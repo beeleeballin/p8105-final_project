@@ -1,0 +1,11 @@
+---
+title: "Final Project Proposal"
+author: 
+  - "Jennifer Estrada (jae2186) \n"
+  - "Brian Lee (jl6046) \n"
+  - "Jesse Ames (jra2186) \n"
+  - "Catherine Mauro (cgm2163) \n"
+  - "Benjamin Goebel (bpg2118) \n"
+date: "11/12/2021"
+output: github_document
+---
