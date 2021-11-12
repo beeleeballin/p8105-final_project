@@ -1,6 +1,6 @@
 # p8105-final_project
 
-Our final prject for P8105 - Data Science at the Mailman School of Public Health.
+Final prject for P8105 - Data Science at the Mailman School of Public Health.
 
 Topic: Climate Change and Public Health
 
