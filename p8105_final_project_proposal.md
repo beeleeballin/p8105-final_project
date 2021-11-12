@@ -18,7 +18,7 @@ Benjamin Goebel (bpg2118)
 In recent years, concerns over the impact of climate change have moved
 to the forefront of public discussion. Our group is interested in
 assessing how trends in chronic disease incidence at the state level
-have been impacted by air pollution and solar radiation. Air pollution
+have been impacted by air pollution and UV radiation. Air pollution
 is known to be associated with lung cancer and asthma, and UV radiation
 with skin cancer, but we want to illustrate these associations wtih
 contemporary data from diverse areas. We also seek to determine whether
@@ -28,7 +28,7 @@ well.
 ## Intended final products
 
 We intend to create a written report detailing the findings of our
-project. Additionally, we will create a github-supported repo and
+project. Additionally, we will create a github repository and
 webpage with a dashboard of data visualization relating to our analysis.
 The dashboard will include asthma, lung cancer, and skin cancer
 incidence for selected states over a span of several years and the
