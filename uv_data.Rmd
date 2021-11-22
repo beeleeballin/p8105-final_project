@@ -1,0 +1,67 @@
+---
+title: "UV radiation data"
+author: "Jesse R. Ames"
+date: "11/21/2021"
+output: github_document
+---
+
+Source: https://data.cdc.gov/Environmental-Health-Toxicology/Population-Weighted-Ultraviolet-Irradiance-2004-20/h28b-t43q/data#About
+
+Before downloading, I filtered to our three states of interest (Maine, New York, and Ohio) using the CDC's web application. The state FIPS codes for Maine, New York, and Ohio are 23, 36, and 39, respectively, per the US Department of Agriculture.
+
+```{r}
+library(tidyverse)
+uv <- read_csv("data/Population-Weighted_Ultraviolet_Irradiance__2004-2015.csv")
+names(uv)
+```
+
+According to the metadata provided with this dataset (OMIUV_Metadata_May2017.pdf), we have the following variables:
+
+* `statefips` - FIPS code of the state of the observations
+* `countyfips` - FIPS code of the county of the observations
+* `year`, `month`, and `day` (from 2004 to 2015)
+* `edd` - "Daily county-level population weighted erythemally weighted daily dose, with the
+unit of J/m^2"
+* `edr` - "Daily county-level population weighted erythemally weighted irradiance at local
+solar noon time, with the unit of Mw/m^2"
+* `i305` - "Daily county-level population weighted spectral irradiance at local solar noon time
+at 305 nm, with the unit of mW/m^2/nm"
+* `i310` - "Daily county-level population weighted spectral irradiance at local solar noon time
+at 310 nm, with the unit of mW/m^2/nm"
+* `i324` - "Daily county-level population weighted spectral irradiance at local solar noon time
+at 324 nm, with the unit of mW/m^2/nm"
+* `i380` - "Daily county-level population weighted spectral irradiance at local solar noon time
+at 380 nm, with the unit of mW/m^2/nm"
+
+The metadata additionally specifies how missing data was coded:
+
+"NAs in the dataset appear as missing values; these refer to no valid data and are caused
+by invalid retrievals from OMI. We suggest to treat NAs as missing."
+
+Now, we need the county-level FIPS codes. How do we get those? Web scraping the [USDA website](https://www.nrcs.usda.gov/wps/portal/nrcs/detail/national/home/?cid=nrcs143_013697):
+
+```{r}
+library(rvest)
+library(httr)
+
+usda_countyfips <- read_html("https://www.nrcs.usda.gov/wps/portal/nrcs/detail/national/home/?cid=nrcs143_013697")
+
+#Use SelectorGadget
+
+countyfips_string <- usda_countyfips %>%
+  html_elements(".data") %>%
+  html_text2()
+
+#Break this crazy string into useful data
+countyfips_matrix <- matrix(data = unlist(strsplit(countyfips_string, split = "\r "))[-c(1:3)],
+                            ncol = 3, byrow = TRUE)
+countyfips_df <- tibble(countyfips = countyfips_matrix[,1],
+                        county = countyfips_matrix[,2],
+                        state = countyfips_matrix[,3]) %>%
+  mutate(countyfips = as.double(countyfips))
+
+#left_join to add county and state to the UV data
+uv <- left_join(uv, countyfips_df, by = "countyfips")
+```
+
+
