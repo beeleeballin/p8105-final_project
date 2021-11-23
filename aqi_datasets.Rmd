@@ -22,7 +22,7 @@ See description for the following variables:
 Load libraries and set working directory
 ```{r, message=FALSE}
 library(tidyverse)
-setwd("~/Desktop/Columbia/Fall_2021/P8105-Data_Science/")
+setwd("~/Desktop/Columbia/Fall_2021/P8105-Data_Science/p8105-final_project/") ## may need to set your own paths to access the rmd and data files
 ```
 
 .csv tidying function 
@@ -53,7 +53,7 @@ tidy_df = function(all_paths){
 
 Data import and organization
 ```{r, warning=FALSE}
-folder_path = "./aqi/"
+folder_path = "./data/aqi/"
 
 aqi_files = 
   tibble(
