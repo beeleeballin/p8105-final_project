@@ -18,6 +18,9 @@ See description for the following variables:
 * `med_aqi` - Half of daily AQI values during the year were less than or equal to the median value, and half equaled or exceeded it
 * `co`, `no2`, `o3`, `so2`, `pm2_5`, `pm10` - A daily index value is calculated for each air pollutant measured. The highest of those index values is the AQI value, and the pollutant responsible for the highest index value is the "Main Pollutant." These columns give the number of days each pollutant measured was the main pollutant.
 
+For more information, please see 
+https://www.epa.gov/outdoor-air-quality-data/about-air-data-reports
+
 
 Load libraries and set working directory
 ```{r, message=FALSE}
