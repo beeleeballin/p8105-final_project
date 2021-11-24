@@ -1,0 +1,78 @@
+---
+title: "lung_cancer_data"
+author: "Kate Mauro"
+date: "11/23/2021"
+output: github_document
+---
+
+First, I loaded the tidyverse and read in the function created by Benjamin for
+the county level data
+
+```{r}
+
+
+library(tidyverse)
+
+read_and_clean_county_data <- function(file_path_name) {
+  read_csv(file_path_name, skip = 8) %>%
+  janitor::clean_names() %>%
+  select(county, age_adjusted_incidence_rate_rate_note_cases_per_100_000)
+}
+
+
+
+```
+
+Next, I loaded in the county data sets using this function:
+
+```{r}
+
+#county-level lung cancer PA data https://statecancerprofiles.cancer.gov/
+
+pa_county_lc = read_and_clean_county_data('./data/pa_lung_data_county.csv')
+
+
+#county-level lung cancer OH data https://statecancerprofiles.cancer.gov/
+
+oh_county_lc = read_and_clean_county_data('./data/oh_lung_data_county.csv')
+
+
+#county-level lung cancer NY data https://statecancerprofiles.cancer.gov/
+
+ny_county_lc = read_and_clean_county_data('./data/ny_lung_data_county.csv')
+
+```
+
+Finally, I loaded in the state-level lung cancer data
+
+```{r}
+
+
+#state-level lung cancer PA data https://www.phaim1.health.pa.gov/EDD/
+
+pa_cancer = read.csv('./data/pa_state_lung.csv', sep = ";", header = T, skip = 3) %>%
+  janitor::clean_names() %>%
+  select(year, rate_ratio_result) %>%
+  map_df(str_replace, pattern = ",", replacement = ".") %>%
+    map_df(as.numeric)
+
+
+#state-level lung cancer OH data https://publicapps.odh.ohio.gov/EDW/DataBrowser/Browse/StateLayoutLockdownCancers
+
+oh_cancer = read.csv('./data/oh_state_lung.csv', sep = ";") %>%
+  janitor::clean_names() %>%
+  rename(year = cancer_year_year) %>%
+  select(year, age_adjusted_rate) %>%
+    map_df(str_replace, pattern = ",", replacement = ".") %>%
+    map_df(as.numeric)
+
+
+#state-level lung cancer NY data https://www.health.ny.gov/statistics/cancer/registry/table2/tb2lungnys.htm
+
+ny_cancer = read.csv("./data/ny_state_lung.csv", skip = 2)[ ,1:3] %>%
+  janitor::clean_names() %>%
+  rename(year = x) %>%
+  select(year, rate_per_100_000_population)
+
+
+```

@@ -1,0 +1,33 @@
+Category2;;;;;;;;;;;;;;;
+Pennsylvania Cancer Incidence: Age-Adjusted Rates per 100,000;;;;;;;;;;;;;;;
+;;;;;;;;;;;;;;;
+RateRatio;Cancer_Site;County;Year;Sex;Race_Ethnicity;Age;Stage;Count;Exp_Count;Pop;RateRatioResult;LowerBound_Result;UpperBoundResult;SignificanceResult;County_Code
+Age-Adjusted Rate;Lung and Bronchus;Pennsylvania;2018;Total;All Races;All Ages;Invasive;10.808;ND;12.807.060;59,9;58,8;61,1;;0
+Age-Adjusted Rate;Lung and Bronchus;Pennsylvania;2017;Total;All Races;All Ages;Invasive;10.929;ND;12.805.537;61,6;60,5;62,8;;0
+Age-Adjusted Rate;Lung and Bronchus;Pennsylvania;2016;Total;All Races;All Ages;Invasive;10.942;ND;12.784.227;63,0;61,8;64,2;;0
+Age-Adjusted Rate;Lung and Bronchus;Pennsylvania;2015;Total;All Races;All Ages;Invasive;10.813;ND;12.802.503;63,2;62,0;64,4;;0
+Age-Adjusted Rate;Lung and Bronchus;Pennsylvania;2014;Total;All Races;All Ages;Invasive;10.662;ND;12.787.209;63,2;62,0;64,4;;0
+Age-Adjusted Rate;Lung and Bronchus;Pennsylvania;2013;Total;All Races;All Ages;Invasive;10.654;ND;12.773.801;64,3;63,1;65,5;;0
+Age-Adjusted Rate;Lung and Bronchus;Pennsylvania;2012;Total;All Races;All Ages;Invasive;10.419;ND;12.763.536;63,9;62,7;65,2;;0
+Age-Adjusted Rate;Lung and Bronchus;Pennsylvania;2011;Total;All Races;All Ages;Invasive;10.579;ND;12.742.886;66,0;64,8;67,3;;0
+Age-Adjusted Rate;Lung and Bronchus;Pennsylvania;2010;Total;All Races;All Ages;Invasive;10.402;ND;12.702.379;65,9;64,6;67,2;;0
+Age-Adjusted Rate;Lung and Bronchus;Pennsylvania;2009;Total;All Races;All Ages;Invasive;10.598;ND;12.604.767;69,0;67,7;70,3;;0
+Age-Adjusted Rate;Lung and Bronchus;Pennsylvania;2008;Total;All Races;All Ages;Invasive;10.581;ND;12.448.279;69,8;68,5;71,2;;0
+Age-Adjusted Rate;Lung and Bronchus;Pennsylvania;2007;Total;All Races;All Ages;Invasive;10.650;ND;12.432.792;70,9;69,5;72,2;;0
+Age-Adjusted Rate;Lung and Bronchus;Pennsylvania;2006;Total;All Races;All Ages;Invasive;10.432;ND;12.440.621;69,9;68,5;71,2;;0
+Age-Adjusted Rate;Lung and Bronchus;Pennsylvania;2005;Total;All Races;All Ages;Invasive;10.476;ND;12.429.616;70,3;68,9;71,7;;0
+Age-Adjusted Rate;Lung and Bronchus;Pennsylvania;2004;Total;All Races;All Ages;Invasive;10.095;ND;12.406.292;68,2;66,8;69,5;;0
+Age-Adjusted Rate;Lung and Bronchus;Pennsylvania;2003;Total;All Races;All Ages;Invasive;10.223;ND;12.365.455;69,3;67,9;70,6;;0
+Age-Adjusted Rate;Lung and Bronchus;Pennsylvania;2002;Total;All Races;All Ages;Invasive;10.264;ND;12.335.091;69,9;68,5;71,2;;0
+Age-Adjusted Rate;Lung and Bronchus;Pennsylvania;2001;Total;All Races;All Ages;Invasive;10.173;ND;12.287.150;70,3;68,9;71,6;;0
+Age-Adjusted Rate;Lung and Bronchus;Pennsylvania;2000;Total;All Races;All Ages;Invasive;9.880;ND;12.281.054;68,4;67,1;69,8;;0
+Age-Adjusted Rate;Lung and Bronchus;Pennsylvania;1999;Total;All Races;All Ages;Invasive;9.799;ND;11.994.016;69,5;68,1;70,9;;0
+Age-Adjusted Rate;Lung and Bronchus;Pennsylvania;1998;Total;All Races;All Ages;Invasive;9.905;ND;12.001.451;70,1;68,8;71,5;;0
+Age-Adjusted Rate;Lung and Bronchus;Pennsylvania;1997;Total;All Races;All Ages;Invasive;9.838;ND;12.019.661;69,8;68,4;71,2;;0
+Age-Adjusted Rate;Lung and Bronchus;Pennsylvania;1996;Total;All Races;All Ages;Invasive;9.825;ND;12.056.112;69,4;68,0;70,8;;0
+Age-Adjusted Rate;Lung and Bronchus;Pennsylvania;1995;Total;All Races;All Ages;Invasive;9.654;ND;12.071.842;68,3;66,9;69,7;;0
+Age-Adjusted Rate;Lung and Bronchus;Pennsylvania;1994;Total;All Races;All Ages;Invasive;9.260;ND;12.052.410;66,0;64,7;67,4;;0
+Age-Adjusted Rate;Lung and Bronchus;Pennsylvania;1993;Total;All Races;All Ages;Invasive;9.190;ND;12.030.079;65,9;64,5;67,2;;0
+Age-Adjusted Rate;Lung and Bronchus;Pennsylvania;1992;Total;All Races;All Ages;Invasive;8.753;ND;11.995.405;63,4;62,1;64,8;;0
+Age-Adjusted Rate;Lung and Bronchus;Pennsylvania;1991;Total;All Races;All Ages;Invasive;8.734;ND;11.961.070;64,0;62,6;65,4;;0
+Age-Adjusted Rate;Lung and Bronchus;Pennsylvania;1990;Total;All Races;All Ages;Invasive;8.532;ND;11.881.643;62,7;61,4;64,1;;0
