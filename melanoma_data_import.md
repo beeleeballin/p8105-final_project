@@ -1,7 +1,7 @@
 Melanoma Data Import
 ================
 Benjamin Goebel
-11/23/2021
+11/25/2021
 
 ## Incidence of Melanoma by Year
 
@@ -108,39 +108,70 @@ We will use the following function to read in and clean the data.
 ``` r
 # Purpose: Reads in the county-level data for a given state, cleans 
 #          variable names and selects columns of interest.
-# Arguments: A character, the file path name to read in
+# Arguments: file_path_name: A character, the file path name to read in
+#            state: A character, the state
+#            cancer_type: A character, the type of cancer
 # Returns: A tibble, the data.
-read_and_clean_county_data <- function(file_path_name) {
+read_and_clean_county_data <- function(file_path_name, state, cancer_type) {
   read_csv(file_path_name,
            skip = 8) %>%
   janitor::clean_names() %>%
-  select(county, age_adjusted_incidence_rate_rate_note_cases_per_100_000)
+  select(county, age_adjusted_incidence_rate_rate_note_cases_per_100_000) %>%
+  mutate(state = state,
+         cancer_type = cancer_type,
+         age_adjusted_incidence_rate =
+           as.numeric(age_adjusted_incidence_rate_rate_note_cases_per_100_000)) %>%
+  select(state, county, cancer_type, age_adjusted_incidence_rate)
 }
 ```
+
+We can get the county-level melanoma average incidence data for New
+York, Ohio and Pennsylvania from 2014 to 2018 as follows.
 
 #### New York
 
 ``` r
+# Read in New York melanoma incidence county-level data averaged from 2014 to 
+# 2018
 nys_county_melanoma_incidence_2014_2018 <- 
 read_and_clean_county_data(here("data",
                                 "incidence_melanoma_data",
-                                "nys_county_melanoma_incidence_2014_2018.csv"))
+                                "nys_county_melanoma_incidence_2014_2018.csv"),
+                           "NY",
+                           "melanoma")
 ```
 
 #### Ohio
 
 ``` r
+# Read in Ohio melanoma incidence county-level data averaged from 2014 to 2018
 ohio_county_melanoma_incidence_2014_2018 <- 
 read_and_clean_county_data(here("data",
                                 "incidence_melanoma_data",
-                                "ohio_county_melanoma_incidence_2014_2018.csv"))
+                                "ohio_county_melanoma_incidence_2014_2018.csv"),
+                           "OH",
+                           "melanoma")
 ```
 
 #### Pennsylvania
 
 ``` r
+# Read in Pennsylvania melanoma incidence county-level data averaged from 
+# 2014 to 2018
 pa_county_melanoma_incidence_2014_2018 <- 
 read_and_clean_county_data(here("data",
                                 "incidence_melanoma_data",
-                                "pa_county_melanoma_incidence_2014_2018.csv"))
+                                "pa_county_melanoma_incidence_2014_2018.csv"),
+                           "PA",
+                           "melanoma")
+```
+
+Now, we can merge this data together.
+
+``` r
+# Merge county-level dataframes with bind_rows
+state_county_melanoma_incidence_2014_2018 <- 
+  bind_rows(nys_county_melanoma_incidence_2014_2018,
+            ohio_county_melanoma_incidence_2014_2018,
+            pa_county_melanoma_incidence_2014_2018)
 ```
