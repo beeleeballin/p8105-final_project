@@ -1,0 +1,115 @@
+---
+title: "Daily PM2.5 and O3"
+author: "Brian Jo Hsuan Lee"
+date: "11/23/2021"
+output: html_document
+---
+
+```{r}
+library(tidyverse)
+library(rvest)
+library(httr)
+setwd("~/Desktop/Columbia/Fall_2021/P8105-Data_Science/p8105-final_project/") ## may need to set your own paths to access the rmd and data files
+```
+
+
+```{r}
+pm_df = 
+  read_csv("../final_raw/Daily_PM2.5_Concentrations_All_County__2001-2016.csv") %>% 
+  filter(statefips %in% c(36, 39, 23, 42)) %>% 
+  janitor::clean_names() %>% 
+  mutate(
+    countyfips = statefips*1000 + countyfips,
+    day = str_extract(date, "^\\d{2}"),
+    day = factor(as.numeric(day)),
+    month = str_extract(date, "[A-Z]{3}"),
+    month = factor(month)
+  ) %>% 
+  select(-c(date, statefips)) %>% 
+  select(year, countyfips, month, day, everything())
+  # nest(pm25 = c(month:pm25_pop_pred))
+
+oz_df = 
+  read_csv("../final_raw/Daily_County-Level_Ozone_Concentrations__2001-2016.csv") %>% 
+  filter(statefips %in% c(36, 39, 23, 42)) %>% 
+  janitor::clean_names() %>% 
+  mutate(
+    countyfips = as.numeric(statefips)*1000 + countyfips,
+    month = factor(month),
+    day = factor(day)
+  ) %>% 
+  select(-statefips) %>% 
+  select(year, countyfips, everything())
+  # nest(oz = c(month:o3_pop_pred))
+
+```
+
+
+```{r}
+usda_countyfips = read_html("https://www.nrcs.usda.gov/wps/portal/nrcs/detail/national/home/?cid=nrcs143_013697")
+
+countyfips_string =
+  usda_countyfips %>%
+  html_elements(".data") %>%
+  html_text2()
+
+countyfips_matrix = 
+  matrix(
+    data = unlist(strsplit(countyfips_string, split = "\r "))[-c(1:3)],
+    ncol = 3, 
+    byrow = TRUE
+  )
+
+countyfips_df =
+  tibble(
+    countyfips = countyfips_matrix[,1],
+    county = countyfips_matrix[,2]
+  ) %>%
+  mutate(
+    countyfips = as.numeric(countyfips)
+  )
+```
+
+
+```{r}
+ap_df = 
+  full_join(pm_df, oz_df, by = c("year", "countyfips", "month", "day")) %>% 
+  left_join(., countyfips_df, by = "countyfips") %>% 
+  mutate(
+    statefips = str_extract(countyfips, "^\\d{2}"),
+    state = case_when(
+      statefips == 36 ~ "NY",
+      statefips == 39 ~ "OH",
+      statefips == 23 ~ "ME",
+      statefips == 42 ~ "PA"
+    ),
+    state = factor(state),
+  ) %>% 
+  select(-statefips) %>% 
+  select(year, month, day, countyfips, county, state, everything())
+
+ny_ap_df = 
+  ap_df %>% 
+  filter(state == "NY")
+
+write_csv(ny_ap_df,"./data/daily_ny_ap.csv")
+
+oh_ap_df = 
+  ap_df %>% 
+  filter(state == "OH")
+
+write_csv(oh_ap_df,"./data/daily_oh_ap.csv")
+
+me_ap_df = 
+  ap_df %>% 
+  filter(state == "ME")
+
+write_csv(me_ap_df,"./data/daily_me_ap.csv")
+
+pa_ap_df = 
+  ap_df %>% 
+  filter(state == "PA")
+
+write_csv(pa_ap_df,"./data/daily_pa_ap.csv")
+```
+
