@@ -7,7 +7,7 @@ output: github_document
 
 First, I loaded the tidyverse and read in the function created by Benjamin for
 the county level data
-
+*
 
 ```{r}
 
