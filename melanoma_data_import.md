@@ -1,7 +1,7 @@
 Melanoma Data Import
 ================
 Benjamin Goebel
-11/28/2021
+11/30/2021
 
 ## Incidence of Melanoma by Year
 
@@ -143,6 +143,26 @@ state_melanoma_age_adjusted <-
             ohio_melanoma_age_adjusted,
             pa_melanoma_age_adjusted)
 ```
+
+Let’s visualize the merged state melanoma incidence data.
+
+``` r
+# Visualize the merged state melanoma incidence data with line graph
+state_melanoma_age_adjusted %>%
+  ggplot(aes(x = year, y = age_adjusted_incidence_rate, color = state)) +
+  geom_line() +
+  labs(
+    title = "Age-adjusted incidence rate of Melanoma by Year colored by State",
+    x = "Year",
+    y = "Age-adjusted incidence rate of Melanoma", 
+    color = "State"
+  ) +
+  scale_x_continuous(breaks = seq(1976, 2018, by = 4)) +
+  theme_bw() +
+  theme(plot.title = element_text(hjust = 0.5))
+```
+
+![](melanoma_data_import_files/figure-gfm/state_melanoma_incidence_line_graph-1.png)<!-- -->
 
 ## Incidence of Melanoma 2014-2018 at the county level
 

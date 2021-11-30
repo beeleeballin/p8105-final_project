@@ -1,7 +1,7 @@
 ---
 title: "Melanoma Data Import"
 author: "Benjamin Goebel"
-date: "11/28/2021"
+date: "11/30/2021"
 output: github_document
 ---
 
@@ -145,6 +145,24 @@ state_melanoma_age_adjusted <-
             ohio_melanoma_age_adjusted,
             pa_melanoma_age_adjusted)
 ```
+
+Let's visualize the merged state melanoma incidence data.
+```{r state_melanoma_incidence_line_graph}
+# Visualize the merged state melanoma incidence data with line graph
+state_melanoma_age_adjusted %>%
+  ggplot(aes(x = year, y = age_adjusted_incidence_rate, color = state)) +
+  geom_line() +
+  labs(
+    title = "Age-adjusted incidence rate of Melanoma by Year colored by State",
+    x = "Year",
+    y = "Age-adjusted incidence rate of Melanoma", 
+    color = "State"
+  ) +
+  scale_x_continuous(breaks = seq(1976, 2018, by = 4)) +
+  theme_bw() +
+  theme(plot.title = element_text(hjust = 0.5))
+```
+
 
 ## Incidence of Melanoma 2014-2018 at the county level
 
