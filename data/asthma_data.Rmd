@@ -1,0 +1,347 @@
+---
+title: "Asthma Data"
+author: 'UNI: jae2186 (Jennifer Estrada)'
+date: "11/23/2021"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+library(tidyverse)
+library(httr)
+library(jsonlite)
+
+knitr::opts_chunk$set(
+	fig.asp = 0.75,
+	fig.width = 6,
+	message = FALSE,
+	warning = FALSE,
+	out.width = "100%"
+)
+
+theme_set(theme_bw() + theme(plot.caption = element_text(size = 6.5)))
+
+options(
+  ggplot2.continuous.colour = "viridis",
+  ggplot2.continuous.fill = "viridis",
+  knitr.kable.NA = ""
+)
+
+scale_colour_discrete = scale_color_viridis_d
+scale_fill_discrete = scale_fill_viridis_d
+
+```
+
+## Ohio Asthma Data
+
+Data from Ohio provided in pdf document which was copied over to csv document. There are three ways in which the data were organized prior to compiling into one document with a list of available variables:
+
+* Hospitalizations (i.e. inpatient) and ED visits rates for children, adults, and total rates (per 10 000) by county for the year 2016
+* Hospitalizations and ED visits with counts and rates per 10 000 stratified by age group and race by year for 2013-2016:
+  * age group ptions are 0-4, 5-14, 15-34, 35-64, and 65+, and all
+* Hospitalizations and ED visits by month with counts for children, adults, and total but no rate provided (under `frequency`):
+
+The variables are:
+
+* `geography`: denotes which county or 'Ohio' if statewide data
+* `visit`: differentiate between inpatient and ED visits
+* `age_group`: notes the age group above or if 'child' v. 'adult'
+* `month` - only in 2016 is there statewide monthly data made available
+* `year` - range is 2013-2016 
+* `race` - options noted are White and Black, otherwise it is total
+* `frequency`: number of visits for the specific sub-population
+* `population`: number in population meeting the specific race and age criteria during the noted time frame
+* `rate`: per 10 000 residents
+* `sex`: the data has not been stratified by sex, which is noted with 'all'
+
+
+```{r ohio_data}
+oh_asthma <-
+  read_csv("./ohio/ohio_all.csv") %>% 
+  janitor::clean_names()
+```
+
+### Basic Ohio Visualization
+
+Plotting data over time and looking at (1) overall trends comparing inpatient and ED visits, (2) these same trends with respect to age and race, and (3) how this looks across counties within a given year (2016).
+
+```{r oh_eda}
+
+oh_asthma %>% 
+  filter(geography == "Ohio",
+         age_group == "All", 
+         month != "All") %>% 
+  mutate(month = as.numeric(month)) %>% 
+  ggplot(aes(x = month, y = frequency, color = visit)) + 
+  geom_point() +
+  scale_x_continuous(name = "Month", breaks = c(0, 3, 6, 9, 12)) +
+  geom_path() +
+  facet_grid(. ~ year) 
+
+oh_asthma %>% 
+  filter(geography == "Ohio",
+         age_group != "child",
+         age_group != "adult",
+         age_group != "All",
+         month == "All") %>% 
+  mutate(month = as.numeric(month)) %>% 
+  ggplot(aes(x = year, y = rate, color = race)) + 
+  geom_point() +
+  geom_path() +
+  facet_grid(age_group ~ visit) 
+
+oh_asthma %>% 
+  filter(age_group == "All",
+         race == "Total",
+         month == "All",
+         year == "2016",
+         rate != "5.5",
+         rate != "43.2") %>% 
+  group_by(visit) %>% 
+  mutate(geography = fct_reorder(geography, rate)) %>% 
+  ggplot(aes(x = geography, y = rate, color = visit)) +
+  geom_point() + 
+  theme(axis.text.x = element_text(angle = 90, 
+                                   vjust = 0.5, 
+                                   hjust = 1, 
+                                   size = 5)) +
+  geom_vline(xintercept = "Ohio")
+
+```
+
+
+## New York Asthma Data
+
+Data from New York provided as a csv file and uploaded directly
+
+* Hospitalizations (i.e. inpatient) and ED visits rates for children, adults, and total rates (per 10 000) by county for the year 2016 (`ohio_county`):
+  * county
+  * visit - differentiates between ED and inpatient
+  * child_rate_per_10k 
+  * adult_rate_per_10k
+  * total_rate_per_10k
+  * year
+
+```{r ny_data}
+ny_asthma <-
+  read_csv("./ny/NYS_ASTHMA.csv") %>% 
+  janitor::clean_names()
+
+```
+
+### Basic New York Visualization
+
+```{r ny_eda}
+years <- c("2000", "2001", "2002", "2003", "2004", 
+           "2005", "2006", "2007", "2008", "2009", 
+           "2010", "2011", "2012", "2013", "2014", 
+           "2015", "2016", "2017", "2018", "2019")
+
+ny_asthma %>% 
+  filter(geography == "New York State", 
+         age_group == "Total", 
+         month == "Total",
+         year == "2000" | year == "2001" | year == "2002" | year == "2003" |
+           year == "2004" | year == "2005" | year == "2006" | year == "2007" | 
+           year =="2008"  | year == "2009" | year == "2010" | year == "2011" | 
+           year == "2012" | year == "2013" | year == "2014" | year == "2015" | 
+           year == "2016" | year == "2017" | year == "2018" | year == "2019",
+         rate_adj == "Age-Adjusted Rate") %>% 
+  mutate(year = as.numeric(year)) %>% 
+  ggplot(aes(x = year, y = rate_per_10k, color = visit)) + 
+  geom_point() +
+  geom_path()
+
+```
+
+## Pennsylvania Asthma Data
+
+Data for PA has county level information for hospitalizations due to asthma that was obtained from the Enterprise Data Dissemination Informatics Exchange (EDDIE) as a part of Pennsylvania's Department of Health. Data was compiled separately into one document with the option of either age-adjustment or noting crude/age-specific rates. Data include:
+
+* `rate_adj`: notes if the data is age-adjusted or crude/age-specific rates
+  * Age-Adjusted Rate is per 100,000 US 2000 standard million population. 
+  * Crude/Age-Specific Rate is per 100,000.
+* `health_event`: hospital discharge event (all are asthma in this dataset)
+* `geography`: denotes the county unless it is "Pennsylvania" which notes the state values
+* `geography_code`: numerical value specific to the counties
+* `year`: calendar year for data collection, in this dataset information was collected from 2000-2019
+* `sex`: if data is stratified by 'male' or 'female' sex will be noted here; otherwise it is labelled as 'total'
+* `race`: options for race are 'all races', 'white', 'black', and 'hispanic'
+* `age`: data is age-adjusted when noted to be 'all ages' otherwise crude values given for adult and child categories
+* `count`: number of hospitalizations
+* `population`: total population meeting demographic criteria for a given count
+* `rate`: rate for hospitalizations per 100 000
+* `lb`: lower bound of the rate
+* `ub`: upper bound of the rate
+* `significance`: provided for some rates with significance denoted with "+" symbol
+
+Notes for data: 
+* ND = Not displayed if count < 10 for Crude/Age Specific Rates or if count < 20 for Age-Adjusted Rates. 
+* Exported county data contain a + symbol indicating a significantly higher value or a - symbol indicating a significantly lower value compared to Pennsylvania.
+* A note on how these data were obtained: "Hospital discharge counts reflect acute hospital visits, by county of residence, when the patient is admitted. Patients can be counted more than once if they are discharged from a hospital, for the same diagnosis, procedure, or condition during the same year. Hospital discharge coding switched from ICD-9-CM to ICD-10-CM effective October 1, 2015. ICD-10-CM codes offer greater specificity which impacts discharge counts and rates. This transition from ICD-9-CM to ICD-10-CM caused the data for certain categories to require additional processing, or appear to be out of a trend. As a result, it is recommended to re-benchmark using 2016 estimates since comparisons in counts and rates beginning in 2016 should not be compared to prior years."
+
+
+```{r pa_data}
+pa_asthma <-
+  read_csv("./pa/pa_asthma_all.csv", col_names = TRUE) %>% 
+  janitor::clean_names()
+```
+
+### Basic Pennsylvania Visualization
+
+```{r pa_eda}
+
+pa_asthma %>% 
+  filter(race == "All Races", 
+         age == "All Ages",
+         sex == "Total",
+         geography == "Pennsylvania") %>%
+  mutate(rate = as.numeric(rate),
+         lb = as.numeric(lb),
+         ub = as.numeric(ub)) %>% 
+  ggplot(aes(x = year, y = rate)) + 
+  geom_point() +
+  geom_errorbar(aes(ymin = lb, ymax = ub))
+
+pa_asthma %>% 
+  filter(geography_code == "0",
+         sex != "Total",
+         age == "All Ages") %>%
+  mutate(rate = as.numeric(rate) / 10,
+         lb = as.numeric(lb) / 10,
+         ub = as.numeric(ub) / 10) %>% 
+  ggplot(aes(x = year, y = rate, color = race)) +
+  geom_point() +
+  geom_errorbar(aes(ymin = lb, ymax = ub)) +
+  facet_grid(sex ~ .)
+
+pa_asthma %>% 
+  filter(geography_code == "0",
+         sex != "Total",
+         race == "All Races") %>%
+  mutate(rate = as.numeric(rate) / 10,
+         lb = as.numeric(lb) / 10,
+         ub = as.numeric(ub) / 10) %>% 
+  ggplot(aes(x = year, y = rate, color = age)) +
+  geom_point() +
+  geom_errorbar(aes(ymin = lb, ymax = ub)) +
+  facet_grid(sex ~ .)
+
+```
+
+## Comparing data across states
+
+```{r map_code, include= FALSE}
+library("maps")
+library("mapproj")
+
+us_states <- map_data("state")
+us_counties <- 
+  map_data("county") %>% 
+  filter(region == "new york" | 
+           region == "pennsylvania" |
+           region == "ohio")
+
+ggplot(data = us_counties, 
+       mapping = aes(x = long, y = lat, 
+                     group = group, 
+                     fill = subregion)) + 
+  geom_polygon(color = "gray90", size = 0.1) +
+  coord_map(projection = "albers", lat0 = 39, lat1 = 45) +
+  guides(fill = FALSE) +
+  theme(axis.line = element_blank(),
+        axis.text = element_blank(),
+        axis.ticks = element_blank(),
+        axis.title = element_blank(),
+        panel.background = element_blank(),
+        panel.border = element_blank(),
+        panel.grid = element_blank())
+```
+
+
+```{r compare_county}
+
+ny_county <-
+  ny_asthma %>% 
+  filter(age_group == "Total", 
+         month == "Total",
+         year == "2015-2017",
+         visit == "Inpatient",
+         rate_adj == "Age-Adjusted Rate",
+         geography != "New York State",
+         geography != "New York City") %>% 
+  mutate(county = tolower(geography),
+         rate = rate_per_10k,
+         region = "new york",
+         county = replace(county, 
+                          county == "new york county", "new york")) %>% 
+  select(region, county, rate) %>% 
+  group_by(county)
+
+oh_county <- 
+  oh_asthma %>% 
+  filter(geography != "Ohio",
+         age_group == "All", 
+         visit == "Inpatient") %>% 
+  mutate(county = tolower(geography),
+         region = "ohio") %>%
+  select(region, county, rate) %>% 
+  group_by(county)
+
+pa_county <- 
+  pa_asthma %>% 
+  filter(geography_code != "0",
+         rate_adj == "Age-Adjusted Rate",
+         year == "2016",
+         age == "All Ages") %>% 
+  mutate(county = tolower(geography),
+         region = "pennsylvania",
+         rate = as.numeric(rate) / 10) %>%
+  select(region, county, rate) %>% 
+  group_by(county)
+
+county_2016 <-
+  bind_rows(oh_county, ny_county, pa_county)
+
+us_counties %>% 
+  filter(region == "ohio"| 
+           region == "new york" | 
+           region == "pennsylvania" ) %>% 
+  left_join(county_2016, by = c("subregion" = "county")) %>%
+  ggplot(aes(x = long, y = lat, group = group, fill = rate)) +
+  geom_polygon(color = "gray90", size = 0.1) +
+  #coord_map(projection = "albers", lat0 = 39, lat1 = 45) +
+  coord_map(projection = "albers", lat0 = 45, lat1 = 55) +
+  scale_fill_continuous(type = "viridis")+
+  #scale_fill_brewer("Oranges")+
+  theme(legend.position = "bottom",
+        axis.line = element_blank(),
+        axis.text = element_blank(),
+        axis.ticks = element_blank(),
+        axis.title = element_blank(),
+        panel.background = element_blank(),
+        panel.border = element_blank(),
+        panel.grid = element_blank())
+
+us_counties %>% 
+  filter(region == "ohio"| 
+           region == "new york" | 
+           region == "pennsylvania" ) %>% 
+  left_join(county_2016, by = c("subregion" = "county")) %>%
+  ggplot(aes(x = long, y = lat, group = group, fill = log(rate))) +
+  geom_polygon(color = "gray90", size = 0.1) +
+  #coord_map(projection = "albers", lat0 = 39, lat1 = 45) +
+  coord_map(projection = "albers", lat0 = 45, lat1 = 55) +
+  scale_fill_continuous(type = "viridis")+
+  #scale_fill_brewer("Oranges")+
+  theme(legend.position = "bottom",
+        axis.line = element_blank(),
+        axis.text = element_blank(),
+        axis.ticks = element_blank(),
+        axis.title = element_blank(),
+        panel.background = element_blank(),
+        panel.border = element_blank(),
+        panel.grid = element_blank())
+
+
+```
+
