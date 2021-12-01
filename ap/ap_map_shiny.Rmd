@@ -15,44 +15,10 @@ library(flexdashboard)
 library(viridis)
 ```
 
-```{r data_import}
-df = 
-  bind_rows(
-    read_csv("~/Desktop/Columbia/Fall_2021/P8105-Data_Science/p8105-final_project/data/daily_ap/daily_ny_ap.csv")
-  ) %>% 
-  bind_rows(
-    read_csv("~/Desktop/Columbia/Fall_2021/P8105-Data_Science/p8105-final_project/data/daily_ap/daily_oh_ap.csv")
-  ) %>% 
-  bind_rows(
-    read_csv("~/Desktop/Columbia/Fall_2021/P8105-Data_Science/p8105-final_project/data/daily_ap/daily_me_ap.csv")
-  ) %>% 
-  bind_rows(
-    read_csv("~/Desktop/Columbia/Fall_2021/P8105-Data_Science/p8105-final_project/data/daily_ap/daily_pa_ap.csv")
-  )
-  
-tidy_df =
-  df %>% 
-  group_by(year, countyfips, county, state) %>%
-  summarize(across(pm25_max_pred:o3_pop_pred, mean), 
-            across(pm25_max_pred:o3_pop_pred, round, 2)) %>% 
-  ungroup() %>% 
-  mutate(
-    hover = paste(county, '<br>', 
-                  "PM 2.5:", '<br>',
-                  "Average Daily Max", pm25_max_pred, '<br>',
-                  "Average Daily Median", pm25_med_pred, '<br>',
-                  "O3:", '<br>',
-                  "Average Daily Max", o3_max_pred, '<br>',
-                  "Average Daily Median", o3_med_pred),
-    year = factor(year)
-  ) %>% 
-  rename("PM2.5" = pm25_mean_pred, "O3" = o3_mean_pred) %>% 
-  select(year, countyfips, county, state, PM2.5, O3, hover)
-
-extreme_value =
-  tidy_df %>% 
-  select(PM2.5, O3) %>% 
-  summarize(across(c(PM2.5, O3), c(max, min)))
+```{r}
+tidy_pm_df = read_csv("~/Desktop/Columbia/Fall_2021/P8105-Data_Science/p8105-final_project/data/daily_ap/pm25.csv")
+tidy_oz_df = read_csv("~/Desktop/Columbia/Fall_2021/P8105-Data_Science/p8105-final_project/data/daily_ap/o3.csv")
+extreme_value = read_csv("~/Desktop/Columbia/Fall_2021/P8105-Data_Science/p8105-final_project/data/daily_ap/extreme_value.csv")
 ```
 
 ```{r}
@@ -67,21 +33,22 @@ map_gen = function(y, s, d){
   mx = mn = 0
   plot_title = ""
   
-  new_df = tidy_df %>% 
-    filter(year == y, state == s)
   if(d == "PM2.5"){
-    new_df = rename(new_df, value = PM2.5)
+    new_df = rename(tidy_pm_df, value = PM2.5)
     mx = pull(extreme_value, 1)
     mn = pull(extreme_value, 2)
     plot_title = "Average Daily PM 2.5 Level"
   }
   if(d == "O3"){
-    new_df = rename(new_df, value = O3)
+    new_df = rename(tidy_oz_df, value = O3)
     mx = pull(extreme_value, 3)
     mn = pull(extreme_value, 4)
     plot_title = "Average Daily O3 Level"
   }
-  select(new_df, countyfips, value, hover)
+  
+  new_df = new_df %>% 
+    filter(year == y, state == s) %>% 
+    select(countyfips, value, hover)
   
   plot_geo(new_df) %>% 
     add_trace(
@@ -111,10 +78,16 @@ Column {.sidebar}
 -----------------------------------------------------------------------
 
 ```{r}
-state_choices = 
-  tidy_df %>% 
-  distinct(state) %>% 
-  pull()
+year_choices = c(2001:2016)
+state_choices = c("NY", "OH", "ME", "PA")
+data_choices = c("PM2.5", "O3")
+
+selectInput(
+  "year_choice",
+  label = h3("Select Year"),
+  choices = year_choices,
+  selected = "2001"
+)
 
 selectInput(
   "state_choice",
@@ -123,28 +96,11 @@ selectInput(
   selected = "NY"
 )
 
-data_choices = 
-  tidy_df %>% 
-  select(PM2.5, O3) %>% 
-  colnames()
-
 selectInput(
   "data_choice",
   label = h3("Select Data"),
   choices = data_choices,
   selected = "PM2.5"
-)
-
-year_choices = 
-  tidy_df %>% 
-  distinct(year) %>% 
-  pull()
-
-selectInput(
-  "year_choice",
-  label = h3("Select Year"),
-  choices = year_choices,
-  selected = "2001"
 )
 ```
 

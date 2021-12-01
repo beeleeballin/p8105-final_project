@@ -113,3 +113,66 @@ pa_ap_df =
 write_csv(pa_ap_df,"./data/daily_pa_ap.csv")
 ```
 
+```{r}
+df = 
+  bind_rows(
+    read_csv("~/Desktop/Columbia/Fall_2021/P8105-Data_Science/p8105-final_project/data/daily_ap/daily_ny_ap.csv")
+  ) %>% 
+  bind_rows(
+    read_csv("~/Desktop/Columbia/Fall_2021/P8105-Data_Science/p8105-final_project/data/daily_ap/daily_oh_ap.csv")
+  ) %>% 
+  bind_rows(
+    read_csv("~/Desktop/Columbia/Fall_2021/P8105-Data_Science/p8105-final_project/data/daily_ap/daily_me_ap.csv")
+  ) %>% 
+  bind_rows(
+    read_csv("~/Desktop/Columbia/Fall_2021/P8105-Data_Science/p8105-final_project/data/daily_ap/daily_pa_ap.csv")
+  )
+  
+tidy_pm_df =
+  df %>% 
+  select(-contains('o3')) %>% 
+  group_by(year, countyfips, county, state) %>%
+  summarize(across(pm25_max_pred:pm25_mean_pred, mean), 
+            across(pm25_max_pred:pm25_mean_pred, round, 2)) %>% 
+  ungroup() %>% 
+  mutate(
+    hover = paste(county, '<br>', 
+                  "Average Daily Max", pm25_max_pred, '<br>',
+                  "Average Daily Median", pm25_med_pred, '<br>'),
+    year = factor(year)
+  ) %>% 
+  rename("PM2.5" = pm25_mean_pred) %>% 
+  select(year, countyfips, county, state, PM2.5, hover)
+
+write_csv(tidy_pm_df,"./daily_ap/pm25.csv")
+  
+tidy_oz_df =
+  df %>% 
+  select(-contains('pm25')) %>% 
+  group_by(year, countyfips, county, state) %>%
+  summarize(across(o3_max_pred:o3_mean_pred, mean), 
+            across(o3_max_pred:o3_mean_pred, round, 2)) %>% 
+  ungroup() %>% 
+  mutate(
+    hover = paste(county, '<br>', 
+                  "Average Daily Max", o3_max_pred, '<br>',
+                  "Average Daily Median", o3_med_pred),
+    year = factor(year)
+  ) %>% 
+  rename("O3" = o3_mean_pred) %>%
+  select(year, countyfips, county, state, O3, hover)
+
+write_csv(tidy_oz_df,"./daily_ap/o3.csv")
+
+extreme_value =
+  bind_cols(
+    select(tidy_pm_df, PM2.5)
+  ) %>% 
+  bind_cols(
+    select(tidy_oz_df, O3)
+  ) %>% 
+  summarize(across(c(PM2.5, O3), c(max, min)))
+
+write_csv(extreme_value,"./daily_ap/extreme_value.csv")
+```
+
