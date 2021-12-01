@@ -46,11 +46,10 @@ map_gen = function(y, s, d){
     plot_title = "Average Daily O3 Level"
   }
   
-  new_df = new_df %>% 
+  new_df %>% 
     filter(year == y, state == s) %>% 
-    select(countyfips, value, hover)
-  
-  plot_geo(new_df) %>% 
+    select(countyfips, value, hover) %>% 
+    plot_geo() %>% 
     add_trace(
       geojson = counties,
       locations = ~ countyfips,
