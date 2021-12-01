@@ -43,60 +43,67 @@ tidy_df =
                   "Average Daily Median", pm25_med_pred, '<br>',
                   "O3:", '<br>',
                   "Average Daily Max", o3_max_pred, '<br>',
-                  "Average Daily Median", o3_med_pred)
+                  "Average Daily Median", o3_med_pred),
+    year = factor(year)
   ) %>% 
-  select(year, countyfips, county, state, pm25_mean_pred, o3_mean_pred, hover)
+  rename("PM2.5" = pm25_mean_pred, "O3" = o3_mean_pred) %>% 
+  select(year, countyfips, county, state, PM2.5, O3, hover)
+
+extreme_value =
+  tidy_df %>% 
+  select(PM2.5, O3) %>% 
+  summarize(across(c(PM2.5, O3), c(max, min)))
 ```
 
 ```{r}
 url1 = 'https://raw.githubusercontent.com/plotly/datasets/master/geojson-counties-fips.json'
 counties = rjson::fromJSON(file = url1)
 g = list(
-    visible = FALSE,
-    fitbounds = "locations"
-    # scope = 'usa',
-    # projection = list(type = 'albers usa'
+  visible = FALSE,
+  fitbounds = "locations"
 )
 
-df_gen = function(y, s, d){
+map_gen = function(y, s, d){
+  mx = mn = 0
+  plot_title = ""
   
   new_df = tidy_df %>% 
     filter(year == y, state == s)
-  
-  if(d == "pm25_mean_pred"){
-    new_df = rename(new_df, value = pm25_mean_pred)
+  if(d == "PM2.5"){
+    new_df = rename(new_df, value = PM2.5)
+    mx = pull(extreme_value, 1)
+    mn = pull(extreme_value, 2)
+    plot_title = "Average Daily PM 2.5 Level"
   }
-  if(d == "o3_mean_pred"){
-    new_df = rename(new_df, value = o3_mean_pred)
+  if(d == "O3"){
+    new_df = rename(new_df, value = O3)
+    mx = pull(extreme_value, 3)
+    mn = pull(extreme_value, 4)
+    plot_title = "Average Daily O3 Level"
   }
-  
   select(new_df, countyfips, value, hover)
-}
-
-map_gen = function(df){
   
-  fig = 
-    plot_geo(df) %>% 
+  plot_geo(new_df) %>% 
     add_trace(
       geojson = counties,
       locations = ~ countyfips,
       z = ~ value,
-      colorscale = "Viridis",
       text = ~ hover,
-      zmin = ~ min(value),
-      zmax = ~ max(value),
+      
+      colorscale = "Viridis",
+      
+      zmin = mn,
+      zmax = mx,
       marker = 
         list(
           line = list(width = 0)
         )
     ) %>% 
-    colorbar(title = "legend bar title") %>%
+    colorbar(title = "") %>%
     layout(
-      title = "graph tile",
+      title = plot_title,
       geo = g
     )
-  
-  fig
 }
 ```
 
@@ -114,68 +121,40 @@ selectInput(
   label = h3("Select State"),
   choices = state_choices,
   selected = "NY"
-  )
-
-sliderInput(
-  "year_choice",
-  label = h3("Select Year"),
-  min = 2001,
-  max = 2016,
-  value = 2001
-  )
+)
 
 data_choices = 
-  df %>% 
-  select("pm25_mean_pred", "o3_mean_pred") %>% 
+  tidy_df %>% 
+  select(PM2.5, O3) %>% 
   colnames()
 
-radioButtons(
-  "data_choice", 
+selectInput(
+  "data_choice",
   label = h3("Select Data"),
   choices = data_choices,
-  selected = "pm25_mean_pred"
+  selected = "PM2.5"
+)
+
+year_choices = 
+  tidy_df %>% 
+  distinct(year) %>% 
+  pull()
+
+selectInput(
+  "year_choice",
+  label = h3("Select Year"),
+  choices = year_choices,
+  selected = "2001"
 )
 ```
 
-Column {data-width=650}
+Column {data-width=1000}
 -----------------------------------------------------------------------
 
 ### Chart A
 
 ```{r}
-# a = input[["year_choice"]]
-# b = input[["state_choice"]]
-# c = input[["data_choice"]]
-# 
-# if(c == "pm25_mean_pred"){
-#   c = "pm"
-# }else{
-#   c = "oz"
-# }
-
-
-
 renderPlotly({
-  df_gen(input[["year_choice"]], input[["state_choice"]], input[["data_choice"]]) %>% 
-    map_gen()
+  map_gen(input[["year_choice"]], input[["state_choice"]], input[["data_choice"]])
 })
-```
-
-Column {data-width=350}
------------------------------------------------------------------------
-
-### Chart B
-
-```{r}
-# renderPrint({
-#   input[["price_choice"]]
-# })
-```
-
-### Chart C
-
-```{r}
-# renderPrint({
-#   input[["room_choice"]]
-# })
 ```
