@@ -1,13 +1,15 @@
 ---
 title: "UV radiation data"
 author: "Jesse R. Ames"
-date: "11/21/2021"
+date: "11/29/2021"
 output: github_document
 ---
 
+## Data
+
 Source: https://data.cdc.gov/Environmental-Health-Toxicology/Population-Weighted-Ultraviolet-Irradiance-2004-20/h28b-t43q/data#About
 
-Before downloading, I filtered to our three states of interest (Maine, New York, and Ohio) using the CDC's web application. The state FIPS codes for Maine, New York, and Ohio are 23, 36, and 39, respectively, per the US Department of Agriculture.
+Before downloading, I filtered to our states of interest (Maine, New York, Ohio, and Pennsylvania) using the CDC's web application. The state FIPS codes for Maine, New York, Ohio, and Pennsylvania are 23, 36, 39, and 42, respectively, per the U.S. Department of Agriculture.
 
 ```{r}
 library(tidyverse)
@@ -23,7 +25,7 @@ According to the metadata provided with this dataset (OMIUV_Metadata_May2017.pdf
 * `edd` - "Daily county-level population weighted erythemally weighted daily dose, with the
 unit of J/m^2"
 * `edr` - "Daily county-level population weighted erythemally weighted irradiance at local
-solar noon time, with the unit of Mw/m^2"
+solar noon time, with the unit of mW/m^2"
 * `i305` - "Daily county-level population weighted spectral irradiance at local solar noon time
 at 305 nm, with the unit of mW/m^2/nm"
 * `i310` - "Daily county-level population weighted spectral irradiance at local solar noon time
@@ -62,6 +64,74 @@ countyfips_df <- tibble(countyfips = countyfips_matrix[,1],
 
 #left_join to add county and state to the UV data
 uv <- left_join(uv, countyfips_df, by = "countyfips")
+
+#County, state
+uv <- uv %>%
+  mutate(county = paste(county, state, sep = ", "))
+
+#Missing data?
+skimr::skim(uv)
+
+#What are these missing rows? Maybe it's the 2004 data?
+missing <- uv %>%
+  filter(is.na(edd))
+
+missing %>% janitor::tabyl(year, month, state)
+
+#We have several columns which are all highly correlated with one another
+uv %>% 
+  select(edd:i380) %>% 
+  do(as.data.frame(cor(., method="pearson", use="pairwise.complete.obs")))
 ```
+
+## Visualizations
+
+```{r}
+#Boxplots
+uv %>%
+  ggplot(aes(x = state, y = edd, color = state)) +
+  geom_boxplot() +
+  labs(title = "Comparison of Erythemal Daily Dose by State",
+       x = "State", y = "EDD (J/m^2)")
+
+#Density
+uv %>%
+  ggplot(aes(x = edd, color = state)) +
+  geom_density() +
+  labs(title = "Distribution of Erytemal Daily Dose by State",
+       x = "EDD (J/m^2)")
+
+#County breakdown
+uv %>%
+  filter(state == "NY") %>%
+  ggplot(aes(x = reorder(county,edd, na.rm = TRUE), y = edd)) +
+  geom_boxplot() +
+  theme(axis.text.x = element_text(angle = 90, vjust = 0.5, hjust = 1)) +
+  labs(title = "Comparison of Erythemal Daily Dose by County, NY",
+       x = "County", y = "EDD (J/m^2)")
+
+#Monthly trends
+uv %>%
+  mutate(month = as.character(month)) %>%
+  mutate(month = fct_recode(month,
+                            Jan = "1", Feb = "2", Mar = "3", Apr = "4",
+                            May = "5", Jun = "6", Jul = "7", Aug = "8",
+                            Sep = "9", Oct = "10", Nov = "11", Dec = "12")) %>%
+  mutate(month = factor(month, levels = c("Jan","Feb","Mar","Apr","May","Jun","Jul","Aug",
+                                          "Sep","Oct","Nov","Dec"))) %>%
+  ggplot(aes(x = month, y = edd, color = state)) +
+  geom_boxplot() +
+  labs(title = "Comparison of Erythemal Daily Dose by State by Month")
+
+#Annual trends
+uv %>%
+  mutate(year = as.factor(year)) %>%
+  ggplot(aes(x = year, y = edd, color = state)) +
+  geom_boxplot() +
+  labs(title = "Comparison of Erythemal Daily Dose by State by Year")
+```
+
+Note that the data from 2004 start in October; they aren't full-year data.
+
 
 
