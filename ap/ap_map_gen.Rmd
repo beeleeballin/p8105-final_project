@@ -1,0 +1,156 @@
+---
+title: "values on map"
+author: "Brian Jo Hsuan Lee"
+date: "11/24/2021"
+output: html_document
+---
+```{r}
+library(tidyverse)
+library(rjson)
+library(plotly)
+# library(leaflet)
+# library(maps)
+```
+
+```{r}
+df = 
+  bind_rows(
+    read_csv("~/Desktop/Columbia/Fall_2021/P8105-Data_Science/p8105-final_project/data/daily_ap/daily_ny_ap.csv")
+  ) %>% 
+  bind_rows(
+    read_csv("~/Desktop/Columbia/Fall_2021/P8105-Data_Science/p8105-final_project/data/daily_ap/daily_oh_ap.csv")
+  ) %>% 
+  bind_rows(
+    read_csv("~/Desktop/Columbia/Fall_2021/P8105-Data_Science/p8105-final_project/data/daily_ap/daily_me_ap.csv")
+  ) %>% 
+  bind_rows(
+    read_csv("~/Desktop/Columbia/Fall_2021/P8105-Data_Science/p8105-final_project/data/daily_ap/daily_pa_ap.csv")
+  )
+  
+tidy_df =
+  df %>% 
+  group_by(year, countyfips, county, state) %>%
+  summarize(across(pm25_max_pred:o3_pop_pred, mean), 
+            across(pm25_max_pred:o3_pop_pred, round, 2)) %>% 
+  ungroup() %>% 
+  mutate(
+    hover = paste(county, '<br>', 
+                  "PM 2.5:", '<br>',
+                  "Average Daily Max", pm25_max_pred, '<br>',
+                  "Average Daily Median", pm25_med_pred, '<br>',
+                  "O3:", '<br>',
+                  "Average Daily Max", o3_max_pred, '<br>',
+                  "Average Daily Median", o3_med_pred)
+  ) %>% 
+  select(year, countyfips, county, state, pm25_mean_pred, o3_mean_pred, hover)
+```
+
+```{r}
+url1 = 'https://raw.githubusercontent.com/plotly/datasets/master/geojson-counties-fips.json'
+counties = rjson::fromJSON(file = url1)
+g = list(
+    visible = FALSE,
+    fitbounds = "locations"
+    # scope = 'usa',
+    # projection = list(type = 'albers usa'
+)
+
+df_gen = function(y, s, d){
+  
+  new_df = tidy_df %>% 
+    filter(year == y, state == s)
+  
+  if(d == "pm"){
+    new_df = rename(new_df, value = pm25_mean_pred)
+  }
+  if(d == "oz"){
+    new_df = rename(new_df, value = o3_mean_pred)
+  }
+  
+  select(new_df, countyfips, value, hover)
+}
+
+map_gen = function(df){
+  
+  fig = 
+    plot_geo(df) %>% 
+    add_trace(
+      geojson = counties,
+      locations = ~ countyfips,
+      z = ~ value,
+      colorscale = "Viridis",
+      text = ~ hover,
+      zmin = ~ min(value),
+      zmax = ~ max(value),
+      marker = 
+        list(
+          line = list(width = 0)
+        )
+    ) %>% 
+    colorbar(title = "legend bar title") %>%
+    layout(
+      title = "graph tile",
+      geo = g
+    )
+  
+  fig
+}
+```
+
+```{r}
+test_df = df_gen(2010, "ME", "oz")
+test_map = map_gen(test_df)
+```
+
+--------------------------------------------------------
+function building; ignore
+--------------------------------------------------------
+```{r}
+df_2001_ny =
+  df %>% 
+  filter(year == 2001, state == "NY") %>% 
+  group_by(year, countyfips, county) %>%
+  summarize(across(pm25_max_pred:o3_pop_pred, mean), 
+            across(pm25_max_pred:o3_pop_pred, round, 2)) %>% 
+  mutate(
+    hover = paste(county, '<br>', 
+                  "PM 2.5:", '<br>',
+                  "Average Daily Max", pm25_max_pred, '<br>',
+                  "Average Daily Median", pm25_med_pred, '<br>',
+                  "O3:", '<br>',
+                  "Average Daily Max", o3_max_pred, '<br>',
+                  "Average Daily Median", o3_med_pred)
+  ) %>% 
+  select(year, countyfips, county, pm25_mean_pred, o3_mean_pred, hover)
+fig = plot_geo(df_2001_ny)
+fig_2001 =
+  fig %>% 
+  add_trace(
+    geojson = counties,
+    locations = ~ countyfips,
+    z = ~ pm25_mean_pred,
+    colorscale = "Viridis",
+    text = ~ hover,
+    zmin = ~ min(pm25_mean_pred),
+    zmax = ~ max(pm25_mean_pred),
+    marker = 
+      list(
+        line = list(width = 0)
+      )
+  ) %>% 
+  colorbar(title = "PM 2.5 level") %>%
+  layout(
+    title = "Average PM 2.5 level by County",
+    geo = g
+  )
+
+fig_2001
+```
+
+```{r}
+# mapNY = maps::map("ny", fill = TRUE, plot = FALSE)
+# leaflet(data = mapNY) %>% 
+#   addTiles()
+```
+
+
