@@ -1,18 +1,21 @@
 ---
-title: "values on map"
-author: "Brian Jo Hsuan Lee"
-date: "11/24/2021"
-output: html_document
+title: "mao on shiny dashboard"
+output: 
+  flexdashboard::flex_dashboard:
+    orientation: columns
+    vertical_layout: fill
+runtime: shiny
 ---
-```{r}
+
+```{r setup, include=FALSE}
 library(tidyverse)
 library(rjson)
 library(plotly)
-# library(leaflet)
-# library(maps)
+library(flexdashboard)
+library(viridis)
 ```
 
-```{r}
+```{r data_import}
 df = 
   bind_rows(
     read_csv("~/Desktop/Columbia/Fall_2021/P8105-Data_Science/p8105-final_project/data/daily_ap/daily_ny_ap.csv")
@@ -60,10 +63,10 @@ df_gen = function(y, s, d){
   new_df = tidy_df %>% 
     filter(year == y, state == s)
   
-  if(d == "pm"){
+  if(d == "pm25_mean_pred"){
     new_df = rename(new_df, value = pm25_mean_pred)
   }
-  if(d == "oz"){
+  if(d == "o3_mean_pred"){
     new_df = rename(new_df, value = o3_mean_pred)
   }
   
@@ -97,60 +100,82 @@ map_gen = function(df){
 }
 ```
 
-```{r}
-test_df = df_gen(2010, "ME", "oz")
-map_gen(test_df)
-```
+Column {.sidebar}
+-----------------------------------------------------------------------
 
---------------------------------------------------------
-function building; ignore
---------------------------------------------------------
 ```{r}
-df_2001_ny =
-  df %>% 
-  filter(year == 2001, state == "NY") %>% 
-  group_by(year, countyfips, county) %>%
-  summarize(across(pm25_max_pred:o3_pop_pred, mean), 
-            across(pm25_max_pred:o3_pop_pred, round, 2)) %>% 
-  mutate(
-    hover = paste(county, '<br>', 
-                  "PM 2.5:", '<br>',
-                  "Average Daily Max", pm25_max_pred, '<br>',
-                  "Average Daily Median", pm25_med_pred, '<br>',
-                  "O3:", '<br>',
-                  "Average Daily Max", o3_max_pred, '<br>',
-                  "Average Daily Median", o3_med_pred)
-  ) %>% 
-  select(year, countyfips, county, pm25_mean_pred, o3_mean_pred, hover)
-fig = plot_geo(df_2001_ny)
-fig_2001 =
-  fig %>% 
-  add_trace(
-    geojson = counties,
-    locations = ~ countyfips,
-    z = ~ pm25_mean_pred,
-    colorscale = "Viridis",
-    text = ~ hover,
-    zmin = ~ min(pm25_mean_pred),
-    zmax = ~ max(pm25_mean_pred),
-    marker = 
-      list(
-        line = list(width = 0)
-      )
-  ) %>% 
-  colorbar(title = "PM 2.5 level") %>%
-  layout(
-    title = "Average PM 2.5 level by County",
-    geo = g
+state_choices = 
+  tidy_df %>% 
+  distinct(state) %>% 
+  pull()
+
+selectInput(
+  "state_choice",
+  label = h3("Select State"),
+  choices = state_choices,
+  selected = "NY"
   )
 
-fig_2001
+sliderInput(
+  "year_choice",
+  label = h3("Select Year"),
+  min = 2001,
+  max = 2016,
+  value = 2001
+  )
+
+data_choices = 
+  df %>% 
+  select("pm25_mean_pred", "o3_mean_pred") %>% 
+  colnames()
+
+radioButtons(
+  "data_choice", 
+  label = h3("Select Data"),
+  choices = data_choices,
+  selected = "pm25_mean_pred"
+)
 ```
+
+Column {data-width=650}
+-----------------------------------------------------------------------
+
+### Chart A
 
 ```{r}
-# mapNY = maps::map("ny", fill = TRUE, plot = FALSE)
-# leaflet(data = mapNY) %>% 
-#   addTiles()
+# a = input[["year_choice"]]
+# b = input[["state_choice"]]
+# c = input[["data_choice"]]
+# 
+# if(c == "pm25_mean_pred"){
+#   c = "pm"
+# }else{
+#   c = "oz"
+# }
+
+
+
+renderPlotly({
+  df_gen(input[["year_choice"]], input[["state_choice"]], input[["data_choice"]]) %>% 
+    map_gen()
+})
 ```
 
+Column {data-width=350}
+-----------------------------------------------------------------------
 
+### Chart B
+
+```{r}
+# renderPrint({
+#   input[["price_choice"]]
+# })
+```
+
+### Chart C
+
+```{r}
+# renderPrint({
+#   input[["room_choice"]]
+# })
+```
