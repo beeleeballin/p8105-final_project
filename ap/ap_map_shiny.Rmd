@@ -12,13 +12,14 @@ library(tidyverse)
 library(rjson)
 library(plotly)
 library(flexdashboard)
+library(rsconnect)
 ```
 
 ```{r}
-tidy_pm_df = read_csv("~/Desktop/Columbia/Fall_2021/P8105-Data_Science/p8105-final_project/data/ap_uv/pm25.csv")
-tidy_oz_df = read_csv("~/Desktop/Columbia/Fall_2021/P8105-Data_Science/p8105-final_project/data/ap_uv/o3.csv")
-tidy_uv_df = read_csv("~/Desktop/Columbia/Fall_2021/P8105-Data_Science/p8105-final_project/data/ap_uv/edd.csv")
-extreme_value = read_csv("~/Desktop/Columbia/Fall_2021/P8105-Data_Science/p8105-final_project/data/ap_uv/ext_value.csv")
+tidy_pm_df = read_csv("./ap_uv/pm25.csv")
+tidy_oz_df = read_csv("./ap_uv/o3.csv")
+tidy_uv_df = read_csv("./ap_uv/edd.csv")
+extreme_value = read_csv("./ap_uv/ext_value.csv")
 ```
 
 ```{r}
