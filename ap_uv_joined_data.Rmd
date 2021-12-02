@@ -1,0 +1,173 @@
+---
+title: "PM2.5, O3, and UV joined data"
+author: "Brian Jo Hsuan Lee"
+date: "12/2/2021"
+output: html_document
+---
+
+```{r}
+library(tidyverse)
+library(rvest)
+library(httr)
+setwd("~/Desktop/Columbia/Fall_2021/P8105-Data_Science/p8105-final_project/")
+```
+
+Data scraping tool
+```{r}
+usda_countyfips = read_html("https://www.nrcs.usda.gov/wps/portal/nrcs/detail/national/home/?cid=nrcs143_013697")
+
+countyfips_string =
+  usda_countyfips %>%
+  html_elements(".data") %>%
+  html_text2()
+
+countyfips_matrix = 
+  matrix(
+    data = unlist(strsplit(countyfips_string, split = "\r "))[-c(1:3)],
+    ncol = 3, 
+    byrow = TRUE
+  )
+
+countyfips_df =
+  tibble(
+    countyfips = countyfips_matrix[,1],
+    county = countyfips_matrix[,2]
+  ) %>%
+  mutate(
+    countyfips = as.numeric(countyfips)
+  )
+```
+
+AP data
+```{r}
+pm_df = 
+  read_csv("../final_raw/Daily_PM2.5_Concentrations_All_County__2001-2016.csv") %>% 
+  filter(statefips %in% c(36, 39, 23, 42)) %>% 
+  janitor::clean_names() %>% 
+  mutate(
+    countyfips = statefips*1000 + countyfips,
+    day = str_extract(date, "^\\d{2}"),
+    day = factor(as.numeric(day)),
+    month = str_extract(date, "[A-Z]{3}"),
+    month = factor(month)
+  )
+
+oz_df = 
+  read_csv("../final_raw/Daily_County-Level_Ozone_Concentrations__2001-2016.csv") %>% 
+  filter(statefips %in% c(36, 39, 23, 42)) %>% 
+  janitor::clean_names() %>% 
+  mutate(
+    countyfips = as.numeric(statefips)*1000 + countyfips,
+    month = factor(month),
+    day = factor(day)
+  )
+```
+
+UV data
+```{r}
+uv_df = 
+  read_csv("data/Population-Weighted_Ultraviolet_Irradiance__2004-2015.csv") %>%
+  filter(statefips %in% c(36, 39, 23, 42)) %>% 
+  mutate(
+    day = factor(as.numeric(day)),
+    month = factor(month),
+    month = recode_factor(month, `1` = "JAN", `2` = "FEB", `3` = "MAR", `4` = "APR",
+                          `5` = "MAY", `6` = "JUN", `7` = "JUL", `8` = "AUG",
+                          `9` = "SEP", `10` = "OCT", `11` = "NOV", `12` = "DEC", .default = "Other")
+  )
+```
+
+
+```{r}
+ap_uv_df = 
+  full_join(pm_df, oz_df, by = c("year", "countyfips", "month", "day")) %>% 
+  full_join(., uv_df, by = c("year", "countyfips", "month", "day")) %>% 
+  left_join(., countyfips_df, by = "countyfips") %>% 
+  mutate(
+    statefips = str_extract(countyfips, "^\\d{2}"),
+    state = case_when(
+      statefips == 36 ~ "NY",
+      statefips == 39 ~ "OH",
+      statefips == 23 ~ "ME",
+      statefips == 42 ~ "PA"
+    ),
+    year = factor(year),
+    state = factor(state),
+    countyfips = factor(countyfips),
+  ) %>% 
+  select(-contains("statefips"), -date) %>% 
+  select(year, month, day, countyfips, county, state, everything())
+```
+
+```{r}
+tidy_df =
+  ap_uv_df %>% 
+  group_by(year, countyfips, county, state) %>%
+  summarize(across(pm25_max_pred:i380, mean, na.rm = TRUE), 
+            across(pm25_max_pred:i380, round, 2)) %>% 
+  ungroup()
+
+tidy_pm_df =
+  tidy_df %>% 
+  select(-c(o3_max_pred:i380)) %>% 
+  rename("PM2.5" = pm25_pop_pred) %>% 
+  mutate(
+    hover = paste(county, '<br>', 
+                  "Average Daily Max", pm25_max_pred, '<br>',
+                  "Average Daily Median", pm25_med_pred, '<br>')
+  ) %>% 
+  select(year, countyfips, county, state, PM2.5, hover)
+
+tidy_oz_df =
+  tidy_df %>% 
+  select(-contains("pm25"), -c(edd:i380)) %>% 
+  rename("O3" = o3_pop_pred) %>% 
+  mutate(
+    hover = paste(county, '<br>', 
+                  "Average Daily Max", o3_max_pred, '<br>',
+                  "Average Daily Median", o3_med_pred, '<br>')
+  ) %>% 
+  select(year, countyfips, county, state, O3, hover)
+
+tidy_uv_df =
+  tidy_df %>% 
+  select(-contains("pm25"), -contains("o3"), -c(edr:i380)) %>% 
+  rename("UV" = edd) %>% 
+  mutate(
+    hover = paste(county, '<br>')
+  ) %>% 
+  select(year, countyfips, county, state, UV, hover)
+
+extreme_value =
+  bind_cols(
+    bind_cols(
+      select(tidy_pm_df, PM2.5)
+    ) %>% 
+    bind_cols(
+      select(tidy_oz_df, O3)
+    ) %>% 
+    bind_cols(
+      select(tidy_uv_df, UV)
+    ) %>%
+    summarize(across(c(PM2.5:UV), max, na.rm =TRUE))
+  ) %>% 
+  bind_cols(
+    bind_cols(
+      select(tidy_pm_df, PM2.5)
+    ) %>% 
+    bind_cols(
+      select(tidy_oz_df, O3)
+    ) %>% 
+    bind_cols(
+      select(tidy_uv_df, UV)
+    ) %>% 
+    summarize(across(c(PM2.5:UV), min, na.rm =TRUE))
+  )
+
+write_csv(extreme_value,"data/ap_uv/ext_value.csv")
+write_csv(tidy_pm_df,"data/ap_uv/pm25.csv")
+write_csv(tidy_oz_df,"data/ap_uv/o3.csv")
+write_csv(tidy_uv_df,"data/ap_uv/edd.csv")
+
+```
+

@@ -145,7 +145,15 @@ tidy_pm_df =
   select(year, countyfips, county, state, PM2.5, hover)
 
 write_csv(tidy_pm_df,"./daily_ap/pm25.csv")
-  
+
+for (i in 2001:2016) {
+  year_name_csv = paste("pm25_", i, ".csv", sep = "")
+   
+  tidy_pm_df %>% 
+    filter(year == i) %>% 
+    write_csv(paste("./data/daily_ap/", year_name_csv, sep = ""))
+}
+
 tidy_oz_df =
   df %>% 
   select(-contains('pm25')) %>% 
@@ -163,6 +171,14 @@ tidy_oz_df =
   select(year, countyfips, county, state, O3, hover)
 
 write_csv(tidy_oz_df,"./daily_ap/o3.csv")
+
+for (i in 2001:2016) {
+  year_name_csv = paste("o3_", i, ".csv", sep = "")
+   
+  tidy_oz_df %>% 
+    filter(year == i) %>% 
+    write_csv(paste("./data/daily_ap/", year_name_csv, sep = ""))
+}
 
 extreme_value =
   bind_cols(

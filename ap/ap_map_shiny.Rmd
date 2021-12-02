@@ -1,5 +1,5 @@
 ---
-title: "mao on shiny dashboard"
+title: "shiny ap and uv maps"
 output: 
   flexdashboard::flex_dashboard:
     orientation: columns
@@ -12,13 +12,13 @@ library(tidyverse)
 library(rjson)
 library(plotly)
 library(flexdashboard)
-library(viridis)
 ```
 
 ```{r}
-tidy_pm_df = read_csv("~/Desktop/Columbia/Fall_2021/P8105-Data_Science/p8105-final_project/data/daily_ap/pm25.csv")
-tidy_oz_df = read_csv("~/Desktop/Columbia/Fall_2021/P8105-Data_Science/p8105-final_project/data/daily_ap/o3.csv")
-extreme_value = read_csv("~/Desktop/Columbia/Fall_2021/P8105-Data_Science/p8105-final_project/data/daily_ap/extreme_value.csv")
+tidy_pm_df = read_csv("~/Desktop/Columbia/Fall_2021/P8105-Data_Science/p8105-final_project/data/ap_uv/pm25.csv")
+tidy_oz_df = read_csv("~/Desktop/Columbia/Fall_2021/P8105-Data_Science/p8105-final_project/data/ap_uv/o3.csv")
+tidy_uv_df = read_csv("~/Desktop/Columbia/Fall_2021/P8105-Data_Science/p8105-final_project/data/ap_uv/edd.csv")
+extreme_value = read_csv("~/Desktop/Columbia/Fall_2021/P8105-Data_Science/p8105-final_project/data/ap_uv/ext_value.csv")
 ```
 
 ```{r}
@@ -36,18 +36,75 @@ map_gen = function(y, s, d){
   if(d == "PM2.5"){
     new_df = rename(tidy_pm_df, value = PM2.5)
     mx = pull(extreme_value, 1)
-    mn = pull(extreme_value, 2)
+    mn = pull(extreme_value, 4)
     plot_title = "Average Daily PM 2.5 Level"
   }
   if(d == "O3"){
     new_df = rename(tidy_oz_df, value = O3)
-    mx = pull(extreme_value, 3)
-    mn = pull(extreme_value, 4)
+    mx = pull(extreme_value, 2)
+    mn = pull(extreme_value, 5)
     plot_title = "Average Daily O3 Level"
+  }
+  
+  if(d == "UV"){
+    new_df = rename(tidy_uv_df, value = UV)
+    mx = pull(extreme_value, 3)
+    mn = pull(extreme_value, 6)
+    plot_title = "Average Daily UV Level"
   }
   
   new_df %>% 
     filter(year == y, state == s) %>% 
+    select(countyfips, value, hover) %>% 
+    plot_geo() %>% 
+    add_trace(
+      geojson = counties,
+      locations = ~ countyfips,
+      z = ~ value,
+      text = ~ hover,
+      
+      colorscale = "Viridis",
+      
+      zmin = mn,
+      zmax = mx,
+      marker = 
+        list(
+          line = list(width = 0)
+        )
+    ) %>% 
+    colorbar(title = "") %>%
+    layout(
+      title = plot_title,
+      geo = g
+    )
+}
+
+all_map_gen = function(y, d){
+  mx = mn = 0
+  plot_title = ""
+  
+  if(d == "PM2.5"){
+    new_df = rename(tidy_pm_df, value = PM2.5)
+    mx = pull(extreme_value, 1)
+    mn = pull(extreme_value, 4)
+    plot_title = "Average Daily PM 2.5 Level"
+  }
+  if(d == "O3"){
+    new_df = rename(tidy_oz_df, value = O3)
+    mx = pull(extreme_value, 2)
+    mn = pull(extreme_value, 5)
+    plot_title = "Average Daily O3 Level"
+  }
+  
+  if(d == "UV"){
+    new_df = rename(tidy_uv_df, value = UV)
+    mx = pull(extreme_value, 3)
+    mn = pull(extreme_value, 6)
+    plot_title = "Average Daily UV Level"
+  }
+  
+  new_df %>% 
+    filter(year == y) %>% 
     select(countyfips, value, hover) %>% 
     plot_geo() %>% 
     add_trace(
@@ -78,8 +135,8 @@ Column {.sidebar}
 
 ```{r}
 year_choices = c(2001:2016)
-state_choices = c("NY", "OH", "ME", "PA")
-data_choices = c("PM2.5", "O3")
+# state_choices = c("NY", "OH", "ME", "PA")
+# data_choices = c("PM2.5", "O3", "UV")
 
 selectInput(
   "year_choice",
@@ -88,28 +145,99 @@ selectInput(
   selected = "2001"
 )
 
-selectInput(
-  "state_choice",
-  label = h3("Select State"),
-  choices = state_choices,
-  selected = "NY"
-)
+# selectInput(
+#   "state_choice",
+#   label = h3("Select State"),
+#   choices = state_choices,
+#   selected = "NY"
+# )
 
-selectInput(
-  "data_choice",
-  label = h3("Select Data"),
-  choices = data_choices,
-  selected = "PM2.5"
-)
+# selectInput(
+#   "data_choice",
+#   label = h3("Select Data"),
+#   choices = data_choices,
+#   selected = "PM2.5"
+# )
 ```
 
-Column {data-width=1000}
+Column {data-width=333}
 -----------------------------------------------------------------------
 
-### Chart A
+### PM2.5 level in NY
 
 ```{r}
 renderPlotly({
-  map_gen(input[["year_choice"]], input[["state_choice"]], input[["data_choice"]])
+  map_gen(input[["year_choice"]], "NY", "PM2.5")
+  # all_map_gen(input[["year_choice"]], input[["data_choice"]])
+})
+```
+
+### PM2.5 level in PA
+
+```{r}
+renderPlotly({
+  map_gen(input[["year_choice"]], "PA", "PM2.5")
+})
+```
+
+### PM2.5 level in OH
+
+```{r}
+renderPlotly({
+  map_gen(input[["year_choice"]], "OH", "PM2.5")
+})
+```
+
+Column {data-width=333}
+-----------------------------------------------------------------------
+
+### O3 level in NY
+
+```{r}
+renderPlotly({
+  map_gen(input[["year_choice"]], "NY", "O3")
+})
+```
+
+### O3 level in PA
+
+```{r}
+renderPlotly({
+  map_gen(input[["year_choice"]], "PA", "O3")
+})
+```
+
+### O3 level in OH
+
+```{r}
+renderPlotly({
+ map_gen(input[["year_choice"]], "OH", "O3")
+})
+```
+
+Column {data-width=333}
+-----------------------------------------------------------------------
+
+### UV level in NY
+
+```{r}
+renderPlotly({
+  map_gen(input[["year_choice"]], "NY", "UV")
+})
+```
+
+### UV level in PA
+
+```{r}
+renderPlotly({
+  map_gen(input[["year_choice"]], "PA", "UV")
+})
+```
+
+### UV level in OH
+
+```{r}
+renderPlotly({
+  map_gen(input[["year_choice"]], "OH", "UV")
 })
 ```
