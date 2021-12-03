@@ -57,9 +57,10 @@ The variables are:
 
 ```{r ohio_data}
 oh_asthma <-
-  read_csv("./asthma_data/ohio_all.csv") %>% 
+  read_csv("./data/asthma_data/ohio_all.csv") %>% 
   janitor::clean_names()
 ```
+
 
 ### Basic Ohio Visualization
 
@@ -124,7 +125,7 @@ Data from New York provided as a csv file and uploaded directly
 
 ```{r ny_data}
 ny_asthma <-
-  read_csv("./asthma_data/NYS_ASTHMA.csv") %>% 
+  read_csv("./data/asthma_data/NYS_ASTHMA.csv") %>% 
   janitor::clean_names()
 
 ```
@@ -185,7 +186,7 @@ Notes for data:
 
 ```{r pa_data}
 pa_asthma <-
-  read_csv("./asthma_data/pa_asthma_all.csv", col_names = TRUE) %>% 
+  read_csv("./data/asthma_data/pa_asthma_all.csv", col_names = TRUE) %>% 
   janitor::clean_names()
 ```
 
@@ -233,6 +234,7 @@ pa_asthma %>%
 
 ## Comparing data across states
 
+### Maps
 ```{r map_code, include= FALSE}
 library("maps")
 library("mapproj")
@@ -260,10 +262,9 @@ ggplot(data = us_counties,
         panel.grid = element_blank())
 ```
 
-
 ```{r compare_county}
 
-ny_county <-
+ny_co <-
   ny_asthma %>% 
   filter(age_group == "Total", 
          month == "Total",
@@ -280,7 +281,7 @@ ny_county <-
   select(region, county, rate) %>% 
   group_by(county)
 
-oh_county <- 
+oh_co <- 
   oh_asthma %>% 
   filter(geography != "Ohio",
          age_group == "All", 
@@ -290,7 +291,7 @@ oh_county <-
   select(region, county, rate) %>% 
   group_by(county)
 
-pa_county <- 
+pa_co <- 
   pa_asthma %>% 
   filter(geography_code != "0",
          rate_adj == "Age-Adjusted Rate",
@@ -303,7 +304,7 @@ pa_county <-
   group_by(county)
 
 county_2016 <-
-  bind_rows(oh_county, ny_county, pa_county)
+  bind_rows(oh_co, ny_co, pa_co)
 
 us_counties %>% 
   filter(region == "ohio"| 
@@ -348,7 +349,7 @@ us_counties %>%
 
 ```
 
-## Visualizations for final project
+### Graphs 
 
 Boxplots to contrast states/regions - one boxplot for asthma all years available:
 
@@ -411,5 +412,103 @@ all_line <-
 
 all_bp + all_line
 
+```
+
+
+
+
+## Merging Data
+
+```{r merge_state}
+oh_state <-
+  oh_asthma %>% 
+  filter(age_group == "All",
+         month == "All",
+         race == "Total",
+         sex == "All",
+         geography == "OH",
+         visit == "Inpatient",
+         frequency > 0) %>% 
+  mutate(rate = rate * 10,
+         outcome = "asthma") %>% 
+  rename(state = geography) %>% 
+  select(year, state, outcome, rate)
+
+pa_state <-
+  pa_asthma %>% 
+  filter(age == "All Ages",
+         race == "All Races",
+         sex == "Total",
+         geography == "PA",
+         rate_adj == "Age-Adjusted Rate") %>% 
+  mutate(outcome = "asthma") %>% 
+  rename(state = geography) %>% 
+  select(year, state, outcome, rate)
+
+ny_state <-
+  ny_asthma %>% 
+  filter(visit == "Inpatient",
+         geography == "New York State",
+         age_group == "Total",
+         sex == "Total",
+         rate_adj == "Age-Adjusted Rate",
+         month == "Total",
+         str_detect(year, "-20", negate = TRUE)) %>% 
+  rename(rate = rate_per_10k) %>% 
+  mutate(rate = round(rate * 10, 2),
+         state = "NY",
+         outcome = "asthma") %>% 
+  select(year, state, outcome, rate)
+
+asthma_state <-
+  rbind(ny_state, oh_state, pa_state) %>% 
+  write_csv("./data/asthma_state.csv")
+
+```
+
+```{r merge_county}
+ny_county <-
+  ny_asthma %>% 
+  filter(visit == "Inpatient",
+         geography != "New York State",
+         geography != "New York City", 
+         geography != "NYS excluding NYC",
+         rate_adj == "Age-Adjusted Rate",
+         sex == "Total",
+         age_group == "Total",
+         rate_per_10kpy >= 0) %>% 
+  rename(county = geography) %>% 
+  mutate(outcome = "asthma",
+         state = "NY",
+         year = str_sub(year, 6, -1),
+         rate = rate_per_10kpy * 10) %>% 
+  filter(year != "2019") %>% 
+  select(year, state, county, outcome, rate)
+
+pa_county <-
+  pa_asthma %>% 
+  filter(geography_code != "0",
+         rate_adj == "Age-Adjusted Rate",
+         sex == "Total",
+         age == "All Ages") %>% 
+  rename(county = geography) %>% 
+  mutate(outcome = "asthma",
+         state = "PA") %>% 
+  select(year, state, county, outcome, rate)
+
+oh_county <-
+  oh_asthma %>% 
+  filter(geography != "Ohio",
+         age_group == "All", 
+         visit == "Inpatient") %>% 
+  mutate(state = "OH",
+         rate = rate * 10,
+         outcome = "asthma") %>%
+  rename(county = geography) %>% 
+  select(year, state, county, outcome, rate)
+
+asthma_county <-
+  rbind(ny_county, oh_county, pa_county) %>% 
+  write_csv("./data/asthma_county.csv")
 ```
 
