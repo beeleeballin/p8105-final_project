@@ -2,14 +2,14 @@
 title: "lung_cancer_data"
 author: "Kate Mauro"
 date: "11/23/2021"
-output: github_document
+output: html_document
 ---
 
-First, I loaded the tidyverse and read in the function created by Benjamin for
-the county level data
-*
+
 
 ```{r}
+
+# libraries in use
 
 library(tidyverse)
 library(dplyr)
@@ -19,19 +19,19 @@ library(maps)
 library(mapdata)
 library(plotly)
 
+# Benjamin's read and clean function
 
-
-read_and_clean_county_data <- function(file_path_name, state, cancer_type) {
+read_and_clean_county_data <- function(file_path_name, state, outcome) {
   read_csv(file_path_name,
            skip = 8) %>%
   janitor::clean_names() %>%
   select(county, age_adjusted_incidence_rate_rate_note_cases_per_100_000) %>%
   mutate(county = (gsub('.{10}$', '', county)),
           state = state,
-         cancer_type = cancer_type,
+         outcome = outcome,
          age_adjusted_incidence_rate =
            as.numeric(age_adjusted_incidence_rate_rate_note_cases_per_100_000)) %>%
-  select(state, county, cancer_type, age_adjusted_incidence_rate)
+  select(state, county, outcome, age_adjusted_incidence_rate)
 }
 
 
@@ -45,7 +45,7 @@ Next, I loaded in the county data sets using this function:
 
 pa_county_lc = read_and_clean_county_data('./data/pa_lung_data_county.csv', 
                                           state = "PA",
-                                          cancer_type = "lung") %>%
+                                          outcome = "lung cancer") %>%
                                           filter(complete.cases(.)) %>%
                                           slice(-c(1, 2))
 
@@ -53,7 +53,7 @@ pa_county_lc = read_and_clean_county_data('./data/pa_lung_data_county.csv',
 
 oh_county_lc = read_and_clean_county_data('./data/oh_lung_data_county.csv', 
                                           state = "OH", 
-                                          cancer_type = "lung") %>%
+                                          outcome = "lung cancer") %>%
                                           filter(complete.cases(.)) %>%
                                           slice(-c(1, 2))
 
@@ -61,17 +61,11 @@ oh_county_lc = read_and_clean_county_data('./data/oh_lung_data_county.csv',
 
 ny_county_lc = read_and_clean_county_data('./data/ny_lung_data_county.csv', 
                                           state = "NY", 
-                                          cancer_type = "lung") %>%
+                                          outcome = "lung cancer") %>%
                                           filter(complete.cases(.)) %>%
                                           slice(-c(1, 2))
-                                          
-view(oh_county_lc)
-view(pa_county_lc)
-view(ny_county_lc)
-
 
 ```
-
 
 Finally, I loaded in the state-level lung cancer data
 
@@ -86,8 +80,6 @@ pa_cancer = read.csv('./data/pa_state_lung.csv', sep = ";", header = T, skip = 3
     map_df(as.numeric) %>%
     rename(c("age_adjusted_incidence_rate" = "rate_ratio_result")) %>%
   add_column(state = "PA")
-
-
 
 #state-level lung cancer OH data https://publicapps.odh.ohio.gov/EDW/DataBrowser/Browse/StateLayoutLockdownCancers
 
@@ -130,6 +122,8 @@ fips_codes$county[fips_codes$county == "St Lawrence"] <- "St. Lawrence"
 county_lc <- rbind(pa_county_lc, oh_county_lc, ny_county_lc)
 
 lc_fips <- merge(county_lc, fips_codes, by = c("state", "county"))
+
+view(lc_fips)
 
 # lung cancer incidence maps by county
 
@@ -185,8 +179,9 @@ view(state_lc_wide)
 
 ```
 
-
 ```{r}
+
+# plotly of county level data
 
 fig <- plot_ly(state_lc_wide, x = ~year)
 fig <- fig %>% add_lines(y = ~PA_AAIR, name = "Pennsylvania")
@@ -227,41 +222,181 @@ fig
 
 
 
-fig <- plot_ly(state_lc_wide, x = ~year)
-fig <- fig %>% add_lines(y = ~PA_AAIR, name = "Pennsylvania")
-fig <- fig %>% add_lines(y = ~NY_AAIR, name = "New York")
-fig <- fig %>% add_lines(y = ~OH_AAIR, name = "Ohio")
-fig <- fig %>% layout(
-    title = "State Age-Adjusted Lung Cancer Incidence Rates",
-    xaxis = list(
-      rangeselector = list(
-        buttons = list(
-          list(
-            count = 1,
-            label = "1 yr",
-            step = "year",
-            stepmode = "backward"),
-          list(
-            count = 5,
-            label = "5 yr",
-            step = "year",
-            stepmode = "backward"),
-          list(
-            count = 10,
-            label = "10 yr",
-            step = "year",
-            stepmode = "backward"),
-      rangeslider = list(type = "year"))),
+```
 
-    yaxis = list(title = "Age Adjusted Incidence Rate")))
+
+
+
+```{r}
+
+
+ny_ap =
+  read.csv('./data/daily_ap/daily_ny_ap.csv')
+
+oh_ap =
+  read.csv('./data/daily_ap/daily_oh_ap.csv')
+
+pa_ap =
+  read.csv('./data/daily_ap/daily_pa_ap.csv')
+
+annual_aqi =
+  read.csv('./data/annual_aqi.csv')
+
+
+view(ny_ap)
+view(oh_ap)
+view(pa_ap)
+view(annual_aqi)
+
+
+
+average_med_aqi =
+  annual_aqi %>%
+  group_by(state, year) %>%
+  summarise_at(vars(median_aqi), list(name = mean))
+
+lc_aqi_data <- merge(average_med_aqi, state_lc, by = c("year", "state")) %>%
+  rename(c("avg_med_aqi" = "name"))
+
+view(lc_aqi_data)
+
+average_med_aqi_wide =
+  average_med_aqi %>%
+  pivot_wider(
+    names_from = state,
+    values_from = name) %>%
+  rename(c("oh_avg_med_aqi" = "OH", "ny_avg_med_aqi" = "NY", "pa_avg_med_aqi" = "PA")) %>%
+  subset(select = -c(ME))
+
+view(average_med_aqi_wide)
+
+library(plotly)
+
+
+fig1 <- lc_aqi_data %>%
+  plot_ly(
+    x = ~age_adjusted_incidence,
+    y = ~y,
+    frame = ~f,
+    type = 'scatter',
+    mode = 'markers',
+    showlegend = F
+  )
+
+
+
+
+fig1 <- lc_aqi_data %>%
+  plot_ly(
+    x = ~avg_med_aqi, 
+    y = ~age_adjusted_incidence_rate, 
+    color = ~state, 
+    frame = ~year, 
+    text = ~state, 
+    hoverinfo = "text",
+    type = 'scatter',
+    mode = 'markers'
+  )
+fig1 <- fig1 %>% layout(
+  title = "Lung Cancer AAIR and Average Median AQI",
+    xaxis = list(title = "Average Median AQI", 
+      type = "log"
+    ),
+    yaxis = list(title = "Age Adjusted Incidence Rate")
+  )
+
+
+fig1
+
+```
+
+
+
+```{r}
+
+
+ny_fips = lc_fips %>%
+  filter(state == "NY")
+pa_fips = lc_fips %>%
+  filter(state == "PA")
+oh_fips = lc_fips %>%
+  filter(state == "OH")
+
+
+library(rjson)
+library(plotly)
+url <- 'https://raw.githubusercontent.com/plotly/datasets/master/geojson-counties-fips.json'
+counties <- rjson::fromJSON(file = url)
+
+
+
+county_map_lc <- plot_ly()
+county_map_lc <- county_map_lc %>%
+  add_trace(
+    type = "choroplethmapbox",
+    geojson = counties,
+    locations = lc_fips$fips,
+    z = lc_fips$age_adjusted_incidence_rate,
+    text = lc_fips$county,
+    colorscale = "Viridis",
+    marker = list(line = list(
+      width = 0),
+      opacity = 0.5)
+    )
+county_map_lc <- county_map_lc %>%
+  layout(
+    title = "Age-Adjusted Lung Cancer Incidence Rates (2014-2018)",
+    mapbox = list(
+      style = "carto-positron",
+      zoom = 4,
+      center = list(lon = -77.215135, lat = 41.164818)
+    )
+  )
+
+
+county_map_lc
 
 
 ```
 
 
 
+```{r}
+
+lm_lc_aqi = lm(age_adjusted_incidence_rate ~ avg_med_aqi, data = lc_aqi_data)
+
+summary(lm_lc_aqi)
+
+plot(lc_aqi_data$age_adjusted_incidence_rate, lc_aqi_data$avg_med_aqi)
+
+lm_lc_aqi = lm(age_adjusted_incidence_rate ~ avg_med_aqi, data = lc_aqi_data)
+
+lc_aqi_data %>% 
+  plot_ly(x = ~avg_med_aqi) %>% 
+  add_markers(y = ~age_adjusted_incidence_rate, name = "AQI") %>% 
+  add_lines(x = ~avg_med_aqi, y = fitted(lm_lc_aqi), name = "Regression Fit")
 
 
+
+
+
+```
+
+
+```{r}
+
+
+
+
+```
+
+
+
+```{r}
+
+
+
+```
 
 
 
