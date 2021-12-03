@@ -386,17 +386,10 @@ lc_aqi_data %>%
 ```{r}
 
 
-
-
-```
-
-
-
-```{r}
-
-
+write_csv(lc_fips, "lc_fips.csv")
 
 ```
+
 
 
 
