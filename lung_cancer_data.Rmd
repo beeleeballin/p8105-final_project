@@ -375,8 +375,9 @@ lc_aqi_data %>%
 
 ```{r}
 
-
 write_csv(lc_fips, "./data/lung/lc_fips.csv")
+
+write_csv(county_lc, "./data/lung/county_lc.csv")
 
 ```
 
