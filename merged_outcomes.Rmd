@@ -3,13 +3,51 @@ title: "merge_outcomes"
 output: github_document
 ---
 
-## Combining county-level outcome data
 ```{r}
-
 library(tidyverse)
 library(tidyr)
 library(dplyr)
+```
 
+
+## Combining state-level outcome data
+
+First, let's combine lung and skin cancer data at the state level.
+```{r}
+# read in state data for lung and skin cancer
+
+#state level lung cancer data
+state_lc_data = read_csv("./data/lung/state_lc_data.csv")
+
+#state level melanoma data
+state_mel_data = read_csv("./data/incidence_melanoma_data/state_melanoma_age_adjusted.csv") %>%
+  rename(c("outcome" = "cancer_type"))
+
+# combine cancer outcome data
+lc_mel_state = bind_rows(state_lc_data, state_mel_data)
+```
+
+Next, let's combine asthma data with the cancer data at the state level.
+First, let's read in the asthma state-level data.
+```{r}
+asthma_state <- read_csv(here::here("data", "asthma_state.csv"))
+```
+Next, let's combine the asthma and cancer state-level data.
+```{r}
+# Bind rows of cancer and asthma by state and arrange accordingly
+lc_mel_asthma_state <- bind_rows(lc_mel_state, asthma_state) %>%
+  arrange(state, outcome)
+```
+
+Lastly, let's write out the combined data.
+```{r}
+write_csv(lc_mel_asthma_state, here::here("data", "lc_mel_asthma_state.csv"))
+```
+
+## Combining county-level outcome data
+
+First, let's combine lung and skin cancer data at the county level.
+```{r}
 # read in county data for lung and skin cancer
 
 county_lc = read_csv("./data/lung/county_lc.csv")
@@ -35,7 +73,7 @@ county_lc$county <- gsub(" County","", county_lc$county)
 
 # binding rows
 
-lc_mel_county = rbind(county_lc, county_mel) %>%
+lc_mel_county = bind_rows(county_lc, county_mel) %>%
   filter(complete.cases(.)) 
 
 
@@ -44,14 +82,12 @@ fips = fips_codes %>%
     rename(c("county" = "name"))
 
 lc_mel_county = merge(lc_mel_county, fips, by = c("state", "county"))
-
-write_csv(lc_mel_county, "./data/lc_mel_county.csv")
-
 ```
 
-Next, we will read in asthma data and combined with the cancer data. First let's
-read in the asthma county data, rename column names and add an additional
-column for county fips code.
+Next, we will read in asthma data and combine it with the cancer data. 
+
+First, let's read in the asthma county data, rename column names and add an 
+additional column for county fips code.
 ```{r}
 # Read in asthma data
 # Only get county data for the year 2016 since we need county data at
