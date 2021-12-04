@@ -1,0 +1,59 @@
+---
+title: "merge_outcomes"
+output: github_document
+---
+
+```{r}
+
+library(tidyverse)
+library(tidyr)
+library(dplyr)
+
+# read in data for lung and skin cancer
+
+county_lc = read.csv("./data/lung/county_lc.csv")
+
+state_mel = read.csv("./data/incidence_melanoma_data/state_melanoma_age_adjusted.csv")
+
+county_mel = read.csv("./data/incidence_melanoma_data/state_county_melanoma_incidence_2014_2018.csv")
+
+fips_codes = read.csv("./data/fips_codes.csv")
+
+# cleaning to make the data sets compatible
+
+county_mel = county_mel %>%
+  rename(c("outcome" = "cancer_type")) %>%
+  drop_na() 
+
+county_mel <- county_mel[!(county_mel$county == "Ohio" | county_mel$county == "Pennsylvania" | 
+     county_mel$county == "New York"), ] %>%
+  filter(!grepl('SEER', county))
+
+county_mel$county <- gsub(" County","", county_mel$county)
+
+county_mel$county[county_mel$county == "St Lawrence"] <- "St. Lawrence"
+
+county_lc$county <- gsub(" County","", county_lc$county)
+
+# binding rows
+
+lc_mel_county = rbind(county_lc, county_mel) %>%
+  filter(complete.cases(.)) 
+
+
+fips = fips_codes %>%
+    janitor::clean_names() %>%
+    rename(c("county" = "name"))
+
+lc_mel_merge = merge(lc_mel_county, fips, by = c("state", "county"))
+
+view(lc_mel_merge)
+
+write_csv(lc_mel_merge, "./data/melanoma_lung_merge.csv")
+
+```
+
+
+
+
+

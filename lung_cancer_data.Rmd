@@ -125,8 +125,6 @@ county_lc <- rbind(pa_county_lc, oh_county_lc, ny_county_lc)
 
 lc_fips <- merge(county_lc, fips_codes, by = c("state", "county"))
 
-view(lc_fips)
-
 # lung cancer incidence maps by county
 
 ny_map <- plot_usmap(data = lc_fips, values = "age_adjusted_incidence_rate", "counties", include = c("NY"), color = "black") +  
@@ -168,7 +166,6 @@ ny_oh_pa_lungcancer
 # merging state level data for lung cancer
 
 state_lc <- rbind(pa_cancer, oh_cancer, ny_cancer)
-view(state_lc)
 
 state_lc_wide = state_lc %>%
   pivot_wider(
@@ -176,7 +173,6 @@ state_lc_wide = state_lc %>%
     values_from = age_adjusted_incidence_rate) %>%
   rename(c("PA_AAIR" = "PA", "NY_AAIR" = "NY", "OH_AAIR" = "OH"))
 
-view(state_lc_wide)
 
 
 ```
@@ -245,11 +241,6 @@ annual_aqi =
   read.csv('./data/annual_aqi.csv')
 
 
-view(ny_ap)
-view(oh_ap)
-view(pa_ap)
-view(annual_aqi)
-
 
 
 average_med_aqi =
@@ -260,8 +251,6 @@ average_med_aqi =
 lc_aqi_data <- merge(average_med_aqi, state_lc, by = c("year", "state")) %>%
   rename(c("avg_med_aqi" = "name"))
 
-view(lc_aqi_data)
-
 average_med_aqi_wide =
   average_med_aqi %>%
   pivot_wider(
@@ -270,7 +259,6 @@ average_med_aqi_wide =
   rename(c("oh_avg_med_aqi" = "OH", "ny_avg_med_aqi" = "NY", "pa_avg_med_aqi" = "PA")) %>%
   subset(select = -c(ME))
 
-view(average_med_aqi_wide)
 
 library(plotly)
 
@@ -388,7 +376,7 @@ lc_aqi_data %>%
 ```{r}
 
 
-write_csv(lc_fips, "lc_fips.csv")
+write_csv(lc_fips, "./data/lung/lc_fips.csv")
 
 ```
 
