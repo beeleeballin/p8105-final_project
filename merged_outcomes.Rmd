@@ -24,19 +24,22 @@ state_mel_data = read_csv("./data/incidence_melanoma_data/state_melanoma_age_adj
   rename(c("outcome" = "cancer_type"))
 
 # combine cancer outcome data
-lc_mel_state = bind_rows(state_lc_data, state_mel_data)
+lc_mel_state = bind_rows(state_lc_data, state_mel_data) %>%
+  select(state, year, outcome, age_adjusted_incidence_rate)
 ```
 
 Next, let's combine asthma data with the cancer data at the state level.
 First, let's read in the asthma state-level data.
 ```{r}
-asthma_state <- read_csv(here::here("data", "asthma_state.csv"))
+asthma_state <- read_csv(here::here("data", "asthma_state.csv")) %>%
+  rename(age_adjusted_incidence_rate = rate) %>%
+  select(state, year, outcome, age_adjusted_incidence_rate)
 ```
 Next, let's combine the asthma and cancer state-level data.
 ```{r}
 # Bind rows of cancer and asthma by state and arrange accordingly
 lc_mel_asthma_state <- bind_rows(lc_mel_state, asthma_state) %>%
-  arrange(state, outcome)
+  arrange(state, year, outcome)
 ```
 
 Lastly, let's write out the combined data.
