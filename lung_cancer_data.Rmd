@@ -151,12 +151,6 @@ ny_oh_pa_lungcancer <- plot_usmap(data = lc_fips, values = "age_adjusted_inciden
                           name = "age_adjusted_incidence_rate", label = scales::comma) +  
     theme(plot.background = element_rect(), legend.position = "right")  
 
-
-pa_map
-oh_map
-ny_map
-ny_oh_pa_lungcancer
-
 ```
 
 
@@ -378,6 +372,8 @@ lc_aqi_data %>%
 write_csv(lc_fips, "./data/lung/lc_fips.csv")
 
 write_csv(county_lc, "./data/lung/county_lc.csv")
+
+write_csv(state_lc, "./data/lung/lc_fips.csv")
 
 ```
 
