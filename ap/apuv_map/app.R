@@ -12,6 +12,7 @@ library(tidyverse)
 library(leaflet)
 library(htmlwidgets)
 library(tigris)
+library(viridis)
 
 setwd("/Users/beelee/Desktop/Columbia/Fall_2021/P8105-Data_Science/p8105-final_project/ap/apuv_map/")
 apuv_df = readRDS("apuv.RDS")
@@ -79,6 +80,17 @@ select_year_season = function(y, s){
   return(res)
 }
 
+test_df = 
+  apuv_df %>% 
+  filter(year == 2010, state == "NY") %>%
+  pivot_wider(
+    names_from = season,
+    names_glue = "{season}_{.value}",
+    values_from = c(pm25_max_pred:i380)
+  ) %>% 
+  select(-contains(c("Summer", "Fall", "Winter"))) %>% 
+  rename_all(funs(str_replace_all(., "Spring_", "")))
+
 merged_2001_df = filter_merge(2001)
 merged_2002_df = filter_merge(2002)
 merged_2003_df = filter_merge(2003)
@@ -128,7 +140,7 @@ server = function(input, output) {
   })
   
   output$pm25 = renderLeaflet({
-    pal = colorBin(palette = "YlGn", 9, domain = c(as.numeric(ext_val[4]), as.numeric(ext_val[1])))
+    pal = colorBin(palette = "viridis", 9, domain = c(as.numeric(ext_val[4]), as.numeric(ext_val[1])))
     # labels = sprintf("some label")
     pm_oz_uv() %>% 
       leaflet() %>% 
@@ -137,7 +149,7 @@ server = function(input, output) {
       addPolygons(stroke = FALSE,
                   smoothFactor = 0.5,
                   opacity = 1,
-                  fillOpacity = 0.7,
+                  fillOpacity = 0.8,
                   fillColor = ~pal(pm_oz_uv()$pm25_pop_pred),
                   highlightOptions = highlightOptions(weight = 5,
                                                       fillOpacity = 1,
@@ -152,7 +164,7 @@ server = function(input, output) {
   })
   
   output$o3 = renderLeaflet({
-    pal = colorBin(palette = "OrRd", 9, domain = c(as.numeric(ext_val[5]),as.numeric(ext_val[2])))
+    pal = colorBin(palette = "inferno", 9, domain = c(as.numeric(ext_val[5]),as.numeric(ext_val[2])))
     pm_oz_uv() %>% 
       leaflet() %>% 
       addProviderTiles(provider = "Stamen.Toner") %>% 
@@ -160,7 +172,7 @@ server = function(input, output) {
       addPolygons(stroke = FALSE,
                   smoothFactor = 0.5,
                   opacity = 1,
-                  fillOpacity = 0.7,
+                  fillOpacity = 0.8,
                   fillColor = ~pal(pm_oz_uv()$o3_pop_pred),
                   highlightOptions = highlightOptions(weight = 5,
                                                       fillOpacity = 1,
@@ -175,7 +187,7 @@ server = function(input, output) {
   })
   
   output$edd = renderLeaflet({
-    pal = colorBin(palette = "PuBu", 9, domain = c(as.numeric(ext_val[6]),as.numeric(ext_val[3])))
+    pal = colorBin(palette = "BuPu", 9, domain = c(as.numeric(ext_val[6]),as.numeric(ext_val[3])))
     pm_oz_uv() %>% 
       leaflet() %>% 
       addProviderTiles(provider = "Stamen.Toner") %>% 
@@ -183,7 +195,7 @@ server = function(input, output) {
       addPolygons(stroke = FALSE,
                   smoothFactor = 0.5,
                   opacity = 1,
-                  fillOpacity = 0.7,
+                  fillOpacity = 0.8,
                   fillColor = ~pal(pm_oz_uv()$edd),
                   highlightOptions = highlightOptions(weight = 5,
                                                       fillOpacity = 1,
