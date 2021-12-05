@@ -16,117 +16,95 @@ library(tigris)
 setwd("/Users/beelee/Desktop/Columbia/Fall_2021/P8105-Data_Science/p8105-final_project/ap/apuv_map/")
 apuv_df = readRDS("apuv.RDS")
 ext_val = readRDS("ext_val.RDS")
+seasoned_apuv_df = readRDS("apuv.RDS")
+seasoned_ext_val = readRDS("ext_val.RDS")
 
 us_counties = 
   tigris::counties(c("NY", "PA", "OH"))
 
-# county_url = 'https://raw.githubusercontent.com/plotly/datasets/master/geojson-counties-fips.json'
-# counties = geojsonio::geojson_read(county_url, what = "sp")
-# 
-# install_github("r-spatial/sf", configure.args = "--with-proj-lib=/usr/local/lib/")
-# 
-# ggplot(ny_counties) + 
-#   geom_sf() + 
-#   theme_void()
+filter_merge = function(y){
+  seasoned_apuv_df %>% 
+    filter(year == y) %>%
+    pivot_wider(
+      names_from = season,
+      names_glue = "{season}_{.value}",
+      values_from = c(pm25_max_pred:i380)
+    ) %>% 
+    geo_join(us_counties, ., "GEOID",  "countyfips") %>%
+    sf::st_transform('+proj=longlat +datum=WGS84')
+}
 
-merged_2001_df = 
-  apuv_df %>% 
-  filter(year == 2001) %>%
-  geo_join(us_counties, ., "GEOID",  "countyfips") %>%
-  sf::st_transform('+proj=longlat +datum=WGS84')
+merged_2001_df = filter_merge(2001)
+merged_2002_df = filter_merge(2002)
+merged_2003_df = filter_merge(2003)
+merged_2004_df = filter_merge(2004)
+merged_2005_df = filter_merge(2005)
+merged_2006_df = filter_merge(2006)
+merged_2007_df = filter_merge(2007)
+merged_2008_df = filter_merge(2008)
+merged_2009_df = filter_merge(2009)
+merged_2010_df = filter_merge(2010)
+merged_2011_df = filter_merge(2011)
+merged_2012_df = filter_merge(2012)
+merged_2013_df = filter_merge(2013)
+merged_2014_df = filter_merge(2014)
+merged_2015_df = filter_merge(2015)
+merged_2016_df = filter_merge(2016)
 
-merged_2002_df = 
-  apuv_df %>% 
-  filter(year == 2002) %>%
-  geo_join(us_counties, ., "GEOID",  "countyfips") %>%
-  sf::st_transform('+proj=longlat +datum=WGS84')
+select_year = function(y){
+  
+  if(y == 2001){res = merged_2001_df}
+  if(y == 2002){res = merged_2002_df}
+  if(y == 2003){res = merged_2003_df}
+  if(y == 2004){res = merged_2004_df}
+  if(y == 2005){res = merged_2005_df}
+  if(y == 2006){res = merged_2006_df}
+  if(y == 2007){res = merged_2007_df}
+  if(y == 2008){res = merged_2008_df}
+  if(y == 2009){res = merged_2009_df}
+  if(y == 2010){res = merged_2010_df}
+  if(y == 2011){res = merged_2011_df}
+  if(y == 2012){res = merged_2012_df}
+  if(y == 2013){res = merged_2013_df}
+  if(y == 2014){res = merged_2014_df}
+  if(y == 2015){res = merged_2015_df}
+  if(y == 2016){res = merged_2016_df}
+  
+  return(res)
+}
 
-merged_2003_df = 
-  apuv_df %>% 
-  filter(year == 2003) %>%
-  geo_join(us_counties, ., "GEOID",  "countyfips") %>%
-  sf::st_transform('+proj=longlat +datum=WGS84')
+select_season = function(df, s){
+  if(s == "Spring"){
+    res = 
+      df %>% 
+      select(-contains(c("Summer", "Fall", "Winter"))) %>% 
+      rename_all(funs(str_replace_all(., "Spring_", "")))
+  }
+  if(s == "Summer"){
+    res =
+      df %>% 
+      select(-contains(c("Fall", "Winter", "Spring"))) %>% 
+      rename_all(funs(str_replace_all(., "Summer_", "")))
+  }
+  if(s == "Fall"){
+    res =
+      df %>% 
+      select(-contains(c("Winter", "Spring", "Summer"))) %>% 
+      rename_all(funs(str_replace_all(., "Fall_", "")))
+  }
+  if(s == "Winter"){
+    res =
+      df %>% 
+      select(-contains(c("Spring", "Summer", "Fall"))) %>% 
+      rename_all(funs(str_replace_all(., "Winter_", "")))
+  }
+  
+  return(res)
+}
 
-merged_2004_df = 
-  apuv_df %>% 
-  filter(year == 2004) %>%
-  geo_join(us_counties, ., "GEOID",  "countyfips") %>%
-  sf::st_transform('+proj=longlat +datum=WGS84')
-
-merged_2005_df = 
-  apuv_df %>% 
-  filter(year == 2005) %>%
-  geo_join(us_counties, ., "GEOID",  "countyfips") %>%
-  sf::st_transform('+proj=longlat +datum=WGS84')
-
-merged_2006_df = 
-  apuv_df %>% 
-  filter(year == 2006) %>%
-  geo_join(us_counties, ., "GEOID",  "countyfips") %>%
-  sf::st_transform('+proj=longlat +datum=WGS84')
-
-merged_2007_df = 
-  apuv_df %>% 
-  filter(year == 2007) %>%
-  geo_join(us_counties, ., "GEOID",  "countyfips") %>%
-  sf::st_transform('+proj=longlat +datum=WGS84')
-
-merged_2008_df = 
-  apuv_df %>% 
-  filter(year == 2008) %>%
-  geo_join(us_counties, ., "GEOID",  "countyfips") %>%
-  sf::st_transform('+proj=longlat +datum=WGS84')
-
-merged_2009_df = 
-  apuv_df %>% 
-  filter(year == 2009) %>%
-  geo_join(us_counties, ., "GEOID",  "countyfips") %>%
-  sf::st_transform('+proj=longlat +datum=WGS84')
-
-merged_2010_df = 
-  apuv_df %>% 
-  filter(year == 2010) %>%
-  geo_join(us_counties, ., "GEOID",  "countyfips") %>%
-  sf::st_transform('+proj=longlat +datum=WGS84')
-
-merged_2011_df = 
-  apuv_df %>% 
-  filter(year == 2011) %>%
-  geo_join(us_counties, ., "GEOID",  "countyfips") %>%
-  sf::st_transform('+proj=longlat +datum=WGS84')
-
-merged_2012_df = 
-  apuv_df %>% 
-  filter(year == 2012) %>%
-  geo_join(us_counties, ., "GEOID",  "countyfips") %>%
-  sf::st_transform('+proj=longlat +datum=WGS84')
-
-merged_2013_df = 
-  apuv_df %>% 
-  filter(year == 2013) %>%
-  geo_join(us_counties, ., "GEOID",  "countyfips") %>%
-  sf::st_transform('+proj=longlat +datum=WGS84')
-
-merged_2014_df = 
-  apuv_df %>% 
-  filter(year == 2014) %>%
-  geo_join(us_counties, ., "GEOID",  "countyfips") %>%
-  sf::st_transform('+proj=longlat +datum=WGS84')
-
-merged_2015_df = 
-  apuv_df %>% 
-  filter(year == 2015) %>%
-  geo_join(us_counties, ., "GEOID",  "countyfips") %>%
-  sf::st_transform('+proj=longlat +datum=WGS84')
-
-merged_2016_df = 
-  apuv_df %>% 
-  filter(year == 2016) %>%
-  geo_join(us_counties, ., "GEOID",  "countyfips") %>%
-  sf::st_transform('+proj=longlat +datum=WGS84')
-
-merged_df = list(merged_2001_df, merged_2002_df)
-
+test_df = select_year(2001)
+test_df= select_season(test_df, "Spring")
+test_df
 
 ui = fluidPage(
   
@@ -135,9 +113,9 @@ ui = fluidPage(
   sidebarLayout(
     sidebarPanel(
       tags$a(href = "https://ephtracking.cdc.gov/download", "Data Source", target = "_blank"),
-      h5("Explaine your data"),
-      selectInput("yr", "Select a year", choices = unique(apuv_df$year))
-      # selectInput("st", "Select a state", choices = unique(apuv_df$state))
+      h5("Climate and a few particular chronic disease risks are known to be highly correlated. Let's take a look at the Particulate Matter //expression(PM_{2.5}), Ozone (O_{3}) and UV radiation (edd) levels over the years in New York, Pennsylvania, and Ohio. "),
+      selectInput("yr", "Select a year", choices = unique(apuv_df$year)),
+      selectInput("ss", "Select a season", choices = unique(apuv_df$season))
     ),
     
     mainPanel(
@@ -150,27 +128,14 @@ ui = fluidPage(
   )
 )
 
-
 server = function(input, output) {
   
   pm_oz_uv = reactive({
-    if(input$yr == 2001){pou = merged_2001_df}
-    if(input$yr == 2002){pou = merged_2002_df}
-    if(input$yr == 2003){pou = merged_2003_df}
-    if(input$yr == 2004){pou = merged_2004_df}
-    if(input$yr == 2005){pou = merged_2005_df}
-    if(input$yr == 2006){pou = merged_2006_df}
-    if(input$yr == 2007){pou = merged_2007_df}
-    if(input$yr == 2008){pou = merged_2008_df}
-    if(input$yr == 2009){pou = merged_2009_df}
-    if(input$yr == 2010){pou = merged_2010_df}
-    if(input$yr == 2011){pou = merged_2011_df}
-    if(input$yr == 2012){pou = merged_2012_df}
-    if(input$yr == 2013){pou = merged_2013_df}
-    if(input$yr == 2014){pou = merged_2014_df}
-    if(input$yr == 2015){pou = merged_2015_df}
-    if(input$yr == 2016){pou = merged_2016_df}
+    
+    pou = select_year(input$yr)
+    pou = select_season(pou, input$ss)
     return(pou)
+    
   })
   
   output$pm25 = renderLeaflet({

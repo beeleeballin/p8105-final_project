@@ -66,7 +66,7 @@ oz_df =
 Load and clean UV data
 ```{r}
 uv_df = 
-  read_csv("data/Population-Weighted_Ultraviolet_Irradiance__2004-2015.csv") %>%
+  read_csv("../final_raw/Population-Weighted_Ultraviolet_Irradiance__2004-2015.csv") %>%
   filter(statefips %in% c(36, 39, 23, 42)) %>% 
   mutate(
     day = factor(as.numeric(day)),
@@ -103,8 +103,16 @@ Export
 ```{r}
 tidy_df =
   ap_uv_df %>% 
-  group_by(year, countyfips, county, state) %>%
-  summarize(across(pm25_max_pred:i380, mean, na.rm = TRUE), 
+  mutate(
+    season = case_when(
+      month %in% (c("MAR", "APR", "MAY")) ~ "Spring",
+      month %in% (c("JUN", "JUL", "AUG")) ~ "Summer",
+      month %in% (c("SEP", "OCT", "NOV")) ~ "Fall",
+      month %in% (c("DEC", "JAN", "FEB")) ~ "Winter"
+    )
+  ) %>% 
+  group_by(year, countyfips, county, state, season) %>%
+  summarize(across(pm25_max_pred:i380, median, na.rm = TRUE), 
             across(pm25_max_pred:i380, round, 2)) %>% 
   ungroup()
 
@@ -117,10 +125,10 @@ tidy_pm_df =
   rename("PM2.5" = pm25_pop_pred) %>% 
   mutate(
     hover = paste(county, '<br>', 
-                  "Average Daily Max", pm25_max_pred, '<br>',
-                  "Average Daily Median", pm25_med_pred, '<br>')
+                  "Seasonal Max", pm25_max_pred, '<br>',
+                  "Seasonal Median", pm25_med_pred, '<br>')
   ) %>% 
-  select(year, countyfips, county, state, PM2.5, hover)
+  select(year, season, countyfips, county, state, PM2.5, hover)
 
 tidy_oz_df =
   tidy_df %>% 
@@ -128,19 +136,22 @@ tidy_oz_df =
   rename("O3" = o3_pop_pred) %>% 
   mutate(
     hover = paste(county, '<br>', 
-                  "Average Daily Max", o3_max_pred, '<br>',
-                  "Average Daily Median", o3_med_pred, '<br>')
+                  "Seasonal Max", o3_max_pred, '<br>',
+                  "Seasonal Median", o3_med_pred, '<br>')
   ) %>% 
-  select(year, countyfips, county, state, O3, hover)
+  select(year, season, countyfips, county, state, O3, hover)
 
 tidy_uv_df =
   tidy_df %>% 
-  select(-contains("pm25"), -contains("o3"), -c(edr:i380)) %>% 
+  select(-contains("pm25"), -contains("o3")) %>% 
   rename("UV" = edd) %>% 
   mutate(
-    hover = paste(county, '<br>')
+    hover = paste(county, '<br>', 
+                  "Seasonal EDR", edr, '<br>',
+                  "Seasonal I305", i305, '<br>',
+                  "Seasonal I380", i380, '<br>')
   ) %>% 
-  select(year, countyfips, county, state, UV, hover)
+  select(year, season, countyfips, county, state, UV, hover)
 
 write_csv(tidy_pm_df,"ap/ap_uv/pm25.csv")
 write_csv(tidy_oz_df,"ap/ap_uv/o3.csv")
@@ -174,7 +185,5 @@ extreme_value =
 
 write_csv(extreme_value,"ap/ap_uv/ext_value.csv")
 saveRDS(extreme_value,"ap/apuv_map/ext_val.RDS")
-
-
 ```
 
