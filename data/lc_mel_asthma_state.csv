@@ -1,0 +1,211 @@
+state,year,outcome,age_adjusted_incidence_rate
+NY,1976,lung cancer,55.1
+NY,1976,melanoma,5.7
+NY,1977,lung cancer,55.1
+NY,1977,melanoma,6.6
+NY,1978,lung cancer,56.2
+NY,1978,melanoma,6.3
+NY,1979,lung cancer,57.7
+NY,1979,melanoma,6.7
+NY,1980,lung cancer,59.4
+NY,1980,melanoma,7.7
+NY,1981,lung cancer,59
+NY,1981,melanoma,7.4
+NY,1982,lung cancer,61.3
+NY,1982,melanoma,7.6
+NY,1983,lung cancer,62.4
+NY,1983,melanoma,8.2
+NY,1984,lung cancer,62.4
+NY,1984,melanoma,7.8
+NY,1985,lung cancer,64
+NY,1985,melanoma,8
+NY,1986,lung cancer,63.7
+NY,1986,melanoma,8.3
+NY,1987,lung cancer,64.8
+NY,1987,melanoma,7.8
+NY,1988,lung cancer,65.3
+NY,1988,melanoma,7.4
+NY,1989,lung cancer,66.4
+NY,1989,melanoma,7.7
+NY,1990,lung cancer,66.5
+NY,1990,melanoma,7.9
+NY,1991,lung cancer,67.5
+NY,1991,melanoma,7.7
+NY,1992,lung cancer,68.2
+NY,1992,melanoma,7.3
+NY,1993,lung cancer,67.4
+NY,1993,melanoma,7.4
+NY,1994,lung cancer,68.7
+NY,1994,melanoma,8.1
+NY,1995,lung cancer,67.3
+NY,1995,melanoma,8.7
+NY,1996,lung cancer,68.3
+NY,1996,melanoma,9.2
+NY,1997,lung cancer,68
+NY,1997,melanoma,9.9
+NY,1998,lung cancer,68
+NY,1998,melanoma,10.3
+NY,1999,lung cancer,66.3
+NY,1999,melanoma,10.2
+NY,2000,asthma,215.5
+NY,2000,lung cancer,67.4
+NY,2000,melanoma,11.4
+NY,2001,asthma,213.8
+NY,2001,lung cancer,65.4
+NY,2001,melanoma,12.7
+NY,2002,asthma,215.1
+NY,2002,lung cancer,65.7
+NY,2002,melanoma,13.2
+NY,2003,asthma,243.1
+NY,2003,lung cancer,65
+NY,2003,melanoma,12.2
+NY,2004,asthma,222.8
+NY,2004,lung cancer,64.9
+NY,2004,melanoma,14.7
+NY,2005,asthma,210.6
+NY,2005,lung cancer,64.8
+NY,2005,melanoma,16.1
+NY,2006,asthma,215.2
+NY,2006,lung cancer,65.3
+NY,2006,melanoma,17.8
+NY,2007,asthma,204.2
+NY,2007,lung cancer,65.4
+NY,2007,melanoma,16.1
+NY,2008,asthma,210.8
+NY,2008,lung cancer,65.5
+NY,2008,melanoma,17.3
+NY,2009,asthma,225.9
+NY,2009,lung cancer,64.3
+NY,2009,melanoma,18.2
+NY,2010,asthma,198.7
+NY,2010,lung cancer,62.4
+NY,2010,melanoma,16.8
+NY,2011,asthma,192.7
+NY,2011,lung cancer,62.7
+NY,2011,melanoma,18.7
+NY,2012,asthma,190.8
+NY,2012,lung cancer,61.1
+NY,2012,melanoma,17.5
+NY,2013,asthma,175.4
+NY,2013,lung cancer,60.4
+NY,2013,melanoma,19.2
+NY,2014,asthma,174.6
+NY,2014,lung cancer,58
+NY,2014,melanoma,18.6
+NY,2015,asthma,148.7
+NY,2015,lung cancer,59.3
+NY,2015,melanoma,17.9
+NY,2016,asthma,114.6
+NY,2016,lung cancer,57.8
+NY,2016,melanoma,17.9
+NY,2017,asthma,104.1
+NY,2017,lung cancer,58.8
+NY,2017,melanoma,18.1
+NY,2018,asthma,105.7
+NY,2018,lung cancer,56
+NY,2018,melanoma,17.7
+NY,2019,asthma,95.9
+OH,1996,lung cancer,69.3
+OH,1996,melanoma,13.9
+OH,1997,lung cancer,76.9
+OH,1997,melanoma,13.9
+OH,1998,lung cancer,79.5
+OH,1998,melanoma,13
+OH,1999,lung cancer,77.8
+OH,1999,melanoma,13.6
+OH,2000,lung cancer,74.4
+OH,2000,melanoma,13.8
+OH,2001,lung cancer,77.2
+OH,2001,melanoma,16
+OH,2002,lung cancer,76.4
+OH,2002,melanoma,16.8
+OH,2003,lung cancer,75.2
+OH,2003,melanoma,16.2
+OH,2004,lung cancer,76.8
+OH,2004,melanoma,17.7
+OH,2005,lung cancer,76.9
+OH,2005,melanoma,20.8
+OH,2006,lung cancer,76.7
+OH,2006,melanoma,19.1
+OH,2007,lung cancer,74.9
+OH,2007,melanoma,19.6
+OH,2008,lung cancer,75
+OH,2008,melanoma,20.4
+OH,2009,lung cancer,75.9
+OH,2009,melanoma,20.8
+OH,2010,lung cancer,72.8
+OH,2010,melanoma,19.3
+OH,2011,lung cancer,72.4
+OH,2011,melanoma,20.3
+OH,2012,lung cancer,69.8
+OH,2012,melanoma,19.6
+OH,2013,lung cancer,69.3
+OH,2013,melanoma,19.9
+OH,2014,lung cancer,69.6
+OH,2014,melanoma,23.4
+OH,2015,lung cancer,70.1
+OH,2015,melanoma,25.4
+OH,2016,lung cancer,67.2
+OH,2016,melanoma,26.5
+OH,2017,lung cancer,65.2
+OH,2017,melanoma,24.3
+OH,2018,lung cancer,64.6
+OH,2018,melanoma,24.2
+PA,1990,lung cancer,62.7
+PA,1990,melanoma,7.9
+PA,1991,lung cancer,64
+PA,1991,melanoma,7.7
+PA,1992,lung cancer,63.4
+PA,1992,melanoma,8.2
+PA,1993,lung cancer,65.9
+PA,1993,melanoma,7.7
+PA,1994,lung cancer,66
+PA,1994,melanoma,8.8
+PA,1995,lung cancer,68.3
+PA,1995,melanoma,9.5
+PA,1996,lung cancer,69.4
+PA,1996,melanoma,10.9
+PA,1997,lung cancer,69.8
+PA,1997,melanoma,12.2
+PA,1998,lung cancer,70.1
+PA,1998,melanoma,12.2
+PA,1999,lung cancer,69.5
+PA,1999,melanoma,12.9
+PA,2000,lung cancer,68.4
+PA,2000,melanoma,13.8
+PA,2001,lung cancer,70.3
+PA,2001,melanoma,15.8
+PA,2002,lung cancer,69.9
+PA,2002,melanoma,16.8
+PA,2003,lung cancer,69.3
+PA,2003,melanoma,17.6
+PA,2004,lung cancer,68.2
+PA,2004,melanoma,17.1
+PA,2005,lung cancer,70.3
+PA,2005,melanoma,17.9
+PA,2006,lung cancer,69.9
+PA,2006,melanoma,18
+PA,2007,lung cancer,70.9
+PA,2007,melanoma,17.3
+PA,2008,lung cancer,69.8
+PA,2008,melanoma,18.2
+PA,2009,lung cancer,69
+PA,2009,melanoma,20.3
+PA,2010,lung cancer,65.9
+PA,2010,melanoma,20.5
+PA,2011,lung cancer,66
+PA,2011,melanoma,21.1
+PA,2012,lung cancer,63.9
+PA,2012,melanoma,21.2
+PA,2013,lung cancer,64.3
+PA,2013,melanoma,24.3
+PA,2014,lung cancer,63.2
+PA,2014,melanoma,25.8
+PA,2015,lung cancer,63.2
+PA,2015,melanoma,25.7
+PA,2016,lung cancer,63
+PA,2016,melanoma,23.1
+PA,2017,lung cancer,61.6
+PA,2017,melanoma,21.4
+PA,2018,lung cancer,59.9
+PA,2018,melanoma,21

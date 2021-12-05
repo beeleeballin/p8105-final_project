@@ -9,6 +9,10 @@ output: html_document
 library(tidyverse)
 library(httr)
 library(jsonlite)
+<<<<<<< HEAD
+=======
+library(patchwork)
+>>>>>>> 98e71ddd17cb98ebae75c9a60abad23127b2d017
 
 knitr::opts_chunk$set(
 	fig.asp = 0.75,
@@ -37,7 +41,11 @@ Data from Ohio provided in pdf document which was copied over to csv document. T
 
 * Hospitalizations (i.e. inpatient) and ED visits rates for children, adults, and total rates (per 10 000) by county for the year 2016
 * Hospitalizations and ED visits with counts and rates per 10 000 stratified by age group and race by year for 2013-2016:
+<<<<<<< HEAD
   * age group ptions are 0-4, 5-14, 15-34, 35-64, and 65+, and all
+=======
+  * age group options are 0-4, 5-14, 15-34, 35-64, and 65+, and all
+>>>>>>> 98e71ddd17cb98ebae75c9a60abad23127b2d017
 * Hospitalizations and ED visits by month with counts for children, adults, and total but no rate provided (under `frequency`):
 
 The variables are:
@@ -56,10 +64,18 @@ The variables are:
 
 ```{r ohio_data}
 oh_asthma <-
+<<<<<<< HEAD
   read_csv("./ohio/ohio_all.csv") %>% 
   janitor::clean_names()
 ```
 
+=======
+  read_csv("./data/asthma_data/ohio_all.csv") %>% 
+  janitor::clean_names()
+```
+
+
+>>>>>>> 98e71ddd17cb98ebae75c9a60abad23127b2d017
 ### Basic Ohio Visualization
 
 Plotting data over time and looking at (1) overall trends comparing inpatient and ED visits, (2) these same trends with respect to age and race, and (3) how this looks across counties within a given year (2016).
@@ -123,7 +139,11 @@ Data from New York provided as a csv file and uploaded directly
 
 ```{r ny_data}
 ny_asthma <-
+<<<<<<< HEAD
   read_csv("./ny/NYS_ASTHMA.csv") %>% 
+=======
+  read_csv("./data/asthma_data/NYS_ASTHMA.csv") %>% 
+>>>>>>> 98e71ddd17cb98ebae75c9a60abad23127b2d017
   janitor::clean_names()
 
 ```
@@ -175,14 +195,26 @@ Data for PA has county level information for hospitalizations due to asthma that
 * `significance`: provided for some rates with significance denoted with "+" symbol
 
 Notes for data: 
+<<<<<<< HEAD
 * ND = Not displayed if count < 10 for Crude/Age Specific Rates or if count < 20 for Age-Adjusted Rates. 
 * Exported county data contain a + symbol indicating a significantly higher value or a - symbol indicating a significantly lower value compared to Pennsylvania.
 * A note on how these data were obtained: "Hospital discharge counts reflect acute hospital visits, by county of residence, when the patient is admitted. Patients can be counted more than once if they are discharged from a hospital, for the same diagnosis, procedure, or condition during the same year. Hospital discharge coding switched from ICD-9-CM to ICD-10-CM effective October 1, 2015. ICD-10-CM codes offer greater specificity which impacts discharge counts and rates. This transition from ICD-9-CM to ICD-10-CM caused the data for certain categories to require additional processing, or appear to be out of a trend. As a result, it is recommended to re-benchmark using 2016 estimates since comparisons in counts and rates beginning in 2016 should not be compared to prior years."
+=======
+
+* ND = Not displayed if count < 10 for Crude/Age Specific Rates or if count < 20 for Age-Adjusted Rates. 
+* Exported county data contain a + symbol indicating a significantly higher value or a - symbol indicating a significantly lower value compared to Pennsylvania.
+* A note on how these data were obtained: 
+  * <i>"Hospital discharge counts reflect acute hospital visits, by county of residence, when the patient is admitted. Patients can be counted more than once if they are discharged from a hospital, for the same diagnosis, procedure, or condition during the same year. Hospital discharge coding switched from ICD-9-CM to ICD-10-CM effective October 1, 2015. ICD-10-CM codes offer greater specificity which impacts discharge counts and rates. This transition from ICD-9-CM to ICD-10-CM caused the data for certain categories to require additional processing, or appear to be out of a trend. As a result, it is recommended to re-benchmark using 2016 estimates since comparisons in counts and rates beginning in 2016 should not be compared to prior years."</i>
+>>>>>>> 98e71ddd17cb98ebae75c9a60abad23127b2d017
 
 
 ```{r pa_data}
 pa_asthma <-
+<<<<<<< HEAD
   read_csv("./pa/pa_asthma_all.csv", col_names = TRUE) %>% 
+=======
+  read_csv("./data/asthma_data/pa_asthma_all.csv", col_names = TRUE) %>% 
+>>>>>>> 98e71ddd17cb98ebae75c9a60abad23127b2d017
   janitor::clean_names()
 ```
 
@@ -230,6 +262,10 @@ pa_asthma %>%
 
 ## Comparing data across states
 
+<<<<<<< HEAD
+=======
+### Maps
+>>>>>>> 98e71ddd17cb98ebae75c9a60abad23127b2d017
 ```{r map_code, include= FALSE}
 library("maps")
 library("mapproj")
@@ -257,10 +293,16 @@ ggplot(data = us_counties,
         panel.grid = element_blank())
 ```
 
+<<<<<<< HEAD
 
 ```{r compare_county}
 
 ny_county <-
+=======
+```{r compare_county}
+
+ny_co <-
+>>>>>>> 98e71ddd17cb98ebae75c9a60abad23127b2d017
   ny_asthma %>% 
   filter(age_group == "Total", 
          month == "Total",
@@ -277,7 +319,11 @@ ny_county <-
   select(region, county, rate) %>% 
   group_by(county)
 
+<<<<<<< HEAD
 oh_county <- 
+=======
+oh_co <- 
+>>>>>>> 98e71ddd17cb98ebae75c9a60abad23127b2d017
   oh_asthma %>% 
   filter(geography != "Ohio",
          age_group == "All", 
@@ -287,7 +333,11 @@ oh_county <-
   select(region, county, rate) %>% 
   group_by(county)
 
+<<<<<<< HEAD
 pa_county <- 
+=======
+pa_co <- 
+>>>>>>> 98e71ddd17cb98ebae75c9a60abad23127b2d017
   pa_asthma %>% 
   filter(geography_code != "0",
          rate_adj == "Age-Adjusted Rate",
@@ -300,7 +350,11 @@ pa_county <-
   group_by(county)
 
 county_2016 <-
+<<<<<<< HEAD
   bind_rows(oh_county, ny_county, pa_county)
+=======
+  bind_rows(oh_co, ny_co, pa_co)
+>>>>>>> 98e71ddd17cb98ebae75c9a60abad23127b2d017
 
 us_counties %>% 
   filter(region == "ohio"| 
@@ -345,3 +399,169 @@ us_counties %>%
 
 ```
 
+<<<<<<< HEAD
+=======
+### Graphs 
+
+Boxplots to contrast states/regions - one boxplot for asthma all years available:
+
+* Rates per 10 000  for 2013-2016 (includes all races, ages, and sexes) for hospitalizations
+
+Scatterplots/spaghetti plots for disease trends over time
+
+```{r state_boxplots}
+oh_bp <-
+  oh_asthma %>% 
+  filter(geography == "Ohio",
+         age_group == "All", 
+         month == "All", 
+         race == "Total", 
+         population > 0,
+         visit == "Inpatient") %>% 
+  select(year, geography, rate)
+
+ny_bp <-
+  ny_asthma %>% 
+  filter(geography == "New York State", 
+         age_group == "Total", 
+         month == "Total",
+         year == "2013" | year == "2014" | year == "2015" | year == "2016",
+         rate_adj == "Age-Adjusted Rate",
+         visit == "Inpatient") %>% 
+  mutate(year = as.numeric(year)) %>% 
+  rename(rate = rate_per_10k) %>% 
+  select(year, geography, rate)
+
+pa_bp <-
+  pa_asthma %>% 
+  filter(race == "All Races", 
+         age == "All Ages",
+         sex == "Total",
+         geography == "Pennsylvania",
+         year > 2012,
+         year <2017) %>%
+  mutate(rate = as.numeric(rate) / 10,
+         lb = as.numeric(lb),
+         ub = as.numeric(ub)) %>% 
+  select(year, geography, rate)
+
+all_bp_data <-
+  bind_rows(pa_bp, oh_bp, ny_bp)
+
+all_bp <- 
+  all_bp_data %>% 
+  ggplot(aes(x = geography, y = rate, fill = geography, alpha = 0.5)) + 
+  geom_boxplot() +
+  theme(legend.position = "none")
+
+all_line <-
+  all_bp_data %>% 
+  ggplot(aes(x = year, y = rate, color = geography )) + 
+  geom_point() + 
+  geom_path() +
+  theme(legend.position = "none")
+
+
+all_bp + all_line
+
+```
+
+
+
+
+## Merging Data
+
+```{r merge_state}
+oh_state <-
+  oh_asthma %>% 
+  filter(age_group == "All",
+         month == "All",
+         race == "Total",
+         sex == "All",
+         geography == "OH",
+         visit == "Inpatient",
+         frequency > 0) %>% 
+  mutate(rate = rate * 10,
+         outcome = "asthma") %>% 
+  rename(state = geography) %>% 
+  select(year, state, outcome, rate)
+
+pa_state <-
+  pa_asthma %>% 
+  filter(age == "All Ages",
+         race == "All Races",
+         sex == "Total",
+         geography == "PA",
+         rate_adj == "Age-Adjusted Rate") %>% 
+  mutate(outcome = "asthma") %>% 
+  rename(state = geography) %>% 
+  select(year, state, outcome, rate)
+
+ny_state <-
+  ny_asthma %>% 
+  filter(visit == "Inpatient",
+         geography == "New York State",
+         age_group == "Total",
+         sex == "Total",
+         rate_adj == "Age-Adjusted Rate",
+         month == "Total",
+         str_detect(year, "-20", negate = TRUE)) %>% 
+  rename(rate = rate_per_10k) %>% 
+  mutate(rate = round(rate * 10, 2),
+         state = "NY",
+         outcome = "asthma") %>% 
+  select(year, state, outcome, rate)
+
+asthma_state <-
+  rbind(ny_state, oh_state, pa_state) %>% 
+  write_csv("./data/asthma_state.csv")
+
+```
+
+```{r merge_county}
+ny_county <-
+  ny_asthma %>% 
+  filter(visit == "Inpatient",
+         geography != "New York State",
+         geography != "New York City", 
+         geography != "NYS excluding NYC",
+         rate_adj == "Age-Adjusted Rate",
+         sex == "Total",
+         age_group == "Total",
+         rate_per_10kpy >= 0) %>% 
+  rename(county = geography) %>% 
+  mutate(outcome = "asthma",
+         state = "NY",
+         year = str_sub(year, 6, -1),
+         rate = rate_per_10kpy * 10) %>% 
+  filter(year != "2019") %>% 
+  select(year, state, county, outcome, rate)
+
+pa_county <-
+  pa_asthma %>% 
+  filter(geography_code != "0",
+         rate_adj == "Age-Adjusted Rate",
+         sex == "Total",
+         age == "All Ages") %>% 
+  rename(county = geography) %>% 
+  mutate(outcome = "asthma",
+         state = "PA") %>% 
+  select(year, state, county, outcome, rate)
+
+oh_county <-
+  oh_asthma %>% 
+  filter(geography != "Ohio",
+         age_group == "All", 
+         visit == "Inpatient") %>% 
+  mutate(state = "OH",
+         rate = rate * 10,
+         outcome = "asthma") %>%
+  rename(county = geography) %>% 
+  select(year, state, county, outcome, rate)
+
+asthma_county <-
+  rbind(ny_county, oh_county, pa_county) %>% 
+  write_csv("./data/asthma_county.csv")
+```
+
+>>>>>>> 98e71ddd17cb98ebae75c9a60abad23127b2d017

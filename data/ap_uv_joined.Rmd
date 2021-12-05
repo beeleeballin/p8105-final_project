@@ -38,7 +38,7 @@ countyfips_df =
   )
 ```
 
-AP data
+Load and clean AP data
 ```{r}
 pm_df = 
   read_csv("../final_raw/Daily_PM2.5_Concentrations_All_County__2001-2016.csv") %>% 
@@ -63,7 +63,7 @@ oz_df =
   )
 ```
 
-UV data
+Load and clean UV data
 ```{r}
 uv_df = 
   read_csv("data/Population-Weighted_Ultraviolet_Irradiance__2004-2015.csv") %>%
@@ -77,7 +77,7 @@ uv_df =
   )
 ```
 
-
+Join 3 datasets and tidy
 ```{r}
 ap_uv_df = 
   full_join(pm_df, oz_df, by = c("year", "countyfips", "month", "day")) %>% 
@@ -99,6 +99,7 @@ ap_uv_df =
   select(year, month, day, countyfips, county, state, everything())
 ```
 
+Export
 ```{r}
 tidy_df =
   ap_uv_df %>% 
@@ -106,6 +107,9 @@ tidy_df =
   summarize(across(pm25_max_pred:i380, mean, na.rm = TRUE), 
             across(pm25_max_pred:i380, round, 2)) %>% 
   ungroup()
+
+write_csv(tidy_df,"ap/ap_uv/apuv.csv")
+saveRDS(tidy_df,"ap/apuv_map/apuv.RDS")
 
 tidy_pm_df =
   tidy_df %>% 
@@ -138,6 +142,10 @@ tidy_uv_df =
   ) %>% 
   select(year, countyfips, county, state, UV, hover)
 
+write_csv(tidy_pm_df,"ap/ap_uv/pm25.csv")
+write_csv(tidy_oz_df,"ap/ap_uv/o3.csv")
+write_csv(tidy_uv_df,"ap/ap_uv/edd.csv")
+
 extreme_value =
   bind_cols(
     bind_cols(
@@ -164,10 +172,9 @@ extreme_value =
     summarize(across(c(PM2.5:UV), min, na.rm =TRUE))
   )
 
-write_csv(extreme_value,"data/ap_uv/ext_value.csv")
-write_csv(tidy_pm_df,"data/ap_uv/pm25.csv")
-write_csv(tidy_oz_df,"data/ap_uv/o3.csv")
-write_csv(tidy_uv_df,"data/ap_uv/edd.csv")
+write_csv(extreme_value,"ap/ap_uv/ext_value.csv")
+saveRDS(extreme_value,"ap/apuv_map/ext_val.RDS")
+
 
 ```
 

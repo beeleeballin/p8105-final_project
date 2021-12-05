@@ -1,0 +1,122 @@
+---
+title: "merge_outcomes"
+output: github_document
+---
+
+```{r}
+library(tidyverse)
+library(tidyr)
+library(dplyr)
+```
+
+
+## Combining state-level outcome data
+
+First, let's combine lung and skin cancer data at the state level.
+```{r}
+# read in state data for lung and skin cancer
+
+#state level lung cancer data
+state_lc_data = read_csv("./data/lung/state_lc_data.csv")
+
+#state level melanoma data
+state_mel_data = read_csv("./data/incidence_melanoma_data/state_melanoma_age_adjusted.csv") %>%
+  rename(c("outcome" = "cancer_type"))
+
+# combine cancer outcome data
+lc_mel_state = bind_rows(state_lc_data, state_mel_data) %>%
+  select(state, year, outcome, age_adjusted_incidence_rate)
+```
+
+Next, let's combine asthma data with the cancer data at the state level.
+First, let's read in the asthma state-level data.
+```{r}
+asthma_state <- read_csv(here::here("data", "asthma_state.csv")) %>%
+  rename(age_adjusted_incidence_rate = rate) %>%
+  select(state, year, outcome, age_adjusted_incidence_rate)
+```
+Next, let's combine the asthma and cancer state-level data.
+```{r}
+# Bind rows of cancer and asthma by state and arrange accordingly
+lc_mel_asthma_state <- bind_rows(lc_mel_state, asthma_state) %>%
+  arrange(state, year, outcome)
+```
+
+Lastly, let's write out the combined data.
+```{r}
+write_csv(lc_mel_asthma_state, here::here("data", "lc_mel_asthma_state.csv"))
+```
+
+## Combining county-level outcome data
+
+First, let's combine lung and skin cancer data at the county level.
+```{r}
+# read in county data for lung and skin cancer
+
+county_lc = read_csv("./data/lung/county_lc.csv")
+county_mel = read_csv("./data/incidence_melanoma_data/state_county_melanoma_incidence_2014_2018.csv")
+
+fips_codes = read_csv("./data/fips_codes.csv")
+
+# cleaning to make the data sets compatible
+
+county_mel = county_mel %>%
+  rename(c("outcome" = "cancer_type")) %>%
+  drop_na() 
+
+county_mel <- county_mel[!(county_mel$county == "Ohio" | county_mel$county == "Pennsylvania" | 
+     county_mel$county == "New York"), ] %>%
+  filter(!grepl('SEER', county))
+
+county_mel$county <- gsub(" County","", county_mel$county)
+
+county_mel$county[county_mel$county == "St Lawrence"] <- "St. Lawrence"
+
+county_lc$county <- gsub(" County","", county_lc$county)
+
+# binding rows
+
+lc_mel_county = bind_rows(county_lc, county_mel) %>%
+  filter(complete.cases(.)) 
+
+
+fips = fips_codes %>%
+    janitor::clean_names() %>%
+    rename(c("county" = "name"))
+
+lc_mel_county = merge(lc_mel_county, fips, by = c("state", "county"))
+```
+
+Next, we will read in asthma data and combine it with the cancer data. 
+
+First, let's read in the asthma county data, rename column names and add an 
+additional column for county fips code.
+```{r}
+# Read in asthma data
+# Only get county data for the year 2016 since we need county data at
+# a fixed time point (i.e. not longitudinal)
+# Adjust column names and types in prep for merge
+asthma_county <- read_csv(here::here("data", "asthma_county.csv")) %>%
+  filter(year == 2016) %>%
+  select(-year) %>%
+  rename(age_adjusted_incidence_rate = rate) %>%
+  mutate(age_adjusted_incidence_rate = as.double(age_adjusted_incidence_rate))
+
+asthma_county <- merge(asthma_county, fips, by = c("state", "county"))
+```
+Next, let's combine the asthma and cancer county data.
+```{r}
+# Bind rows of cancer and asthma by county and arrange accordingly
+lc_mel_asthma_county <- bind_rows(lc_mel_county, asthma_county) %>%
+  arrange(state, county, outcome)
+```
+
+Lastly, let's write out the combined data.
+```{r}
+write_csv(lc_mel_asthma_county, here::here("data", "lc_mel_asthma_county.csv"))
+```
+
+
+
+
+
