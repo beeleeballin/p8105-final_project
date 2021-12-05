@@ -140,7 +140,7 @@ server = function(input, output) {
   })
   
   output$pm25 = renderLeaflet({
-    pal = colorBin(palette = "viridis", 9, domain = c(as.numeric(ext_val[4]), as.numeric(ext_val[1])))
+    pal = colorBin(palette = "viridis", 9, domain = c(as.numeric(ext_val[4]), as.numeric(ext_val[1])), reverse = T)
     # labels = sprintf("some label")
     pm_oz_uv() %>% 
       leaflet() %>% 
@@ -159,12 +159,12 @@ server = function(input, output) {
       addLegend("bottomright",
                 pal = pal,
                 values = ~pm25_pop_pred,
-                title = "some legend title",
+                title = "PM Level",
                 opacity = 0.7)
   })
   
   output$o3 = renderLeaflet({
-    pal = colorBin(palette = "inferno", 9, domain = c(as.numeric(ext_val[5]),as.numeric(ext_val[2])))
+    pal = colorBin(palette = "inferno", 9, domain = c(as.numeric(ext_val[5]),as.numeric(ext_val[2])), reverse = T)
     pm_oz_uv() %>% 
       leaflet() %>% 
       addProviderTiles(provider = "Stamen.Toner") %>% 
@@ -182,7 +182,7 @@ server = function(input, output) {
       addLegend("bottomright",
                 pal = pal,
                 values = ~o3_pop_pred,
-                title = "some legend title",
+                title = "O3 Level",
                 opacity = 0.7)
   })
   
@@ -205,7 +205,7 @@ server = function(input, output) {
       addLegend("bottomright",
                 pal = pal,
                 values = ~edd,
-                title = "some legend title",
+                title = "UV Level",
                 opacity = 0.7)
   })
   
