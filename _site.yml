@@ -1,0 +1,22 @@
+name: "Climate and Chronic Disease: A P8105 Final Project"
+output_dir: "."
+navbar:
+  title: "Home"
+  left:
+    - text: "Index"
+      href: index.html
+    - text: "About"
+      href: about.html
+    - text: "Map"
+      href: https://beeleeballin.shinyapps.io/apuv_map/
+    
+  right:
+    - icon: fa-envelope fa-lg
+      href: mailto:<johsuan.lee@columbia.edu>
+    - icon: fa-github fa-lg
+      href: https://github.com/beeleeballin/p8105-final_project
+    - icon: fa-map-marker fa-lg
+      href: https://goo.gl/maps/kyKVwUbubgvP3u6s8
+output:
+  html_document:
+    theme: cerulean

@@ -1,25 +1,18 @@
-#
-# This is a Shiny web application. You can run the application by clicking
-# the 'Run App' button above.
-#
-# Find out more about building applications with Shiny here:
-#
-#    http://shiny.rstudio.com/
-#
-
+# Load packages
 library(shiny)
 library(tidyverse)
 library(leaflet)
 library(htmlwidgets)
 library(tigris)
-library(viridis)
+library(rsconnect)
 
+0# Load data
 setwd("/Users/beelee/Desktop/Columbia/Fall_2021/P8105-Data_Science/p8105-final_project/ap/apuv_map/")
 apuv_df = readRDS("apuv.RDS")
 ext_val = readRDS("ext_val.RDS")
 us_counties = tigris::counties(c("NY", "PA", "OH"))
 
-# Filter df for the year desired and merge with the sf object
+# Filter dataframes for the year desired and merge with the county sf objects
 filter_merge = function(y){
   apuv_df %>% 
     filter(year == y) %>%
@@ -80,17 +73,7 @@ select_year_season = function(y, s){
   return(res)
 }
 
-test_df = 
-  apuv_df %>% 
-  filter(year == 2010, state == "NY") %>%
-  pivot_wider(
-    names_from = season,
-    names_glue = "{season}_{.value}",
-    values_from = c(pm25_max_pred:i380)
-  ) %>% 
-  select(-contains(c("Summer", "Fall", "Winter"))) %>% 
-  rename_all(funs(str_replace_all(., "Spring_", "")))
-
+# Preprocess some dataframes before loading Shiny.app
 merged_2001_df = filter_merge(2001)
 merged_2002_df = filter_merge(2002)
 merged_2003_df = filter_merge(2003)
@@ -108,21 +91,23 @@ merged_2014_df = filter_merge(2014)
 merged_2015_df = filter_merge(2015)
 merged_2016_df = filter_merge(2016)
 
+# Shiny.app
 ui = fluidPage(
   
   titlePanel("Annual Air Pollution and UV Radiation Map"),
   
   sidebarLayout(
     sidebarPanel(
-      tags$a(href = "https://ephtracking.cdc.gov/download", "Data Source", target = "_blank"),
-      h5("Some climate conditions and a few particular chronic disease risks are known to be highly correlated. Let's explore the Particulate Matter //expression(PM_{2.5}), Ozone (O_{3}) and UV radiation (edd) levels over the years in New York, Pennsylvania, and Ohio."),
+      tags$a(href = "https://ephtracking.cdc.gov/download", "Go to Data Source", target = "_blank"),
+      # tags$script(type = "text/x-mathjax-config", 'MathJax.Hub.Config({"HTML-CSS": { linebreaks: {automatic: true}},SVG: {linebreaks: {automatic: true}}});'),
+      h5("Some climate conditions and particular chronic disease risks are known to be correlated. Let's explore the Particulate Matter, Ozone, and UV radiation levels over the years in counties in New York, Pennsylvania, and Ohio."),
       selectInput("yr", "Select a year", choices = unique(apuv_df$year)),
       selectInput("ss", "Select a season", choices = unique(apuv_df$season))
     ),
     
     mainPanel(
       tabsetPanel(
-        tabPanel("Particulate Matter 2.5 Level", leafletOutput("pm25")),
+        tabPanel("Particulate Matter (2.5) Level", leafletOutput("pm25")),
         tabPanel("Ozone Level", leafletOutput("o3")),
         tabPanel("UV Radiation Level", leafletOutput("edd"))
       )
@@ -133,20 +118,21 @@ ui = fluidPage(
 server = function(input, output) {
   
   pm_oz_uv = reactive({
-    
+
     pou = select_year_season(input$yr, input$ss)
     return(pou)
     
   })
   
   output$pm25 = renderLeaflet({
-    pal = colorBin(palette = "viridis", 9, domain = c(as.numeric(ext_val[4]), as.numeric(ext_val[1])), reverse = T)
-    # labels = sprintf("some label")
+    pal = colorBin(palette = "viridis", bins = 9, domain = c(as.numeric(ext_val[4]), as.numeric(ext_val[1])), reverse = T)
+    labels = sprintf("<strong>%s, %s</strong><br/>Population-Weighted Mean: %g<br/>Max: %g", pm_oz_uv()$county, pm_oz_uv()$state, pm_oz_uv()$pm25_pop_pred, pm_oz_uv()$pm25_max_pred) %>% lapply(htmltools::HTML)
     pm_oz_uv() %>% 
       leaflet() %>% 
       addProviderTiles(provider = "Stamen.Toner") %>% 
       setView(-78, 41.8, zoom = 5.5) %>% 
-      addPolygons(stroke = FALSE,
+      addPolygons(label = labels,
+                  stroke = FALSE,
                   smoothFactor = 0.5,
                   opacity = 1,
                   fillOpacity = 0.8,
@@ -164,12 +150,14 @@ server = function(input, output) {
   })
   
   output$o3 = renderLeaflet({
-    pal = colorBin(palette = "inferno", 9, domain = c(as.numeric(ext_val[5]),as.numeric(ext_val[2])), reverse = T)
+    pal = colorBin(palette = "inferno", bins = 9, domain = c(as.numeric(ext_val[5]),as.numeric(ext_val[2])), reverse = T)
+    labels = sprintf("<strong>%s, %s</strong><br/>Population-Weighted Mean: %g<br/>Max: %g", pm_oz_uv()$county, pm_oz_uv()$state, pm_oz_uv()$o3_pop_pred, pm_oz_uv()$o3_max_pred) %>% lapply(htmltools::HTML)
     pm_oz_uv() %>% 
       leaflet() %>% 
       addProviderTiles(provider = "Stamen.Toner") %>% 
       setView(-78, 41.8, zoom = 5.5) %>% 
-      addPolygons(stroke = FALSE,
+      addPolygons(label = labels,
+                  stroke = FALSE,
                   smoothFactor = 0.5,
                   opacity = 1,
                   fillOpacity = 0.8,
@@ -187,12 +175,14 @@ server = function(input, output) {
   })
   
   output$edd = renderLeaflet({
-    pal = colorBin(palette = "BuPu", 9, domain = c(as.numeric(ext_val[6]),as.numeric(ext_val[3])))
+    pal = colorBin(palette = "BuPu", bins = 9, domain = c(as.numeric(ext_val[6]),as.numeric(ext_val[3])))
+    labels = sprintf("<strong>%s, %s</strong><br/>edd: %g<br/>edr: %g", pm_oz_uv()$county, pm_oz_uv()$state, pm_oz_uv()$edd, pm_oz_uv()$edr) %>% lapply(htmltools::HTML)
     pm_oz_uv() %>% 
       leaflet() %>% 
       addProviderTiles(provider = "Stamen.Toner") %>% 
       setView(-78, 41.8, zoom = 5.5) %>% 
-      addPolygons(stroke = FALSE,
+      addPolygons(label = labels,
+                  stroke = FALSE,
                   smoothFactor = 0.5,
                   opacity = 1,
                   fillOpacity = 0.8,
