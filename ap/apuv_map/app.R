@@ -6,8 +6,8 @@ library(htmlwidgets)
 library(tigris)
 library(rsconnect)
 
-0# Load data
-setwd("/Users/beelee/Desktop/Columbia/Fall_2021/P8105-Data_Science/p8105-final_project/ap/apuv_map/")
+# Load data
+# setwd("/Users/beelee/Desktop/Columbia/Fall_2021/P8105-Data_Science/p8105-final_project/ap/apuv_map/")
 apuv_df = readRDS("apuv.RDS")
 ext_val = readRDS("ext_val.RDS")
 us_counties = tigris::counties(c("NY", "PA", "OH"))
