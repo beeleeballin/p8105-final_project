@@ -18,8 +18,8 @@ Benjamin Goebel (bpg2118)
 In recent years, concerns over the impact of climate change have moved
 to the forefront of public discussion. Our group is interested in
 assessing how trends in chronic disease incidence at the state level
-have been impacted by air pollution and solar radiation. Air pollution
-is known to be associated with lung cancer and asthma, and UV radiation
+have been impacted by air pollution and UV radiation. Air pollution is
+known to be associated with lung cancer and asthma, and UV radiation
 with skin cancer, but we want to illustrate these associations wtih
 contemporary data from diverse areas. We also seek to determine whether
 temperature and precipitation correlate with these chronic diseases as

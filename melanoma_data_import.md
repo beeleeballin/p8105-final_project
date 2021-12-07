@@ -180,7 +180,8 @@ read_and_clean_county_data <- function(file_path_name, state, cancer_type) {
            skip = 8) %>%
   janitor::clean_names() %>%
   select(county, age_adjusted_incidence_rate_rate_note_cases_per_100_000) %>%
-  mutate(state = state,
+  mutate(county = stringr::str_remove(county, "\\(.\\)$"),
+        state = state,
          cancer_type = cancer_type,
          age_adjusted_incidence_rate =
            as.numeric(age_adjusted_incidence_rate_rate_note_cases_per_100_000)) %>%
@@ -216,6 +217,8 @@ read_and_clean_county_data(here("data",
                            "melanoma")
 ```
 
+    ## Warning: One or more parsing issues, see `problems()` for details
+
 #### Pennsylvania
 
 ``` r
@@ -237,4 +240,10 @@ state_county_melanoma_incidence_2014_2018 <-
   bind_rows(nys_county_melanoma_incidence_2014_2018,
             ohio_county_melanoma_incidence_2014_2018,
             pa_county_melanoma_incidence_2014_2018)
+```
+
+``` r
+write_csv(state_county_melanoma_incidence_2014_2018, "./data/incidence_melanoma_data/state_county_melanoma_incidence_2014_2018.csv")
+
+write_csv(state_melanoma_age_adjusted, "./data/incidence_melanoma_data/state_melanoma_age_adjusted.csv")
 ```

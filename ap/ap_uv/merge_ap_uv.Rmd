@@ -109,8 +109,11 @@ tidy_df =
       month %in% (c("JUN", "JUL", "AUG")) ~ "Summer",
       month %in% (c("SEP", "OCT", "NOV")) ~ "Fall",
       month %in% (c("DEC", "JAN", "FEB")) ~ "Winter"
-    )
+    ), 
+    season = factor(season),
+    season = fct_relevel(season, "Spring", "Summer", "Fall", "Winter")
   ) %>% 
+  filter(year %in% c(2005:2015)) %>% 
   group_by(year, countyfips, county, state, season) %>%
   summarize(across(pm25_max_pred:i380, median, na.rm = TRUE), 
             across(pm25_max_pred:i380, round, 2)) %>% 

@@ -28,10 +28,6 @@ filter_merge = function(y){
 # Return the filtered and merged object
 select_year_season = function(y, s){
   
-  if(y == 2001){res = merged_2001_df}
-  if(y == 2002){res = merged_2002_df}
-  if(y == 2003){res = merged_2003_df}
-  if(y == 2004){res = merged_2004_df}
   if(y == 2005){res = merged_2005_df}
   if(y == 2006){res = merged_2006_df}
   if(y == 2007){res = merged_2007_df}
@@ -43,7 +39,6 @@ select_year_season = function(y, s){
   if(y == 2013){res = merged_2013_df}
   if(y == 2014){res = merged_2014_df}
   if(y == 2015){res = merged_2015_df}
-  if(y == 2016){res = merged_2016_df}
   
   if(s == "Spring"){
     res = 
@@ -74,10 +69,6 @@ select_year_season = function(y, s){
 }
 
 # Preprocess some dataframes before loading Shiny.app
-merged_2001_df = filter_merge(2001)
-merged_2002_df = filter_merge(2002)
-merged_2003_df = filter_merge(2003)
-merged_2004_df = filter_merge(2004)
 merged_2005_df = filter_merge(2005)
 merged_2006_df = filter_merge(2006)
 merged_2007_df = filter_merge(2007)
@@ -89,7 +80,6 @@ merged_2012_df = filter_merge(2012)
 merged_2013_df = filter_merge(2013)
 merged_2014_df = filter_merge(2014)
 merged_2015_df = filter_merge(2015)
-merged_2016_df = filter_merge(2016)
 
 # Shiny.app
 ui = fluidPage(
@@ -99,10 +89,12 @@ ui = fluidPage(
   sidebarLayout(
     sidebarPanel(
       tags$a(href = "https://ephtracking.cdc.gov/download", "Go to Data Source", target = "_blank"),
+      tags$a(href = "https://19january2017snapshot.epa.gov/air-research/downscaler-model-predicting-daily-air-pollution_.html", "Learn about the Downscaler Model", target = "_blank"),
       # tags$script(type = "text/x-mathjax-config", 'MathJax.Hub.Config({"HTML-CSS": { linebreaks: {automatic: true}},SVG: {linebreaks: {automatic: true}}});'),
       h5("Some climate conditions and particular chronic disease risks are known to be correlated. Let's explore the Particulate Matter, Ozone, and UV radiation levels over the years in counties in New York, Pennsylvania, and Ohio."),
       selectInput("yr", "Select a year", choices = unique(apuv_df$year)),
       selectInput("ss", "Select a season", choices = unique(apuv_df$season))
+      # selectInput("out", "Select a outcome", choices = c("lung", "melanoma", "asthma"))
     ),
     
     mainPanel(
@@ -110,6 +102,7 @@ ui = fluidPage(
         tabPanel("Particulate Matter (2.5) Level", leafletOutput("pm25")),
         tabPanel("Ozone Level", leafletOutput("o3")),
         tabPanel("UV Radiation Level", leafletOutput("edd"))
+        # tabPanel("Outcome", leafletOutput("edd"))
       )
     )
   )
@@ -126,7 +119,7 @@ server = function(input, output) {
   
   output$pm25 = renderLeaflet({
     pal = colorBin(palette = "viridis", bins = 9, domain = c(as.numeric(ext_val[4]), as.numeric(ext_val[1])), reverse = T)
-    labels = sprintf("<strong>%s, %s</strong><br/>Population-Weighted Mean: %g<br/>Max: %g", pm_oz_uv()$county, pm_oz_uv()$state, pm_oz_uv()$pm25_pop_pred, pm_oz_uv()$pm25_max_pred) %>% lapply(htmltools::HTML)
+    labels = sprintf("<strong>%s, %s</strong><br/>Mean: %g ug/m^3<br/>Max: %g ug/m^3", pm_oz_uv()$county, pm_oz_uv()$state, pm_oz_uv()$pm25_pop_pred, pm_oz_uv()$pm25_max_pred) %>% lapply(htmltools::HTML)
     pm_oz_uv() %>% 
       leaflet() %>% 
       addProviderTiles(provider = "Stamen.Toner") %>% 
@@ -145,13 +138,13 @@ server = function(input, output) {
       addLegend("bottomright",
                 pal = pal,
                 values = ~pm25_pop_pred,
-                title = "PM Level",
+                title = "Median PM 2.5 (ug/m^3)",
                 opacity = 0.7)
   })
   
   output$o3 = renderLeaflet({
     pal = colorBin(palette = "inferno", bins = 9, domain = c(as.numeric(ext_val[5]),as.numeric(ext_val[2])), reverse = T)
-    labels = sprintf("<strong>%s, %s</strong><br/>Population-Weighted Mean: %g<br/>Max: %g", pm_oz_uv()$county, pm_oz_uv()$state, pm_oz_uv()$o3_pop_pred, pm_oz_uv()$o3_max_pred) %>% lapply(htmltools::HTML)
+    labels = sprintf("<strong>%s, %s</strong><br/>Mean: %g ppm<br/>Max: %g ppm", pm_oz_uv()$county, pm_oz_uv()$state, pm_oz_uv()$o3_pop_pred, pm_oz_uv()$o3_max_pred) %>% lapply(htmltools::HTML)
     pm_oz_uv() %>% 
       leaflet() %>% 
       addProviderTiles(provider = "Stamen.Toner") %>% 
@@ -170,13 +163,13 @@ server = function(input, output) {
       addLegend("bottomright",
                 pal = pal,
                 values = ~o3_pop_pred,
-                title = "O3 Level",
+                title = "Median O3 (ppm)",
                 opacity = 0.7)
   })
   
   output$edd = renderLeaflet({
     pal = colorBin(palette = "BuPu", bins = 9, domain = c(as.numeric(ext_val[6]),as.numeric(ext_val[3])))
-    labels = sprintf("<strong>%s, %s</strong><br/>edd: %g<br/>edr: %g", pm_oz_uv()$county, pm_oz_uv()$state, pm_oz_uv()$edd, pm_oz_uv()$edr) %>% lapply(htmltools::HTML)
+    labels = sprintf("<strong>%s, %s</strong><br/>edd: %g J/m^2 <br/>edr: %g J/m^2", pm_oz_uv()$county, pm_oz_uv()$state, pm_oz_uv()$edd, pm_oz_uv()$edr) %>% lapply(htmltools::HTML)
     pm_oz_uv() %>% 
       leaflet() %>% 
       addProviderTiles(provider = "Stamen.Toner") %>% 
@@ -195,7 +188,7 @@ server = function(input, output) {
       addLegend("bottomright",
                 pal = pal,
                 values = ~edd,
-                title = "UV Level",
+                title = "Median UV (J/m^2)",
                 opacity = 0.7)
   })
   
