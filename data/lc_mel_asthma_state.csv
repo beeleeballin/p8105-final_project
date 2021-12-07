@@ -139,12 +139,16 @@ OH,2011,lung cancer,72.4
 OH,2011,melanoma,20.3
 OH,2012,lung cancer,69.8
 OH,2012,melanoma,19.6
+OH,2013,asthma,130
 OH,2013,lung cancer,69.3
 OH,2013,melanoma,19.9
+OH,2014,asthma,134
 OH,2014,lung cancer,69.6
 OH,2014,melanoma,23.4
+OH,2015,asthma,109
 OH,2015,lung cancer,70.1
 OH,2015,melanoma,25.4
+OH,2016,asthma,55
 OH,2016,lung cancer,67.2
 OH,2016,melanoma,26.5
 OH,2017,lung cancer,65.2
@@ -171,41 +175,61 @@ PA,1998,lung cancer,70.1
 PA,1998,melanoma,12.2
 PA,1999,lung cancer,69.5
 PA,1999,melanoma,12.9
+PA,2000,asthma,168.2
 PA,2000,lung cancer,68.4
 PA,2000,melanoma,13.8
+PA,2001,asthma,174.1
 PA,2001,lung cancer,70.3
 PA,2001,melanoma,15.8
+PA,2002,asthma,173.1
 PA,2002,lung cancer,69.9
 PA,2002,melanoma,16.8
+PA,2003,asthma,206.7
 PA,2003,lung cancer,69.3
 PA,2003,melanoma,17.6
+PA,2004,asthma,182.1
 PA,2004,lung cancer,68.2
 PA,2004,melanoma,17.1
+PA,2005,asthma,191
 PA,2005,lung cancer,70.3
 PA,2005,melanoma,17.9
+PA,2006,asthma,193.4
 PA,2006,lung cancer,69.9
 PA,2006,melanoma,18
+PA,2007,asthma,185.5
 PA,2007,lung cancer,70.9
 PA,2007,melanoma,17.3
+PA,2008,asthma,191.2
 PA,2008,lung cancer,69.8
 PA,2008,melanoma,18.2
+PA,2009,asthma,195.8
 PA,2009,lung cancer,69
 PA,2009,melanoma,20.3
+PA,2010,asthma,167.8
 PA,2010,lung cancer,65.9
 PA,2010,melanoma,20.5
+PA,2011,asthma,169.2
 PA,2011,lung cancer,66
 PA,2011,melanoma,21.1
+PA,2012,asthma,156.1
 PA,2012,lung cancer,63.9
 PA,2012,melanoma,21.2
+PA,2013,asthma,145.5
 PA,2013,lung cancer,64.3
 PA,2013,melanoma,24.3
+PA,2014,asthma,137.3
 PA,2014,lung cancer,63.2
 PA,2014,melanoma,25.8
+PA,2015,asthma,116.1
 PA,2015,lung cancer,63.2
 PA,2015,melanoma,25.7
+PA,2016,asthma,86.7
 PA,2016,lung cancer,63
 PA,2016,melanoma,23.1
+PA,2017,asthma,80
 PA,2017,lung cancer,61.6
 PA,2017,melanoma,21.4
+PA,2018,asthma,84.3
 PA,2018,lung cancer,59.9
 PA,2018,melanoma,21
+PA,2019,asthma,70.6

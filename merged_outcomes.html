@@ -1,0 +1,500 @@
+<!DOCTYPE html>
+
+<html>
+
+<head>
+
+<meta charset="utf-8" />
+<meta name="generator" content="pandoc" />
+<meta http-equiv="X-UA-Compatible" content="IE=EDGE" />
+
+
+
+
+<title>merge_outcomes</title>
+
+<script src="site_libs/header-attrs-2.11/header-attrs.js"></script>
+<script src="site_libs/jquery-3.6.0/jquery-3.6.0.min.js"></script>
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<link href="site_libs/bootstrap-3.3.5/css/cerulean.min.css" rel="stylesheet" />
+<script src="site_libs/bootstrap-3.3.5/js/bootstrap.min.js"></script>
+<script src="site_libs/bootstrap-3.3.5/shim/html5shiv.min.js"></script>
+<script src="site_libs/bootstrap-3.3.5/shim/respond.min.js"></script>
+<style>h1 {font-size: 34px;}
+       h1.title {font-size: 38px;}
+       h2 {font-size: 30px;}
+       h3 {font-size: 24px;}
+       h4 {font-size: 18px;}
+       h5 {font-size: 16px;}
+       h6 {font-size: 12px;}
+       code {color: inherit; background-color: rgba(0, 0, 0, 0.04);}
+       pre:not([class]) { background-color: white }</style>
+<script src="site_libs/navigation-1.1/tabsets.js"></script>
+<link href="site_libs/highlightjs-9.12.0/default.css" rel="stylesheet" />
+<script src="site_libs/highlightjs-9.12.0/highlight.js"></script>
+<link href="site_libs/font-awesome-5.1.0/css/all.css" rel="stylesheet" />
+<link href="site_libs/font-awesome-5.1.0/css/v4-shims.css" rel="stylesheet" />
+
+<style type="text/css">
+  code{white-space: pre-wrap;}
+  span.smallcaps{font-variant: small-caps;}
+  span.underline{text-decoration: underline;}
+  div.column{display: inline-block; vertical-align: top; width: 50%;}
+  div.hanging-indent{margin-left: 1.5em; text-indent: -1.5em;}
+  ul.task-list{list-style: none;}
+    </style>
+
+<style type="text/css">code{white-space: pre;}</style>
+<script type="text/javascript">
+if (window.hljs) {
+  hljs.configure({languages: []});
+  hljs.initHighlightingOnLoad();
+  if (document.readyState && document.readyState === "complete") {
+    window.setTimeout(function() { hljs.initHighlighting(); }, 0);
+  }
+}
+</script>
+
+
+
+
+
+
+
+
+<style type = "text/css">
+.main-container {
+  max-width: 940px;
+  margin-left: auto;
+  margin-right: auto;
+}
+img {
+  max-width:100%;
+}
+.tabbed-pane {
+  padding-top: 12px;
+}
+.html-widget {
+  margin-bottom: 20px;
+}
+button.code-folding-btn:focus {
+  outline: none;
+}
+summary {
+  display: list-item;
+}
+pre code {
+  padding: 0;
+}
+</style>
+
+
+<style type="text/css">
+.dropdown-submenu {
+  position: relative;
+}
+.dropdown-submenu>.dropdown-menu {
+  top: 0;
+  left: 100%;
+  margin-top: -6px;
+  margin-left: -1px;
+  border-radius: 0 6px 6px 6px;
+}
+.dropdown-submenu:hover>.dropdown-menu {
+  display: block;
+}
+.dropdown-submenu>a:after {
+  display: block;
+  content: " ";
+  float: right;
+  width: 0;
+  height: 0;
+  border-color: transparent;
+  border-style: solid;
+  border-width: 5px 0 5px 5px;
+  border-left-color: #cccccc;
+  margin-top: 5px;
+  margin-right: -10px;
+}
+.dropdown-submenu:hover>a:after {
+  border-left-color: #adb5bd;
+}
+.dropdown-submenu.pull-left {
+  float: none;
+}
+.dropdown-submenu.pull-left>.dropdown-menu {
+  left: -100%;
+  margin-left: 10px;
+  border-radius: 6px 0 6px 6px;
+}
+</style>
+
+<script type="text/javascript">
+// manage active state of menu based on current page
+$(document).ready(function () {
+  // active menu anchor
+  href = window.location.pathname
+  href = href.substr(href.lastIndexOf('/') + 1)
+  if (href === "")
+    href = "index.html";
+  var menuAnchor = $('a[href="' + href + '"]');
+
+  // mark it active
+  menuAnchor.tab('show');
+
+  // if it's got a parent navbar menu mark it active as well
+  menuAnchor.closest('li.dropdown').addClass('active');
+
+  // Navbar adjustments
+  var navHeight = $(".navbar").first().height() + 15;
+  var style = document.createElement('style');
+  var pt = "padding-top: " + navHeight + "px; ";
+  var mt = "margin-top: -" + navHeight + "px; ";
+  var css = "";
+  // offset scroll position for anchor links (for fixed navbar)
+  for (var i = 1; i <= 6; i++) {
+    css += ".section h" + i + "{ " + pt + mt + "}\n";
+  }
+  style.innerHTML = "body {" + pt + "padding-bottom: 40px; }\n" + css;
+  document.head.appendChild(style);
+});
+</script>
+
+<!-- tabsets -->
+
+<style type="text/css">
+.tabset-dropdown > .nav-tabs {
+  display: inline-table;
+  max-height: 500px;
+  min-height: 44px;
+  overflow-y: auto;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+}
+
+.tabset-dropdown > .nav-tabs > li.active:before {
+  content: "";
+  font-family: 'Glyphicons Halflings';
+  display: inline-block;
+  padding: 10px;
+  border-right: 1px solid #ddd;
+}
+
+.tabset-dropdown > .nav-tabs.nav-tabs-open > li.active:before {
+  content: "&#xe258;";
+  border: none;
+}
+
+.tabset-dropdown > .nav-tabs.nav-tabs-open:before {
+  content: "";
+  font-family: 'Glyphicons Halflings';
+  display: inline-block;
+  padding: 10px;
+  border-right: 1px solid #ddd;
+}
+
+.tabset-dropdown > .nav-tabs > li.active {
+  display: block;
+}
+
+.tabset-dropdown > .nav-tabs > li > a,
+.tabset-dropdown > .nav-tabs > li > a:focus,
+.tabset-dropdown > .nav-tabs > li > a:hover {
+  border: none;
+  display: inline-block;
+  border-radius: 4px;
+  background-color: transparent;
+}
+
+.tabset-dropdown > .nav-tabs.nav-tabs-open > li {
+  display: block;
+  float: none;
+}
+
+.tabset-dropdown > .nav-tabs > li {
+  display: none;
+}
+</style>
+
+<!-- code folding -->
+
+
+
+
+</head>
+
+<body>
+
+
+<div class="container-fluid main-container">
+
+
+
+
+<div class="navbar navbar-default  navbar-fixed-top" role="navigation">
+  <div class="container">
+    <div class="navbar-header">
+      <button type="button" class="navbar-toggle collapsed" data-toggle="collapse" data-target="#navbar">
+        <span class="icon-bar"></span>
+        <span class="icon-bar"></span>
+        <span class="icon-bar"></span>
+      </button>
+      <a class="navbar-brand" href="index.html">Home</a>
+    </div>
+    <div id="navbar" class="navbar-collapse collapse">
+      <ul class="nav navbar-nav">
+        <li>
+  <a href="index.html">Index</a>
+</li>
+<li>
+  <a href="about.html">About</a>
+</li>
+<li>
+  <a href="https://beeleeballin.shinyapps.io/apuv_map/">Map</a>
+</li>
+      </ul>
+      <ul class="nav navbar-nav navbar-right">
+        <li>
+  <a href="report.html">Report</a>
+</li>
+<li>
+  <a href="mailto:&lt;johsuan.lee@columbia.edu&gt;">
+    <span class="fa fa-envelope fa-lg"></span>
+     
+  </a>
+</li>
+<li>
+  <a href="https://github.com/beeleeballin/p8105-final_project">
+    <span class="fa fa-github fa-lg"></span>
+     
+  </a>
+</li>
+<li>
+  <a href="https://goo.gl/maps/kyKVwUbubgvP3u6s8">
+    <span class="fa fa-map-marker fa-lg"></span>
+     
+  </a>
+</li>
+      </ul>
+    </div><!--/.nav-collapse -->
+  </div><!--/.container -->
+</div><!--/.navbar -->
+
+<div id="header">
+
+
+
+<h1 class="title toc-ignore">merge_outcomes</h1>
+
+</div>
+
+
+<pre class="r"><code>library(tidyverse)</code></pre>
+<pre><code>## ── Attaching packages ─────────────────────────────────────── tidyverse 1.3.1 ──</code></pre>
+<pre><code>## ✓ ggplot2 3.3.5     ✓ purrr   0.3.4
+## ✓ tibble  3.1.4     ✓ dplyr   1.0.7
+## ✓ tidyr   1.1.3     ✓ stringr 1.4.0
+## ✓ readr   2.0.1     ✓ forcats 0.5.1</code></pre>
+<pre><code>## ── Conflicts ────────────────────────────────────────── tidyverse_conflicts() ──
+## x dplyr::filter() masks stats::filter()
+## x dplyr::lag()    masks stats::lag()</code></pre>
+<pre class="r"><code>library(tidyr)
+library(dplyr)</code></pre>
+<div id="combining-state-level-outcome-data" class="section level2">
+<h2>Combining state-level outcome data</h2>
+<p>First, let’s combine lung and skin cancer data at the state level.</p>
+<pre class="r"><code># read in state data for lung and skin cancer
+
+#state level lung cancer data
+state_lc_data = read_csv(&quot;./data/lung/state_lc_data.csv&quot;)</code></pre>
+<pre><code>## Rows: 95 Columns: 4</code></pre>
+<pre><code>## ── Column specification ────────────────────────────────────────────────────────
+## Delimiter: &quot;,&quot;
+## chr (2): state, outcome
+## dbl (2): year, age_adjusted_incidence_rate</code></pre>
+<pre><code>## 
+## ℹ Use `spec()` to retrieve the full column specification for this data.
+## ℹ Specify the column types or set `show_col_types = FALSE` to quiet this message.</code></pre>
+<pre class="r"><code>#state level melanoma data
+state_mel_data = read_csv(&quot;./data/incidence_melanoma_data/state_melanoma_age_adjusted.csv&quot;) %&gt;%
+  rename(c(&quot;outcome&quot; = &quot;cancer_type&quot;))</code></pre>
+<pre><code>## Rows: 95 Columns: 4</code></pre>
+<pre><code>## ── Column specification ────────────────────────────────────────────────────────
+## Delimiter: &quot;,&quot;
+## chr (2): state, cancer_type
+## dbl (2): year, age_adjusted_incidence_rate</code></pre>
+<pre><code>## 
+## ℹ Use `spec()` to retrieve the full column specification for this data.
+## ℹ Specify the column types or set `show_col_types = FALSE` to quiet this message.</code></pre>
+<pre class="r"><code># combine cancer outcome data
+lc_mel_state = bind_rows(state_lc_data, state_mel_data) %&gt;%
+  select(state, year, outcome, age_adjusted_incidence_rate)</code></pre>
+<p>Next, let’s combine asthma data with the cancer data at the state level. First, let’s read in the asthma state-level data.</p>
+<pre class="r"><code>asthma_state &lt;- read_csv(here::here(&quot;data&quot;, &quot;asthma_state.csv&quot;)) %&gt;%
+  rename(age_adjusted_incidence_rate = rate) %&gt;%
+  select(state, year, outcome, age_adjusted_incidence_rate)</code></pre>
+<pre><code>## Rows: 44 Columns: 4</code></pre>
+<pre><code>## ── Column specification ────────────────────────────────────────────────────────
+## Delimiter: &quot;,&quot;
+## chr (2): state, outcome
+## dbl (2): year, rate</code></pre>
+<pre><code>## 
+## ℹ Use `spec()` to retrieve the full column specification for this data.
+## ℹ Specify the column types or set `show_col_types = FALSE` to quiet this message.</code></pre>
+<p>Next, let’s combine the asthma and cancer state-level data.</p>
+<pre class="r"><code># Bind rows of cancer and asthma by state and arrange accordingly
+lc_mel_asthma_state &lt;- bind_rows(lc_mel_state, asthma_state) %&gt;%
+  arrange(state, year, outcome)</code></pre>
+<p>Let’s plot the combined data with year on the x-axis, age-adjusted incidence rate on the y-axis, stratified by state (color) and outcome (facet).</p>
+<pre class="r"><code>lc_mel_asthma_state %&gt;%
+  ggplot(aes(x = year, y = age_adjusted_incidence_rate,
+             color = state)) +
+  geom_line() +
+  facet_wrap(~outcome) +
+  theme_bw() +
+  labs(
+    title = &quot;Age-Adjusted Incidence Rate for each Outcome by State&quot;,
+    x = &quot;Year&quot;,
+    y = &quot;Age-Adjusted Incidence Rate&quot;,
+    color = &quot;State&quot;
+  ) +
+  theme(plot.title = element_text(hjust = 0.5))</code></pre>
+<p><img src="merged_outcomes_files/figure-html/unnamed-chunk-5-1.png" width="672" /></p>
+<p>Lastly, let’s write out the combined data.</p>
+<pre class="r"><code>write_csv(lc_mel_asthma_state, here::here(&quot;data&quot;, &quot;lc_mel_asthma_state.csv&quot;))</code></pre>
+</div>
+<div id="combining-county-level-outcome-data" class="section level2">
+<h2>Combining county-level outcome data</h2>
+<p>First, let’s combine lung and skin cancer data at the county level.</p>
+<pre class="r"><code># read in county data for lung and skin cancer
+
+county_lc = read_csv(&quot;./data/lung/county_lc.csv&quot;)</code></pre>
+<pre><code>## Rows: 217 Columns: 4</code></pre>
+<pre><code>## ── Column specification ────────────────────────────────────────────────────────
+## Delimiter: &quot;,&quot;
+## chr (3): state, county, outcome
+## dbl (1): age_adjusted_incidence_rate</code></pre>
+<pre><code>## 
+## ℹ Use `spec()` to retrieve the full column specification for this data.
+## ℹ Specify the column types or set `show_col_types = FALSE` to quiet this message.</code></pre>
+<pre class="r"><code>county_mel = read_csv(&quot;./data/incidence_melanoma_data/state_county_melanoma_incidence_2014_2018.csv&quot;)</code></pre>
+<pre><code>## Rows: 280 Columns: 4</code></pre>
+<pre><code>## ── Column specification ────────────────────────────────────────────────────────
+## Delimiter: &quot;,&quot;
+## chr (3): state, county, cancer_type
+## dbl (1): age_adjusted_incidence_rate</code></pre>
+<pre><code>## 
+## ℹ Use `spec()` to retrieve the full column specification for this data.
+## ℹ Specify the column types or set `show_col_types = FALSE` to quiet this message.</code></pre>
+<pre class="r"><code>fips_codes = read_csv(&quot;./data/fips_codes.csv&quot;)</code></pre>
+<pre><code>## Rows: 3232 Columns: 3</code></pre>
+<pre><code>## ── Column specification ────────────────────────────────────────────────────────
+## Delimiter: &quot;,&quot;
+## chr (2): Name, State
+## dbl (1): FIPS</code></pre>
+<pre><code>## 
+## ℹ Use `spec()` to retrieve the full column specification for this data.
+## ℹ Specify the column types or set `show_col_types = FALSE` to quiet this message.</code></pre>
+<pre class="r"><code># cleaning to make the data sets compatible
+
+county_mel = county_mel %&gt;%
+  rename(c(&quot;outcome&quot; = &quot;cancer_type&quot;)) %&gt;%
+  drop_na() 
+
+county_mel &lt;- county_mel[!(county_mel$county == &quot;Ohio&quot; | county_mel$county == &quot;Pennsylvania&quot; | 
+     county_mel$county == &quot;New York&quot;), ] %&gt;%
+  filter(!grepl(&#39;SEER&#39;, county))
+
+county_mel$county &lt;- gsub(&quot; County&quot;,&quot;&quot;, county_mel$county)
+
+county_mel$county[county_mel$county == &quot;St Lawrence&quot;] &lt;- &quot;St. Lawrence&quot;
+
+county_lc$county &lt;- gsub(&quot; County&quot;,&quot;&quot;, county_lc$county)
+
+# binding rows
+
+lc_mel_county = bind_rows(county_lc, county_mel) %&gt;%
+  filter(complete.cases(.)) 
+
+
+fips = fips_codes %&gt;%
+    janitor::clean_names() %&gt;%
+    rename(c(&quot;county&quot; = &quot;name&quot;))
+
+lc_mel_county = merge(lc_mel_county, fips, by = c(&quot;state&quot;, &quot;county&quot;))</code></pre>
+<p>Next, we will read in asthma data and combine it with the cancer data.</p>
+<p>First, let’s read in the asthma county data, rename column names and add an additional column for county fips code.</p>
+<pre class="r"><code># Read in asthma data
+# Only get county data for the year 2016 since we need county data at
+# a fixed time point (i.e. not longitudinal)
+# Adjust column names and types in prep for merge
+asthma_county &lt;- read_csv(here::here(&quot;data&quot;, &quot;asthma_county.csv&quot;)) %&gt;%
+  filter(year == 2016) %&gt;%
+  select(-year) %&gt;%
+  rename(age_adjusted_incidence_rate = rate) %&gt;%
+  mutate(age_adjusted_incidence_rate = as.double(age_adjusted_incidence_rate))</code></pre>
+<pre><code>## Rows: 2482 Columns: 5</code></pre>
+<pre><code>## ── Column specification ────────────────────────────────────────────────────────
+## Delimiter: &quot;,&quot;
+## chr (4): state, county, outcome, rate
+## dbl (1): year</code></pre>
+<pre><code>## 
+## ℹ Use `spec()` to retrieve the full column specification for this data.
+## ℹ Specify the column types or set `show_col_types = FALSE` to quiet this message.</code></pre>
+<pre><code>## Warning in mask$eval_all_mutate(quo): NAs introduced by coercion</code></pre>
+<pre class="r"><code>asthma_county &lt;- merge(asthma_county, fips, by = c(&quot;state&quot;, &quot;county&quot;))</code></pre>
+<p>Next, let’s combine the asthma and cancer county data.</p>
+<pre class="r"><code># Bind rows of cancer and asthma by county and arrange accordingly
+lc_mel_asthma_county &lt;- bind_rows(lc_mel_county, asthma_county) %&gt;%
+  arrange(state, county, outcome)</code></pre>
+<p>Lastly, let’s write out the combined data.</p>
+<pre class="r"><code>write_csv(lc_mel_asthma_county, here::here(&quot;data&quot;, &quot;lc_mel_asthma_county.csv&quot;))</code></pre>
+</div>
+
+
+
+
+</div>
+
+<script>
+
+// add bootstrap table styles to pandoc tables
+function bootstrapStylePandocTables() {
+  $('tr.odd').parent('tbody').parent('table').addClass('table table-condensed');
+}
+$(document).ready(function () {
+  bootstrapStylePandocTables();
+});
+
+
+</script>
+
+<!-- tabsets -->
+
+<script>
+$(document).ready(function () {
+  window.buildTabsets("TOC");
+});
+
+$(document).ready(function () {
+  $('.tabset-dropdown > .nav-tabs > li').click(function () {
+    $(this).parent().toggleClass('nav-tabs-open');
+  });
+});
+</script>
+
+<!-- code folding -->
+
+
+<!-- dynamically load mathjax for compatibility with self-contained -->
+<script>
+  (function () {
+    var script = document.createElement("script");
+    script.type = "text/javascript";
+    script.src  = "https://mathjax.rstudio.com/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML";
+    document.getElementsByTagName("head")[0].appendChild(script);
+  })();
+</script>
+
+</body>
+</html>

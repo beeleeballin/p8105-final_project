@@ -9,10 +9,7 @@ output: html_document
 library(tidyverse)
 library(httr)
 library(jsonlite)
-<<<<<<< HEAD
-=======
 library(patchwork)
->>>>>>> 98e71ddd17cb98ebae75c9a60abad23127b2d017
 
 knitr::opts_chunk$set(
 	fig.asp = 0.75,
@@ -41,11 +38,8 @@ Data from Ohio provided in pdf document which was copied over to csv document. T
 
 * Hospitalizations (i.e. inpatient) and ED visits rates for children, adults, and total rates (per 10 000) by county for the year 2016
 * Hospitalizations and ED visits with counts and rates per 10 000 stratified by age group and race by year for 2013-2016:
-<<<<<<< HEAD
   * age group ptions are 0-4, 5-14, 15-34, 35-64, and 65+, and all
-=======
   * age group options are 0-4, 5-14, 15-34, 35-64, and 65+, and all
->>>>>>> 98e71ddd17cb98ebae75c9a60abad23127b2d017
 * Hospitalizations and ED visits by month with counts for children, adults, and total but no rate provided (under `frequency`):
 
 The variables are:
@@ -63,19 +57,11 @@ The variables are:
 
 
 ```{r ohio_data}
-oh_asthma <-
-<<<<<<< HEAD
-  read_csv("./ohio/ohio_all.csv") %>% 
+oh_asthma <- 
+  read_csv("./asthma_data/ohio_all.csv") %>% 
   janitor::clean_names()
 ```
 
-=======
-  read_csv("./data/asthma_data/ohio_all.csv") %>% 
-  janitor::clean_names()
-```
-
-
->>>>>>> 98e71ddd17cb98ebae75c9a60abad23127b2d017
 ### Basic Ohio Visualization
 
 Plotting data over time and looking at (1) overall trends comparing inpatient and ED visits, (2) these same trends with respect to age and race, and (3) how this looks across counties within a given year (2016).
@@ -139,11 +125,7 @@ Data from New York provided as a csv file and uploaded directly
 
 ```{r ny_data}
 ny_asthma <-
-<<<<<<< HEAD
-  read_csv("./ny/NYS_ASTHMA.csv") %>% 
-=======
-  read_csv("./data/asthma_data/NYS_ASTHMA.csv") %>% 
->>>>>>> 98e71ddd17cb98ebae75c9a60abad23127b2d017
+  read_csv("./asthma_data/NYS_ASTHMA.csv") %>% 
   janitor::clean_names()
 
 ```
@@ -175,6 +157,7 @@ ny_asthma %>%
 
 ## Pennsylvania Asthma Data
 
+### Data Introduction
 Data for PA has county level information for hospitalizations due to asthma that was obtained from the Enterprise Data Dissemination Informatics Exchange (EDDIE) as a part of Pennsylvania's Department of Health. Data was compiled separately into one document with the option of either age-adjustment or noting crude/age-specific rates. Data include:
 
 * `rate_adj`: notes if the data is age-adjusted or crude/age-specific rates
@@ -195,26 +178,20 @@ Data for PA has county level information for hospitalizations due to asthma that
 * `significance`: provided for some rates with significance denoted with "+" symbol
 
 Notes for data: 
-<<<<<<< HEAD
+
 * ND = Not displayed if count < 10 for Crude/Age Specific Rates or if count < 20 for Age-Adjusted Rates. 
 * Exported county data contain a + symbol indicating a significantly higher value or a - symbol indicating a significantly lower value compared to Pennsylvania.
 * A note on how these data were obtained: "Hospital discharge counts reflect acute hospital visits, by county of residence, when the patient is admitted. Patients can be counted more than once if they are discharged from a hospital, for the same diagnosis, procedure, or condition during the same year. Hospital discharge coding switched from ICD-9-CM to ICD-10-CM effective October 1, 2015. ICD-10-CM codes offer greater specificity which impacts discharge counts and rates. This transition from ICD-9-CM to ICD-10-CM caused the data for certain categories to require additional processing, or appear to be out of a trend. As a result, it is recommended to re-benchmark using 2016 estimates since comparisons in counts and rates beginning in 2016 should not be compared to prior years."
-=======
 
 * ND = Not displayed if count < 10 for Crude/Age Specific Rates or if count < 20 for Age-Adjusted Rates. 
 * Exported county data contain a + symbol indicating a significantly higher value or a - symbol indicating a significantly lower value compared to Pennsylvania.
 * A note on how these data were obtained: 
   * <i>"Hospital discharge counts reflect acute hospital visits, by county of residence, when the patient is admitted. Patients can be counted more than once if they are discharged from a hospital, for the same diagnosis, procedure, or condition during the same year. Hospital discharge coding switched from ICD-9-CM to ICD-10-CM effective October 1, 2015. ICD-10-CM codes offer greater specificity which impacts discharge counts and rates. This transition from ICD-9-CM to ICD-10-CM caused the data for certain categories to require additional processing, or appear to be out of a trend. As a result, it is recommended to re-benchmark using 2016 estimates since comparisons in counts and rates beginning in 2016 should not be compared to prior years."</i>
->>>>>>> 98e71ddd17cb98ebae75c9a60abad23127b2d017
 
-
+### Obtaining data
 ```{r pa_data}
 pa_asthma <-
-<<<<<<< HEAD
-  read_csv("./pa/pa_asthma_all.csv", col_names = TRUE) %>% 
-=======
-  read_csv("./data/asthma_data/pa_asthma_all.csv", col_names = TRUE) %>% 
->>>>>>> 98e71ddd17cb98ebae75c9a60abad23127b2d017
+  read_csv("./asthma_data/pa_asthma_all.csv", col_names = TRUE) %>% 
   janitor::clean_names()
 ```
 
@@ -262,10 +239,9 @@ pa_asthma %>%
 
 ## Comparing data across states
 
-<<<<<<< HEAD
-=======
+
 ### Maps
->>>>>>> 98e71ddd17cb98ebae75c9a60abad23127b2d017
+
 ```{r map_code, include= FALSE}
 library("maps")
 library("mapproj")
@@ -297,12 +273,7 @@ ggplot(data = us_counties,
 
 ```{r compare_county}
 
-ny_county <-
-=======
-```{r compare_county}
-
 ny_co <-
->>>>>>> 98e71ddd17cb98ebae75c9a60abad23127b2d017
   ny_asthma %>% 
   filter(age_group == "Total", 
          month == "Total",
@@ -319,11 +290,8 @@ ny_co <-
   select(region, county, rate) %>% 
   group_by(county)
 
-<<<<<<< HEAD
-oh_county <- 
-=======
+
 oh_co <- 
->>>>>>> 98e71ddd17cb98ebae75c9a60abad23127b2d017
   oh_asthma %>% 
   filter(geography != "Ohio",
          age_group == "All", 
@@ -333,11 +301,8 @@ oh_co <-
   select(region, county, rate) %>% 
   group_by(county)
 
-<<<<<<< HEAD
-pa_county <- 
-=======
+
 pa_co <- 
->>>>>>> 98e71ddd17cb98ebae75c9a60abad23127b2d017
   pa_asthma %>% 
   filter(geography_code != "0",
          rate_adj == "Age-Adjusted Rate",
@@ -350,11 +315,7 @@ pa_co <-
   group_by(county)
 
 county_2016 <-
-<<<<<<< HEAD
-  bind_rows(oh_county, ny_county, pa_county)
-=======
   bind_rows(oh_co, ny_co, pa_co)
->>>>>>> 98e71ddd17cb98ebae75c9a60abad23127b2d017
 
 us_counties %>% 
   filter(region == "ohio"| 
@@ -399,8 +360,6 @@ us_counties %>%
 
 ```
 
-<<<<<<< HEAD
-=======
 ### Graphs 
 
 Boxplots to contrast states/regions - one boxplot for asthma all years available:
@@ -467,8 +426,6 @@ all_bp + all_line
 ```
 
 
-
-
 ## Merging Data
 
 ```{r merge_state}
@@ -478,12 +435,13 @@ oh_state <-
          month == "All",
          race == "Total",
          sex == "All",
-         geography == "OH",
+         geography == "Ohio",
          visit == "Inpatient",
          frequency > 0) %>% 
-  mutate(rate = rate * 10,
-         outcome = "asthma") %>% 
   rename(state = geography) %>% 
+  mutate(rate = rate * 10,
+         outcome = "asthma",
+         state = "OH") %>% 
   select(year, state, outcome, rate)
 
 pa_state <-
@@ -491,10 +449,11 @@ pa_state <-
   filter(age == "All Ages",
          race == "All Races",
          sex == "Total",
-         geography == "PA",
+         geography_code == "0",
          rate_adj == "Age-Adjusted Rate") %>% 
-  mutate(outcome = "asthma") %>% 
   rename(state = geography) %>% 
+  mutate(outcome = "asthma",
+         state = "PA") %>% 
   select(year, state, outcome, rate)
 
 ny_state <-
@@ -514,7 +473,7 @@ ny_state <-
 
 asthma_state <-
   rbind(ny_state, oh_state, pa_state) %>% 
-  write_csv("./data/asthma_state.csv")
+  write_csv("./asthma_state.csv")
 
 ```
 
@@ -561,7 +520,5 @@ oh_county <-
 
 asthma_county <-
   rbind(ny_county, oh_county, pa_county) %>% 
-  write_csv("./data/asthma_county.csv")
+  write_csv("./asthma_county.csv")
 ```
-
->>>>>>> 98e71ddd17cb98ebae75c9a60abad23127b2d017
