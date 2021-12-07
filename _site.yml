@@ -11,6 +11,8 @@ navbar:
       href: https://beeleeballin.shinyapps.io/apuv_map/
     
   right:
+    - text: "Report"
+      href: report.html
     - icon: fa-envelope fa-lg
       href: mailto:<johsuan.lee@columbia.edu>
     - icon: fa-github fa-lg

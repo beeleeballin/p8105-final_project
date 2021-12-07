@@ -1,3 +1,11 @@
+---
+title: "Climate and Chronic Disease"
+output: 
+  html_document:
+    code_folding: hide
+    toc: true
+    toc_float: true
+---
 # **Our Project**
 
 ## Hello from Kate, Jen, Ben, Jesse, and Brian. 
