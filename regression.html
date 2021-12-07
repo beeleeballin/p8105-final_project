@@ -1,0 +1,559 @@
+<!DOCTYPE html>
+
+<html>
+
+<head>
+
+<meta charset="utf-8" />
+<meta name="generator" content="pandoc" />
+<meta http-equiv="X-UA-Compatible" content="IE=EDGE" />
+
+
+<meta name="author" content="Jesse R. Ames" />
+
+
+<title>Regression Analyses</title>
+
+<script src="site_libs/header-attrs-2.11/header-attrs.js"></script>
+<script src="site_libs/jquery-3.6.0/jquery-3.6.0.min.js"></script>
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<link href="site_libs/bootstrap-3.3.5/css/cerulean.min.css" rel="stylesheet" />
+<script src="site_libs/bootstrap-3.3.5/js/bootstrap.min.js"></script>
+<script src="site_libs/bootstrap-3.3.5/shim/html5shiv.min.js"></script>
+<script src="site_libs/bootstrap-3.3.5/shim/respond.min.js"></script>
+<style>h1 {font-size: 34px;}
+       h1.title {font-size: 38px;}
+       h2 {font-size: 30px;}
+       h3 {font-size: 24px;}
+       h4 {font-size: 18px;}
+       h5 {font-size: 16px;}
+       h6 {font-size: 12px;}
+       code {color: inherit; background-color: rgba(0, 0, 0, 0.04);}
+       pre:not([class]) { background-color: white }</style>
+<script src="site_libs/navigation-1.1/tabsets.js"></script>
+<link href="site_libs/highlightjs-9.12.0/default.css" rel="stylesheet" />
+<script src="site_libs/highlightjs-9.12.0/highlight.js"></script>
+<link href="site_libs/font-awesome-5.1.0/css/all.css" rel="stylesheet" />
+<link href="site_libs/font-awesome-5.1.0/css/v4-shims.css" rel="stylesheet" />
+
+<style type="text/css">
+  code{white-space: pre-wrap;}
+  span.smallcaps{font-variant: small-caps;}
+  span.underline{text-decoration: underline;}
+  div.column{display: inline-block; vertical-align: top; width: 50%;}
+  div.hanging-indent{margin-left: 1.5em; text-indent: -1.5em;}
+  ul.task-list{list-style: none;}
+    </style>
+
+<style type="text/css">code{white-space: pre;}</style>
+<script type="text/javascript">
+if (window.hljs) {
+  hljs.configure({languages: []});
+  hljs.initHighlightingOnLoad();
+  if (document.readyState && document.readyState === "complete") {
+    window.setTimeout(function() { hljs.initHighlighting(); }, 0);
+  }
+}
+</script>
+
+
+
+
+
+
+
+
+<style type = "text/css">
+.main-container {
+  max-width: 940px;
+  margin-left: auto;
+  margin-right: auto;
+}
+img {
+  max-width:100%;
+}
+.tabbed-pane {
+  padding-top: 12px;
+}
+.html-widget {
+  margin-bottom: 20px;
+}
+button.code-folding-btn:focus {
+  outline: none;
+}
+summary {
+  display: list-item;
+}
+pre code {
+  padding: 0;
+}
+</style>
+
+
+<style type="text/css">
+.dropdown-submenu {
+  position: relative;
+}
+.dropdown-submenu>.dropdown-menu {
+  top: 0;
+  left: 100%;
+  margin-top: -6px;
+  margin-left: -1px;
+  border-radius: 0 6px 6px 6px;
+}
+.dropdown-submenu:hover>.dropdown-menu {
+  display: block;
+}
+.dropdown-submenu>a:after {
+  display: block;
+  content: " ";
+  float: right;
+  width: 0;
+  height: 0;
+  border-color: transparent;
+  border-style: solid;
+  border-width: 5px 0 5px 5px;
+  border-left-color: #cccccc;
+  margin-top: 5px;
+  margin-right: -10px;
+}
+.dropdown-submenu:hover>a:after {
+  border-left-color: #adb5bd;
+}
+.dropdown-submenu.pull-left {
+  float: none;
+}
+.dropdown-submenu.pull-left>.dropdown-menu {
+  left: -100%;
+  margin-left: 10px;
+  border-radius: 6px 0 6px 6px;
+}
+</style>
+
+<script type="text/javascript">
+// manage active state of menu based on current page
+$(document).ready(function () {
+  // active menu anchor
+  href = window.location.pathname
+  href = href.substr(href.lastIndexOf('/') + 1)
+  if (href === "")
+    href = "index.html";
+  var menuAnchor = $('a[href="' + href + '"]');
+
+  // mark it active
+  menuAnchor.tab('show');
+
+  // if it's got a parent navbar menu mark it active as well
+  menuAnchor.closest('li.dropdown').addClass('active');
+
+  // Navbar adjustments
+  var navHeight = $(".navbar").first().height() + 15;
+  var style = document.createElement('style');
+  var pt = "padding-top: " + navHeight + "px; ";
+  var mt = "margin-top: -" + navHeight + "px; ";
+  var css = "";
+  // offset scroll position for anchor links (for fixed navbar)
+  for (var i = 1; i <= 6; i++) {
+    css += ".section h" + i + "{ " + pt + mt + "}\n";
+  }
+  style.innerHTML = "body {" + pt + "padding-bottom: 40px; }\n" + css;
+  document.head.appendChild(style);
+});
+</script>
+
+<!-- tabsets -->
+
+<style type="text/css">
+.tabset-dropdown > .nav-tabs {
+  display: inline-table;
+  max-height: 500px;
+  min-height: 44px;
+  overflow-y: auto;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+}
+
+.tabset-dropdown > .nav-tabs > li.active:before {
+  content: "";
+  font-family: 'Glyphicons Halflings';
+  display: inline-block;
+  padding: 10px;
+  border-right: 1px solid #ddd;
+}
+
+.tabset-dropdown > .nav-tabs.nav-tabs-open > li.active:before {
+  content: "&#xe258;";
+  border: none;
+}
+
+.tabset-dropdown > .nav-tabs.nav-tabs-open:before {
+  content: "";
+  font-family: 'Glyphicons Halflings';
+  display: inline-block;
+  padding: 10px;
+  border-right: 1px solid #ddd;
+}
+
+.tabset-dropdown > .nav-tabs > li.active {
+  display: block;
+}
+
+.tabset-dropdown > .nav-tabs > li > a,
+.tabset-dropdown > .nav-tabs > li > a:focus,
+.tabset-dropdown > .nav-tabs > li > a:hover {
+  border: none;
+  display: inline-block;
+  border-radius: 4px;
+  background-color: transparent;
+}
+
+.tabset-dropdown > .nav-tabs.nav-tabs-open > li {
+  display: block;
+  float: none;
+}
+
+.tabset-dropdown > .nav-tabs > li {
+  display: none;
+}
+</style>
+
+<!-- code folding -->
+
+
+
+
+</head>
+
+<body>
+
+
+<div class="container-fluid main-container">
+
+
+
+
+<div class="navbar navbar-default  navbar-fixed-top" role="navigation">
+  <div class="container">
+    <div class="navbar-header">
+      <button type="button" class="navbar-toggle collapsed" data-toggle="collapse" data-target="#navbar">
+        <span class="icon-bar"></span>
+        <span class="icon-bar"></span>
+        <span class="icon-bar"></span>
+      </button>
+      <a class="navbar-brand" href="index.html">Home</a>
+    </div>
+    <div id="navbar" class="navbar-collapse collapse">
+      <ul class="nav navbar-nav">
+        <li>
+  <a href="index.html">Index</a>
+</li>
+<li>
+  <a href="about.html">About</a>
+</li>
+<li>
+  <a href="https://beeleeballin.shinyapps.io/apuv_map/">Map</a>
+</li>
+      </ul>
+      <ul class="nav navbar-nav navbar-right">
+        <li>
+  <a href="mailto:&lt;johsuan.lee@columbia.edu&gt;">
+    <span class="fa fa-envelope fa-lg"></span>
+     
+  </a>
+</li>
+<li>
+  <a href="https://github.com/beeleeballin/p8105-final_project">
+    <span class="fa fa-github fa-lg"></span>
+     
+  </a>
+</li>
+<li>
+  <a href="https://goo.gl/maps/kyKVwUbubgvP3u6s8">
+    <span class="fa fa-map-marker fa-lg"></span>
+     
+  </a>
+</li>
+      </ul>
+    </div><!--/.nav-collapse -->
+  </div><!--/.container -->
+</div><!--/.navbar -->
+
+<div id="header">
+
+
+
+<h1 class="title toc-ignore">Regression Analyses</h1>
+<h4 class="author">Jesse R. Ames</h4>
+<h4 class="date">12/6/2021</h4>
+
+</div>
+
+
+<div id="data" class="section level2">
+<h2>Data</h2>
+<pre class="r"><code>library(tidyverse)</code></pre>
+<pre><code>## -- Attaching packages --------------------------------------- tidyverse 1.3.1 --</code></pre>
+<pre><code>## v ggplot2 3.3.5     v purrr   0.3.4
+## v tibble  3.1.4     v dplyr   1.0.7
+## v tidyr   1.1.3     v stringr 1.4.0
+## v readr   2.0.1     v forcats 0.5.1</code></pre>
+<pre><code>## -- Conflicts ------------------------------------------ tidyverse_conflicts() --
+## x dplyr::filter() masks stats::filter()
+## x dplyr::lag()    masks stats::lag()</code></pre>
+<pre class="r"><code>outcomes_state &lt;- read_csv(&quot;data/lc_mel_asthma_state.csv&quot;)</code></pre>
+<pre><code>## Rows: 210 Columns: 4</code></pre>
+<pre><code>## -- Column specification --------------------------------------------------------
+## Delimiter: &quot;,&quot;
+## chr (2): state, outcome
+## dbl (2): year, age_adjusted_incidence_rate</code></pre>
+<pre><code>## 
+## i Use `spec()` to retrieve the full column specification for this data.
+## i Specify the column types or set `show_col_types = FALSE` to quiet this message.</code></pre>
+<pre class="r"><code>outcomes_county &lt;- read_csv(&quot;data/lc_mel_asthma_county.csv&quot;)</code></pre>
+<pre><code>## Rows: 642 Columns: 5</code></pre>
+<pre><code>## -- Column specification --------------------------------------------------------
+## Delimiter: &quot;,&quot;
+## chr (3): state, county, outcome
+## dbl (2): age_adjusted_incidence_rate, fips</code></pre>
+<pre><code>## 
+## i Use `spec()` to retrieve the full column specification for this data.
+## i Specify the column types or set `show_col_types = FALSE` to quiet this message.</code></pre>
+<pre class="r"><code>ap_uv &lt;- read_csv(&quot;ap/ap_uv/apuv.csv&quot;)</code></pre>
+<pre><code>## Rows: 14912 Columns: 19</code></pre>
+<pre><code>## -- Column specification --------------------------------------------------------
+## Delimiter: &quot;,&quot;
+## chr  (3): county, state, season
+## dbl (16): year, countyfips, pm25_max_pred, pm25_med_pred, pm25_mean_pred, pm...</code></pre>
+<pre><code>## 
+## i Use `spec()` to retrieve the full column specification for this data.
+## i Specify the column types or set `show_col_types = FALSE` to quiet this message.</code></pre>
+<pre class="r"><code>#State-level analysis - fewer predictors
+ap_uv_state_slim &lt;- ap_uv %&gt;%
+  select(-c(countyfips, county,
+            pm25_max_pred, pm25_mean_pred, pm25_pop_pred,
+            o3_max_pred, o3_mean_pred, o3_pop_pred,
+            i310, i305, i380, edr)) %&gt;%
+  group_by(state, year, season) %&gt;%
+  #Take medians across county for each season
+  summarize(across(pm25_med_pred:edd, median)) %&gt;%
+  pivot_wider(names_from = season, values_from = pm25_med_pred:edd)</code></pre>
+<pre><code>## `summarise()` has grouped output by &#39;state&#39;, &#39;year&#39;. You can override using the `.groups` argument.</code></pre>
+<pre class="r"><code>#State-level analysis - more predictors
+ap_uv_state &lt;- ap_uv %&gt;%
+  select(-c(countyfips, county)) %&gt;%
+  group_by(state, year, season) %&gt;%
+  #Take medians across county for each season
+  summarize(across(pm25_max_pred:i380, median)) %&gt;%
+  pivot_wider(names_from = season, values_from = pm25_max_pred:i380)</code></pre>
+<pre><code>## `summarise()` has grouped output by &#39;state&#39;, &#39;year&#39;. You can override using the `.groups` argument.</code></pre>
+<pre class="r"><code>outcomes_wider_state &lt;- outcomes_state %&gt;%
+  pivot_wider(names_from = outcome, values_from = age_adjusted_incidence_rate)
+  
+state_analysis &lt;- left_join(outcomes_wider_state, ap_uv_state_slim)</code></pre>
+<pre><code>## Joining, by = c(&quot;state&quot;, &quot;year&quot;)</code></pre>
+<pre class="r"><code>#Check for correlations
+state_analysis_corr &lt;- state_analysis %&gt;% 
+  select(`lung cancer`:edd_Winter) %&gt;% 
+  do(as.data.frame(cor(., method=&quot;pearson&quot;, use=&quot;pairwise.complete.obs&quot;)))</code></pre>
+</div>
+<div id="lung-cancer" class="section level2">
+<h2>Lung Cancer</h2>
+<div id="exploration" class="section level3">
+<h3>Exploration</h3>
+<pre class="r"><code>state_plot &lt;- state_analysis %&gt;%
+  ggplot(aes(x = year, y = `lung cancer`, group = state, color = state)) +
+  geom_path()
+
+spring_plot &lt;- state_analysis %&gt;%
+  ggplot(aes(x = o3_med_pred_Spring, y = `lung cancer`, group = state, color = state)) +
+  geom_point()
+
+summer_plot &lt;- state_analysis %&gt;%
+  ggplot(aes(x = o3_med_pred_Summer, y = `lung cancer`, group = state, color = state)) +
+  geom_point()
+
+fall_plot &lt;- state_analysis %&gt;%
+  ggplot(aes(x = o3_med_pred_Fall, y = `lung cancer`, group = state, color = state)) +
+  geom_point()
+
+library(patchwork)
+(state_plot + spring_plot) / (summer_plot + fall_plot)</code></pre>
+<pre><code>## Warning: Removed 1 row(s) containing missing values (geom_path).</code></pre>
+<pre><code>## Warning: Removed 48 rows containing missing values (geom_point).
+
+## Warning: Removed 48 rows containing missing values (geom_point).
+
+## Warning: Removed 48 rows containing missing values (geom_point).</code></pre>
+<p><img src="regression_files/figure-html/unnamed-chunk-2-1.png" width="672" /></p>
+</div>
+<div id="model-fit" class="section level3">
+<h3>Model Fit</h3>
+<p>We proceed using the BIC criterion working forwards from 2001 to 2015</p>
+<pre class="r"><code>state_2001_2015 &lt;- state_analysis %&gt;%
+  filter(year %in% 2001:2015) %&gt;%
+  #exclude asthma, lots of missingness
+  select(-asthma)
+
+fit &lt;- lm(`lung cancer` ~ ., data = state_2001_2015)
+step_bic &lt;- step(fit, trace = 0, k = log(nobs(fit)), direction = &quot;backward&quot;)
+summary(step_bic)</code></pre>
+<pre><code>## 
+## Call:
+## lm(formula = `lung cancer` ~ state + year + o3_med_pred_Fall + 
+##     o3_med_pred_Spring + o3_med_pred_Summer + edd_Fall + edd_Spring + 
+##     edd_Summer, data = state_2001_2015)
+## 
+## Residuals:
+##      Min       1Q   Median       3Q      Max 
+## -1.86021 -0.31495  0.07269  0.50707  0.95704 
+## 
+## Coefficients:
+##                      Estimate Std. Error t value Pr(&gt;|t|)    
+## (Intercept)         2.189e+03  1.691e+02  12.940 4.84e-12 ***
+## stateOH             9.401e+00  9.229e-01  10.187 5.38e-10 ***
+## statePA             4.342e+00  5.918e-01   7.337 1.83e-07 ***
+## year               -1.055e+00  8.429e-02 -12.515 9.51e-12 ***
+## o3_med_pred_Fall   -3.092e-01  1.464e-01  -2.111   0.0458 *  
+## o3_med_pred_Spring -2.527e-01  1.196e-01  -2.114   0.0456 *  
+## o3_med_pred_Summer -2.127e-01  9.596e-02  -2.217   0.0368 *  
+## edd_Fall            4.640e-03  1.720e-03   2.699   0.0128 *  
+## edd_Spring          2.132e-03  9.207e-04   2.315   0.0299 *  
+## edd_Summer          3.625e-03  2.160e-03   1.678   0.1068    
+## ---
+## Signif. codes:  0 &#39;***&#39; 0.001 &#39;**&#39; 0.01 &#39;*&#39; 0.05 &#39;.&#39; 0.1 &#39; &#39; 1
+## 
+## Residual standard error: 0.766 on 23 degrees of freedom
+##   (12 observations deleted due to missingness)
+## Multiple R-squared:  0.9842, Adjusted R-squared:  0.978 
+## F-statistic: 158.9 on 9 and 23 DF,  p-value: &lt; 2.2e-16</code></pre>
+<p>Am I reading that right? <span class="math inline">\(R^2\)</span> of 0.98! That sounds too good to be true. Let’s look at some diagnostic plots.</p>
+<pre class="r"><code>lung_fit &lt;- state_2001_2015 %&gt;%
+  modelr::add_residuals(step_bic) %&gt;%
+  modelr::add_predictions(step_bic)
+
+lung_fit %&gt;%
+  ggplot(aes(x = pred, y = resid)) + geom_point() + labs(x = &quot;Predicted value&quot;, y = &quot;Residual&quot;)</code></pre>
+<pre><code>## Warning: Removed 12 rows containing missing values (geom_point).</code></pre>
+<p><img src="regression_files/figure-html/unnamed-chunk-4-1.png" width="672" /></p>
+<p>Residuals appear to have a slight upward curvature overall. What variables are driving this?</p>
+<pre class="r"><code>spring_resid &lt;- lung_fit %&gt;%
+  ggplot(aes(x = o3_med_pred_Spring, y = resid)) + geom_point() + labs(x = &quot;Spring Median O3&quot;,
+                                                          y = &quot;Residual&quot;)
+summer_resid &lt;- lung_fit %&gt;%
+  ggplot(aes(x = o3_med_pred_Summer, y = resid)) + geom_point() + labs(x = &quot;Summer Median O3&quot;, y = &quot;Residual&quot;)
+
+fall_resid &lt;- lung_fit %&gt;%
+  ggplot(aes(x = o3_med_pred_Fall, y = resid)) + geom_point() + labs(x = &quot;Fall Median O3&quot;, y = &quot;Residual&quot;)
+
+state_resid &lt;- lung_fit %&gt;%
+  ggplot(aes(x = state, y = resid)) + geom_violin() + labs(x = &quot;State&quot;, y = &quot;Residual&quot;)
+
+(spring_resid + summer_resid) / (fall_resid + state_resid)</code></pre>
+<pre><code>## Warning: Removed 12 rows containing missing values (geom_point).
+
+## Warning: Removed 12 rows containing missing values (geom_point).
+
+## Warning: Removed 12 rows containing missing values (geom_point).</code></pre>
+<pre><code>## Warning: Removed 12 rows containing non-finite values (stat_ydensity).</code></pre>
+<p><img src="regression_files/figure-html/unnamed-chunk-5-1.png" width="672" /></p>
+<p>Hm…</p>
+<pre class="r"><code>plot(step_bic, which = 2)</code></pre>
+<p><img src="regression_files/figure-html/unnamed-chunk-6-1.png" width="672" /></p>
+<p>Normality assumption doesn’t look so great.</p>
+<pre class="r"><code>plot(step_bic, which = 5)</code></pre>
+<p><img src="regression_files/figure-html/unnamed-chunk-7-1.png" width="672" /></p>
+<p>Datapoint number 28 is a borderline outlier.</p>
+</div>
+<div id="cross-validation" class="section level3">
+<h3>Cross validation</h3>
+<p>What happens if we crossvalidate against simpler models? I suspect we are overfit. We will use leave-one-out cross-validation.</p>
+<pre class="r"><code>library(modelr)
+set.seed(15)
+cv_df &lt;- crossv_loo(state_2001_2015)
+    
+cv_df &lt;- cv_df %&gt;% 
+  mutate(
+    #Ozone only
+    ozone  = map(train, ~lm(`lung cancer` ~ o3_med_pred_Spring + o3_med_pred_Summer +
+                              o3_med_pred_Fall, data = .x)),
+    #Ozone with year and state
+    ozone_state_year  = map(train, ~lm(`lung cancer` ~ o3_med_pred_Spring + o3_med_pred_Summer +
+                                         o3_med_pred_Fall + year + state, data = .x)),
+    #Ozone with year and state with time interactions
+    ozone_state_year2  = map(train, ~lm(`lung cancer` ~ year*(o3_med_pred_Spring +
+                                                              o3_med_pred_Summer +
+                                                              o3_med_pred_Fall) + year + state +
+                                                              year*state, data = .x)),
+    
+    #BIC model
+    bic_fit = map(train, ~lm(`lung cancer` ~ state + year + o3_med_pred_Fall +
+                               o3_med_pred_Spring + o3_med_pred_Summer + edd_Fall + edd_Spring +
+                               edd_Summer, data = .x))) %&gt;% 
+  mutate(
+    rmse_ozone = map2_dbl(ozone, test, ~rmse(model = .x, data = .y)),
+    rmse_ozone_state_year = map2_dbl(ozone_state_year, test, ~rmse(model = .x, data = .y)),
+    rmse_ozone_state_year2 = map2_dbl(ozone_state_year2, test, ~rmse(model = .x, data = .y)),
+    rmse_bic_fit = map2_dbl(bic_fit, test, ~rmse(model = .x, data = .y)))
+
+cv_df %&gt;% 
+  select(starts_with(&quot;rmse&quot;)) %&gt;% 
+  pivot_longer(
+    everything(),
+    names_to = &quot;model&quot;, 
+    values_to = &quot;rmse&quot;,
+    names_prefix = &quot;rmse_&quot;) %&gt;% 
+  mutate(model = fct_inorder(model)) %&gt;% 
+  ggplot(aes(x = model, y = rmse)) + geom_violin() + labs(x = &quot;Model&quot;, y = &quot;RMSE&quot;)</code></pre>
+<pre><code>## Warning: Removed 12 rows containing non-finite values (stat_ydensity).</code></pre>
+<p><img src="regression_files/figure-html/unnamed-chunk-8-1.png" width="672" /></p>
+<p>In retrospect, this model really isn’t appropriate for these data - this is a time series. We should probably include time interaction effects, and maybe use generalized least squares. Also cross-validation with a rolling window is probably better. But still, somehow including EDD makes the model better for some reason??</p>
+</div>
+</div>
+
+
+
+
+</div>
+
+<script>
+
+// add bootstrap table styles to pandoc tables
+function bootstrapStylePandocTables() {
+  $('tr.odd').parent('tbody').parent('table').addClass('table table-condensed');
+}
+$(document).ready(function () {
+  bootstrapStylePandocTables();
+});
+
+
+</script>
+
+<!-- tabsets -->
+
+<script>
+$(document).ready(function () {
+  window.buildTabsets("TOC");
+});
+
+$(document).ready(function () {
+  $('.tabset-dropdown > .nav-tabs > li').click(function () {
+    $(this).parent().toggleClass('nav-tabs-open');
+  });
+});
+</script>
+
+<!-- code folding -->
+
+
+<!-- dynamically load mathjax for compatibility with self-contained -->
+<script>
+  (function () {
+    var script = document.createElement("script");
+    script.type = "text/javascript";
+    script.src  = "https://mathjax.rstudio.com/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML";
+    document.getElementsByTagName("head")[0].appendChild(script);
+  })();
+</script>
+
+</body>
+</html>

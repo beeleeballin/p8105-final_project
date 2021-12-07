@@ -9,6 +9,8 @@ navbar:
       href: about.html
     - text: "Map"
       href: https://beeleeballin.shinyapps.io/apuv_map/
+    - text: "Regression Analyses"
+      href: regression.html
     
   right:
     - icon: fa-envelope fa-lg
