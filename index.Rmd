@@ -1,21 +1,23 @@
 ---
 title: "Climate and Chronic Disease"
-output: 
-  html_document:
-    code_folding: hide
-    toc: true
-    toc_float: true
+output: html_document
 ---
 # **Our Project**
 
-## Hello from Kate, Jen, Ben, Jesse, and Brian. 
+## Hello from . 
 
 We are a team, and we care about climates and diseases. 
 
 ![](https://24.media.tumblr.com/b76b02ba820673795a89bc03ecf9e891/tumblr_n55t88X2e81r1tezoo3_500.gif)
-## About the project
+
+# About the project
 
 ## Overview of Our Website
 
 ## About the Authors
+Kate
+Jen
+Ben
+Jesse
+Brian: MS in Biostatistics. Statistical Genetics Track; BA in Biology and Computer Science from Vassar College. I'm easily excited about data visualization and this is my favorite class this semester. 
 

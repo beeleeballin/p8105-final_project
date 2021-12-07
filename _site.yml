@@ -9,14 +9,16 @@ navbar:
       href: about.html
     - text: "Background Data"
       href: background_data.html
-    - text: "Map"
+    - text: "Data Exploration: Map"
       href: https://beeleeballin.shinyapps.io/apuv_map/
-    - text: "Regression Analyses"
+    - text: "Regression"
       href: regression.html
-    
-  right:
     - text: "Report"
       href: report.html
+    - text: "Climate Data"
+      href: merge_ap_uv.html
+    
+  right:
     - icon: fa-envelope fa-lg
       href: mailto:<johsuan.lee@columbia.edu>
     - icon: fa-github fa-lg

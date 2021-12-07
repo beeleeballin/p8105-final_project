@@ -29,11 +29,7 @@
        h6 {font-size: 12px;}
        code {color: inherit; background-color: rgba(0, 0, 0, 0.04);}
        pre:not([class]) { background-color: white }</style>
-<script src="site_libs/jqueryui-1.11.4/jquery-ui.min.js"></script>
-<link href="site_libs/tocify-1.9.1/jquery.tocify.css" rel="stylesheet" />
-<script src="site_libs/tocify-1.9.1/jquery.tocify.js"></script>
 <script src="site_libs/navigation-1.1/tabsets.js"></script>
-<script src="site_libs/navigation-1.1/codefolding.js"></script>
 <link href="site_libs/highlightjs-9.12.0/default.css" rel="stylesheet" />
 <script src="site_libs/highlightjs-9.12.0/highlight.js"></script>
 <link href="site_libs/font-awesome-5.1.0/css/all.css" rel="stylesheet" />
@@ -221,73 +217,7 @@ $(document).ready(function () {
 </style>
 
 <!-- code folding -->
-<style type="text/css">
-.code-folding-btn { margin-bottom: 4px; }
-</style>
 
-
-
-<style type="text/css">
-
-#TOC {
-  margin: 25px 0px 20px 0px;
-}
-@media (max-width: 768px) {
-#TOC {
-  position: relative;
-  width: 100%;
-}
-}
-
-@media print {
-.toc-content {
-  /* see https://github.com/w3c/csswg-drafts/issues/4434 */
-  float: right;
-}
-}
-
-.toc-content {
-  padding-left: 30px;
-  padding-right: 40px;
-}
-
-div.main-container {
-  max-width: 1200px;
-}
-
-div.tocify {
-  width: 20%;
-  max-width: 260px;
-  max-height: 85%;
-}
-
-@media (min-width: 768px) and (max-width: 991px) {
-  div.tocify {
-    width: 25%;
-  }
-}
-
-@media (max-width: 767px) {
-  div.tocify {
-    width: 100%;
-    max-width: none;
-  }
-}
-
-.tocify ul, .tocify li {
-  line-height: 20px;
-}
-
-.tocify-subheader .tocify-item {
-  font-size: 0.90em;
-}
-
-.tocify .list-group-item {
-  border-radius: 0px;
-}
-
-
-</style>
 
 
 
@@ -297,16 +227,6 @@ div.tocify {
 
 
 <div class="container-fluid main-container">
-
-
-<!-- setup 3col/9col grid for toc_float and main content  -->
-<div class="row">
-<div class="col-xs-12 col-sm-4 col-md-3">
-<div id="TOC" class="tocify">
-</div>
-</div>
-
-<div class="toc-content col-xs-12 col-sm-8 col-md-9">
 
 
 
@@ -333,17 +253,20 @@ div.tocify {
   <a href="background_data.html">Background Data</a>
 </li>
 <li>
-  <a href="https://beeleeballin.shinyapps.io/apuv_map/">Map</a>
+  <a href="https://beeleeballin.shinyapps.io/apuv_map/">Data Exploration: Map</a>
 </li>
 <li>
-  <a href="regression.html">Regression Analyses</a>
+  <a href="regression.html">Regression</a>
+</li>
+<li>
+  <a href="report.html">Report</a>
+</li>
+<li>
+  <a href="merge_ap_uv.html">Climate Data</a>
 </li>
       </ul>
       <ul class="nav navbar-nav navbar-right">
         <li>
-  <a href="report.html">Report</a>
-</li>
-<li>
   <a href="mailto:&lt;johsuan.lee@columbia.edu&gt;">
     <span class="fa fa-envelope fa-lg"></span>
      
@@ -368,14 +291,6 @@ div.tocify {
 
 <div id="header">
 
-<div class="btn-group pull-right float-right">
-<button type="button" class="btn btn-default btn-xs btn-secondary btn-sm dropdown-toggle" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false"><span>Code</span> <span class="caret"></span></button>
-<ul class="dropdown-menu dropdown-menu-right" style="min-width: 50px;">
-<li><a id="rmd-show-all-code" href="#">Show All Code</a></li>
-<li><a id="rmd-hide-all-code" href="#">Hide All Code</a></li>
-</ul>
-</div>
-
 
 
 <h1 class="title toc-ignore">Climate and Chronic Disease</h1>
@@ -385,23 +300,25 @@ div.tocify {
 
 <div id="our-project" class="section level1">
 <h1><strong>Our Project</strong></h1>
-<div id="hello-from-kate-jen-ben-jesse-and-brian." class="section level2">
-<h2>Hello from Kate, Jen, Ben, Jesse, and Brian.</h2>
+<div id="hello-from-." class="section level2">
+<h2>Hello from .</h2>
 <p>We are a team, and we care about climates and diseases.</p>
-<p><img src="https://24.media.tumblr.com/b76b02ba820673795a89bc03ecf9e891/tumblr_n55t88X2e81r1tezoo3_500.gif" /> ## About the project</p>
+<p><img src="https://24.media.tumblr.com/b76b02ba820673795a89bc03ecf9e891/tumblr_n55t88X2e81r1tezoo3_500.gif" /></p>
 </div>
+</div>
+<div id="about-the-project" class="section level1">
+<h1>About the project</h1>
 <div id="overview-of-our-website" class="section level2">
 <h2>Overview of Our Website</h2>
 </div>
 <div id="about-the-authors" class="section level2">
 <h2>About the Authors</h2>
+<p>Kate Jen Ben Jesse Brian: MS in Biostatistics. Statistical Genetics Track; BA in Biology and Computer Science from Vassar College. I’m easily excited about data visualization and this is my favorite class this semester.</p>
 </div>
 </div>
 
 
 
-</div>
-</div>
 
 </div>
 
@@ -433,41 +350,7 @@ $(document).ready(function () {
 </script>
 
 <!-- code folding -->
-<script>
-$(document).ready(function () {
-  window.initializeCodeFolding("hide" === "show");
-});
-</script>
 
-<script>
-$(document).ready(function ()  {
-
-    // temporarily add toc-ignore selector to headers for the consistency with Pandoc
-    $('.unlisted.unnumbered').addClass('toc-ignore')
-
-    // move toc-ignore selectors from section div to header
-    $('div.section.toc-ignore')
-        .removeClass('toc-ignore')
-        .children('h1,h2,h3,h4,h5').addClass('toc-ignore');
-
-    // establish options
-    var options = {
-      selectors: "h1,h2,h3",
-      theme: "bootstrap3",
-      context: '.toc-content',
-      hashGenerator: function (text) {
-        return text.replace(/[.\\/?&!#<>]/g, '').replace(/\s/g, '_');
-      },
-      ignoreSelector: ".toc-ignore",
-      scrollTo: 0
-    };
-    options.showAndHide = true;
-    options.smoothScroll = true;
-
-    // tocify
-    var toc = $("#TOC").tocify(options).data("toc-tocify");
-});
-</script>
 
 <!-- dynamically load mathjax for compatibility with self-contained -->
 <script>

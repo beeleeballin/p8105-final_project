@@ -1,17 +1,18 @@
 ---
-title: "PM2.5, O3, and UV data merge"
-author: "Brian Jo Hsuan Lee"
-date: "12/2/2021"
-output: html_document
+title: "Air Pollution and UV Data Merge"
+output:
+  html_document:
+    code_folding: hide
 ---
 
-```{r}
+Load packages.
+```{r, message=F}
 library(tidyverse)
 library(rvest)
 library(httr)
 ```
 
-Data scraping tool
+Scrape FIPS data and put it in a dataframe. See [USDA County FIPS](https://www.nrcs.usda.gov/wps/portal/nrcs/detail/national/home/?cid=nrcs143_013697).
 ```{r}
 usda_countyfips = read_html("https://www.nrcs.usda.gov/wps/portal/nrcs/detail/national/home/?cid=nrcs143_013697")
 
@@ -37,8 +38,8 @@ countyfips_df =
   )
 ```
 
-Load and clean AP data
-```{r}
+Load and tidy air pollution data. We have daily concentrations of 2 specific pollutants -- inhalable particles termed Particulate Matter, and ozone gas -- at the county level across the states from 2001 to 2016. The dataset has no missing values since the it is partially supported by a credible simulation model. For more information about our dataset and methods, see the relevant [CDC](https://ephtracking.cdc.gov/download) and [EPA](https://19january2017snapshot.epa.gov/air-research/downscaler-model-predicting-daily-air-pollution_.html) sites. 
+```{r, message=F}
 pm_df = 
   read_csv("../final_raw/Daily_PM2.5_Concentrations_All_County__2001-2016.csv") %>% 
   filter(statefips %in% c(36, 39, 23, 42)) %>% 
@@ -60,10 +61,11 @@ oz_df =
     month = factor(month),
     day = factor(day)
   )
+
 ```
 
-Load and clean UV data
-```{r}
+Similar to the air pollution data, we have daily UV measurements at the county level across the states from 2004 to 2015 with occasional missing data. As a result, we ruled out the years populated with missing values for analysis. 
+```{r, message=F}
 uv_df = 
   read_csv("../final_raw/Population-Weighted_Ultraviolet_Irradiance__2004-2015.csv") %>%
   filter(statefips %in% c(36, 39, 23, 42)) %>% 
@@ -76,7 +78,7 @@ uv_df =
   )
 ```
 
-Join 3 datasets and tidy
+Join the air pollution and UV data sensibly, and match the county names using the FIPS dataframe.
 ```{r}
 ap_uv_df = 
   full_join(pm_df, oz_df, by = c("year", "countyfips", "month", "day")) %>% 
@@ -98,8 +100,8 @@ ap_uv_df =
   select(year, month, day, countyfips, county, state, everything())
 ```
 
-Export
-```{r}
+Export the large tidied dataframe whole and its summaries for our project.
+```{r, message=F}
 tidy_df =
   ap_uv_df %>% 
   mutate(
@@ -122,30 +124,21 @@ saveRDS(tidy_df,"ap/apuv_map/apuv.RDS")
 
 extreme_value =
   bind_cols(
-    bind_cols(
-      select(tidy_pm_df, PM2.5)
-    ) %>% 
-    bind_cols(
-      select(tidy_oz_df, O3)
-    ) %>% 
-    bind_cols(
-      select(tidy_uv_df, UV)
-    ) %>%
-    summarize(across(c(PM2.5:UV), max, na.rm =TRUE))
-  ) %>% 
+    tidy_df %>% 
+      select(pm25_med_pred, o3_med_pred, edd)%>%
+      summarize(across(pm25_med_pred:edd, max, na.rm =TRUE))
+  ) %>%
   bind_cols(
-    bind_cols(
-      select(tidy_pm_df, PM2.5)
-    ) %>% 
-    bind_cols(
-      select(tidy_oz_df, O3)
-    ) %>% 
-    bind_cols(
-      select(tidy_uv_df, UV)
-    ) %>% 
-    summarize(across(c(PM2.5:UV), min, na.rm =TRUE))
+    tidy_df %>%
+      select(pm25_med_pred, o3_med_pred, edd) %>%
+      summarize(across(pm25_med_pred:edd, min, na.rm =TRUE))
   )
 
 saveRDS(extreme_value,"ap/apuv_map/ext_val.RDS")
+
+knitr::kable(head(tidy_df, 7),
+             format = "simple", 
+             col.names = str_to_title(names(tidy_df))
+)
 ```
 
