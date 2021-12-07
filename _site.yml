@@ -7,6 +7,8 @@ navbar:
       href: index.html
     - text: "About"
       href: about.html
+    - text: "Background Data"
+      href: background_data.html
     - text: "Map"
       href: https://beeleeballin.shinyapps.io/apuv_map/
     - text: "Regression Analyses"
