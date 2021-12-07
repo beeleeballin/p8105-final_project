@@ -151,6 +151,9 @@ To discuss how climate change has impacted the rate of certain negative health
 outcomes, let's first assess their general prevalence.
 
 
+# Recent County-Level Trends
+
+
 Clearly, according to the map below, lung cancer is a relevant issue in 
 our three states of interest (NY, PA, and OH). They also provide a good
 range of examples, as we can see multiple counties with high age-adjusted 
@@ -166,6 +169,7 @@ county_map_lc
 ```
 
 
+# Recent State Level Trends
 
 We can also check how these rates have changed by state over time:
 
