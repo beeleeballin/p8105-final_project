@@ -1,96 +1,218 @@
-year,age_adjusted_incidence_rate,state
-2018,59.9,PA
-2017,61.6,PA
-2016,63,PA
-2015,63.2,PA
-2014,63.2,PA
-2013,64.3,PA
-2012,63.9,PA
-2011,66,PA
-2010,65.9,PA
-2009,69,PA
-2008,69.8,PA
-2007,70.9,PA
-2006,69.9,PA
-2005,70.3,PA
-2004,68.2,PA
-2003,69.3,PA
-2002,69.9,PA
-2001,70.3,PA
-2000,68.4,PA
-1999,69.5,PA
-1998,70.1,PA
-1997,69.8,PA
-1996,69.4,PA
-1995,68.3,PA
-1994,66,PA
-1993,65.9,PA
-1992,63.4,PA
-1991,64,PA
-1990,62.7,PA
-1996,69.3,OH
-1997,76.9,OH
-1998,79.5,OH
-1999,77.8,OH
-2000,74.4,OH
-2001,77.2,OH
-2002,76.4,OH
-2003,75.2,OH
-2004,76.8,OH
-2005,76.9,OH
-2006,76.7,OH
-2007,74.9,OH
-2008,75,OH
-2009,75.9,OH
-2010,72.8,OH
-2011,72.4,OH
-2012,69.8,OH
-2013,69.3,OH
-2014,69.6,OH
-2015,70.1,OH
-2016,67.2,OH
-2017,65.2,OH
-2018,64.6,OH
-1976,55.1,NY
-1977,55.1,NY
-1978,56.2,NY
-1979,57.7,NY
-1980,59.4,NY
-1981,59,NY
-1982,61.3,NY
-1983,62.4,NY
-1984,62.4,NY
-1985,64,NY
-1986,63.7,NY
-1987,64.8,NY
-1988,65.3,NY
-1989,66.4,NY
-1990,66.5,NY
-1991,67.5,NY
-1992,68.2,NY
-1993,67.4,NY
-1994,68.7,NY
-1995,67.3,NY
-1996,68.3,NY
-1997,68,NY
-1998,68,NY
-1999,66.3,NY
-2000,67.4,NY
-2001,65.4,NY
-2002,65.7,NY
-2003,65,NY
-2004,64.9,NY
-2005,64.8,NY
-2006,65.3,NY
-2007,65.4,NY
-2008,65.5,NY
-2009,64.3,NY
-2010,62.4,NY
-2011,62.7,NY
-2012,61.1,NY
-2013,60.4,NY
-2014,58,NY
-2015,59.3,NY
-2016,57.8,NY
-2017,58.8,NY
-2018,56,NY
+state,county,outcome,age_adjusted_incidence_rate,fips
+NY,Albany,lung cancer,70.2,36001
+NY,Allegany,lung cancer,73.6,36003
+NY,Bronx,lung cancer,46.6,36005
+NY,Broome,lung cancer,63.6,36007
+NY,Cattaraugus,lung cancer,72,36009
+NY,Cayuga,lung cancer,82.6,36011
+NY,Chautauqua,lung cancer,71.7,36013
+NY,Chemung,lung cancer,72.7,36015
+NY,Chenango,lung cancer,73.2,36017
+NY,Clinton,lung cancer,97.8,36019
+NY,Columbia,lung cancer,68.7,36021
+NY,Cortland,lung cancer,84.8,36023
+NY,Delaware,lung cancer,64.1,36025
+NY,Dutchess,lung cancer,59.4,36027
+NY,Erie,lung cancer,71.2,36029
+NY,Essex,lung cancer,66.9,36031
+NY,Franklin,lung cancer,82.3,36033
+NY,Fulton,lung cancer,84.6,36035
+NY,Genesee,lung cancer,73.6,36037
+NY,Greene,lung cancer,79.9,36039
+NY,Hamilton,lung cancer,71.9,36041
+NY,Herkimer,lung cancer,76.5,36043
+NY,Jefferson,lung cancer,93.7,36045
+NY,Kings,lung cancer,45.5,36047
+NY,Lewis,lung cancer,57.7,36049
+NY,Livingston,lung cancer,70.2,36051
+NY,Madison,lung cancer,74.9,36053
+NY,Monroe,lung cancer,62.7,36055
+NY,Montgomery,lung cancer,80,36057
+NY,Nassau,lung cancer,52.8,36059
+NY,New York,lung cancer,45.6,36061
+NY,Niagara,lung cancer,76.8,36063
+NY,Oneida,lung cancer,72.6,36065
+NY,Onondaga,lung cancer,75.6,36067
+NY,Ontario,lung cancer,68,36069
+NY,Orange,lung cancer,62.9,36071
+NY,Orleans,lung cancer,85.8,36073
+NY,Oswego,lung cancer,98.8,36075
+NY,Otsego,lung cancer,55.6,36077
+NY,Putnam,lung cancer,64.4,36079
+NY,Queens,lung cancer,43.2,36081
+NY,Rensselaer,lung cancer,82,36083
+NY,Richmond,lung cancer,65.9,36085
+NY,Rockland,lung cancer,49.2,36087
+NY,Saratoga,lung cancer,71.7,36091
+NY,Schenectady,lung cancer,68.7,36093
+NY,Schoharie,lung cancer,60.9,36095
+NY,Schuyler,lung cancer,80.5,36097
+NY,Seneca,lung cancer,75.5,36099
+NY,St. Lawrence,lung cancer,74.3,36089
+NY,Steuben,lung cancer,70.8,36101
+NY,Suffolk,lung cancer,66.3,36103
+NY,Sullivan,lung cancer,66.1,36105
+NY,Tioga,lung cancer,65.6,36107
+NY,Tompkins,lung cancer,52.2,36109
+NY,Ulster,lung cancer,64.7,36111
+NY,Warren,lung cancer,78.5,36113
+NY,Washington,lung cancer,75.8,36115
+NY,Wayne,lung cancer,74.8,36117
+NY,Westchester,lung cancer,47.1,36119
+NY,Wyoming,lung cancer,69.4,36121
+NY,Yates,lung cancer,66.2,36123
+OH,Adams,lung cancer,98.4,39001
+OH,Allen,lung cancer,69,39003
+OH,Ashland,lung cancer,62.4,39005
+OH,Ashtabula,lung cancer,79.1,39007
+OH,Athens,lung cancer,74.4,39009
+OH,Auglaize,lung cancer,52,39011
+OH,Belmont,lung cancer,68.7,39013
+OH,Brown,lung cancer,96.8,39015
+OH,Butler,lung cancer,69,39017
+OH,Carroll,lung cancer,73.2,39019
+OH,Champaign,lung cancer,71.7,39021
+OH,Clark,lung cancer,83.4,39023
+OH,Clermont,lung cancer,75.4,39025
+OH,Clinton,lung cancer,81.7,39027
+OH,Columbiana,lung cancer,66.6,39029
+OH,Coshocton,lung cancer,68.8,39031
+OH,Crawford,lung cancer,85.6,39033
+OH,Cuyahoga,lung cancer,63.7,39035
+OH,Darke,lung cancer,51.9,39037
+OH,Defiance,lung cancer,68.6,39039
+OH,Delaware,lung cancer,49.6,39041
+OH,Erie,lung cancer,62.8,39043
+OH,Fairfield,lung cancer,62.1,39045
+OH,Fayette,lung cancer,89.3,39047
+OH,Franklin,lung cancer,66,39049
+OH,Fulton,lung cancer,62.6,39051
+OH,Gallia,lung cancer,87.3,39053
+OH,Geauga,lung cancer,49,39055
+OH,Greene,lung cancer,54,39057
+OH,Guernsey,lung cancer,91.1,39059
+OH,Hamilton,lung cancer,70.6,39061
+OH,Hancock,lung cancer,62.6,39063
+OH,Hardin,lung cancer,80.1,39065
+OH,Harrison,lung cancer,51.8,39067
+OH,Henry,lung cancer,65,39069
+OH,Highland,lung cancer,79.1,39071
+OH,Hocking,lung cancer,73,39073
+OH,Holmes,lung cancer,45.7,39075
+OH,Huron,lung cancer,62.1,39077
+OH,Jackson,lung cancer,99.6,39079
+OH,Jefferson,lung cancer,74.8,39081
+OH,Knox,lung cancer,69.3,39083
+OH,Lake,lung cancer,66.3,39085
+OH,Lawrence,lung cancer,92.9,39087
+OH,Licking,lung cancer,78.3,39089
+OH,Logan,lung cancer,77.9,39091
+OH,Lorain,lung cancer,65.8,39093
+OH,Lucas,lung cancer,66.3,39095
+OH,Madison,lung cancer,76.9,39097
+OH,Mahoning,lung cancer,55.8,39099
+OH,Marion,lung cancer,85.4,39101
+OH,Medina,lung cancer,57.4,39103
+OH,Meigs,lung cancer,81.8,39105
+OH,Mercer,lung cancer,53.7,39107
+OH,Miami,lung cancer,60.6,39109
+OH,Monroe,lung cancer,68.7,39111
+OH,Montgomery,lung cancer,70.8,39113
+OH,Morgan,lung cancer,86.9,39115
+OH,Morrow,lung cancer,85.2,39117
+OH,Muskingum,lung cancer,82.3,39119
+OH,Noble,lung cancer,52.4,39121
+OH,Ottawa,lung cancer,60.1,39123
+OH,Paulding,lung cancer,77.9,39125
+OH,Perry,lung cancer,94.4,39127
+OH,Pickaway,lung cancer,87,39129
+OH,Pike,lung cancer,97,39131
+OH,Portage,lung cancer,64,39133
+OH,Preble,lung cancer,90.2,39135
+OH,Putnam,lung cancer,54.3,39137
+OH,Richland,lung cancer,70.6,39139
+OH,Ross,lung cancer,92.3,39141
+OH,Sandusky,lung cancer,65,39143
+OH,Scioto,lung cancer,88.4,39145
+OH,Seneca,lung cancer,63.6,39147
+OH,Shelby,lung cancer,60.2,39149
+OH,Stark,lung cancer,64.9,39151
+OH,Summit,lung cancer,62.4,39153
+OH,Trumbull,lung cancer,71,39155
+OH,Tuscarawas,lung cancer,64.8,39157
+OH,Union,lung cancer,64.9,39159
+OH,Van Wert,lung cancer,54.6,39161
+OH,Vinton,lung cancer,101.1,39163
+OH,Warren,lung cancer,60.5,39165
+OH,Washington,lung cancer,82.3,39167
+OH,Wayne,lung cancer,55.4,39169
+OH,Williams,lung cancer,65.2,39171
+OH,Wood,lung cancer,53.2,39173
+OH,Wyandot,lung cancer,59.9,39175
+PA,Adams,lung cancer,64.1,42001
+PA,Allegheny,lung cancer,67.9,42003
+PA,Armstrong,lung cancer,59.7,42005
+PA,Beaver,lung cancer,69.1,42007
+PA,Bedford,lung cancer,57.3,42009
+PA,Berks,lung cancer,63.5,42011
+PA,Blair,lung cancer,70.2,42013
+PA,Bradford,lung cancer,61,42015
+PA,Bucks,lung cancer,58.6,42017
+PA,Butler,lung cancer,60.5,42019
+PA,Cambria,lung cancer,58,42021
+PA,Cameron,lung cancer,66.5,42023
+PA,Carbon,lung cancer,58,42025
+PA,Centre,lung cancer,45.1,42027
+PA,Chester,lung cancer,51.9,42029
+PA,Clarion,lung cancer,60.5,42031
+PA,Clearfield,lung cancer,61.4,42033
+PA,Clinton,lung cancer,60.4,42035
+PA,Columbia,lung cancer,60.4,42037
+PA,Crawford,lung cancer,69.9,42039
+PA,Cumberland,lung cancer,54.2,42041
+PA,Dauphin,lung cancer,58,42043
+PA,Delaware,lung cancer,66.3,42045
+PA,Elk,lung cancer,63,42047
+PA,Erie,lung cancer,64.3,42049
+PA,Fayette,lung cancer,74.4,42051
+PA,Forest,lung cancer,79.8,42053
+PA,Franklin,lung cancer,60.4,42055
+PA,Fulton,lung cancer,68.6,42057
+PA,Greene,lung cancer,72.9,42059
+PA,Huntingdon,lung cancer,56.7,42061
+PA,Indiana,lung cancer,46.7,42063
+PA,Jefferson,lung cancer,61.6,42065
+PA,Juniata,lung cancer,56.5,42067
+PA,Lackawanna,lung cancer,66.8,42069
+PA,Lancaster,lung cancer,51.1,42071
+PA,Lawrence,lung cancer,71.3,42073
+PA,Lebanon,lung cancer,56.9,42075
+PA,Lehigh,lung cancer,61.8,42077
+PA,Luzerne,lung cancer,70.8,42079
+PA,Lycoming,lung cancer,66.1,42081
+PA,McKean,lung cancer,66.4,42083
+PA,Mercer,lung cancer,59.3,42085
+PA,Mifflin,lung cancer,66.1,42087
+PA,Monroe,lung cancer,67.7,42089
+PA,Montgomery,lung cancer,52.2,42091
+PA,Montour,lung cancer,69.4,42093
+PA,Northampton,lung cancer,61.6,42095
+PA,Northumberland,lung cancer,70.3,42097
+PA,Perry,lung cancer,73.1,42099
+PA,Philadelphia,lung cancer,72.9,42101
+PA,Pike,lung cancer,65.3,42103
+PA,Potter,lung cancer,55.8,42105
+PA,Schuylkill,lung cancer,71,42107
+PA,Snyder,lung cancer,47.4,42109
+PA,Somerset,lung cancer,53.7,42111
+PA,Sullivan,lung cancer,55.1,42113
+PA,Susquehanna,lung cancer,54.8,42115
+PA,Tioga,lung cancer,60.2,42117
+PA,Union,lung cancer,46.1,42119
+PA,Venango,lung cancer,67.6,42121
+PA,Warren,lung cancer,59.4,42123
+PA,Washington,lung cancer,69.9,42125
+PA,Wayne,lung cancer,57.7,42127
+PA,Westmoreland,lung cancer,61.4,42129
+PA,Wyoming,lung cancer,70,42131
+PA,York,lung cancer,65.4,42133

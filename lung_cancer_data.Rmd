@@ -119,9 +119,11 @@ fips_codes = read.csv('./data/fips_codes.csv') %>%
   rename(c("county" = "name"))
 
 
+
 fips_codes$county[fips_codes$county == "St Lawrence"] <- "St. Lawrence"
 
-county_lc <- rbind(pa_county_lc, oh_county_lc, ny_county_lc)
+county_lc <- rbind(pa_county_lc, oh_county_lc, ny_county_lc) %>%
+   mutate(county = (gsub('.{7}$', '', county)))
 
 lc_fips <- merge(county_lc, fips_codes, by = c("state", "county"))
 
@@ -167,6 +169,8 @@ state_lc_wide = state_lc %>%
     values_from = age_adjusted_incidence_rate) %>%
   rename(c("PA_AAIR" = "PA", "NY_AAIR" = "NY", "OH_AAIR" = "OH"))
 
+write_csv(state_lc_wide, "./data/state_lc_wide.csv")
+
 
 
 ```
@@ -209,11 +213,6 @@ fig
 
 
 
-
-
-
-
-
 ```
 
 
@@ -221,41 +220,26 @@ fig
 
 ```{r}
 
-
-ny_ap =
-  read.csv('./data/daily_ap/daily_ny_ap.csv')
-
-oh_ap =
-  read.csv('./data/daily_ap/daily_oh_ap.csv')
-
-pa_ap =
-  read.csv('./data/daily_ap/daily_pa_ap.csv')
-
-annual_aqi =
-  read.csv('./data/annual_aqi.csv')
-
-
-
+apuv = read.csv('./ap/ap_uv/apuv.csv')
 
 average_med_aqi =
-  annual_aqi %>%
+  apuv %>%
   group_by(state, year) %>%
-  summarise_at(vars(median_aqi), list(name = mean))
+  summarise_at(vars(pm25_med_pred), list(avg_med_aqi = mean))
 
-lc_aqi_data <- merge(average_med_aqi, state_lc, by = c("year", "state")) %>%
-  rename(c("avg_med_aqi" = "name"))
+
+lc_aqi_data <- merge(average_med_aqi, state_lc, by = c("year", "state"))
 
 average_med_aqi_wide =
   average_med_aqi %>%
   pivot_wider(
     names_from = state,
-    values_from = name) %>%
+    values_from = avg_med_aqi) %>%
   rename(c("oh_avg_med_aqi" = "OH", "ny_avg_med_aqi" = "NY", "pa_avg_med_aqi" = "PA")) %>%
   subset(select = -c(ME))
 
 
-library(plotly)
-
+write_csv(lc_aqi_data, "./data/lc_aqi_data.csv")
 
 fig1 <- lc_aqi_data %>%
   plot_ly(
@@ -266,9 +250,6 @@ fig1 <- lc_aqi_data %>%
     mode = 'markers',
     showlegend = F
   )
-
-
-
 
 fig1 <- lc_aqi_data %>%
   plot_ly(
@@ -342,7 +323,6 @@ county_map_lc
 
 
 ```
-
 
 
 ```{r}
