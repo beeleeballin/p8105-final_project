@@ -42,6 +42,25 @@ lc_mel_asthma_state <- bind_rows(lc_mel_state, asthma_state) %>%
   arrange(state, year, outcome)
 ```
 
+Let's plot the combined data with year on the x-axis, age-adjusted 
+incidence rate on the y-axis, stratified by state (color) and outcome (facet).
+```{r}
+lc_mel_asthma_state %>%
+  ggplot(aes(x = year, y = age_adjusted_incidence_rate,
+             color = state)) +
+  geom_line() +
+  facet_wrap(~outcome) +
+  theme_bw() +
+  labs(
+    title = "Age-Adjusted Incidence Rate for each Outcome by State",
+    x = "Year",
+    y = "Age-Adjusted Incidence Rate",
+    color = "State"
+  ) +
+  theme(plot.title = element_text(hjust = 0.5))
+```
+
+
 Lastly, let's write out the combined data.
 ```{r}
 write_csv(lc_mel_asthma_state, here::here("data", "lc_mel_asthma_state.csv"))

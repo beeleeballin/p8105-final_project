@@ -13,8 +13,8 @@
 
 <title>merge_outcomes</title>
 
-<script src="site_libs/header-attrs-2.10/header-attrs.js"></script>
-<script src="site_libs/jquery-1.11.3/jquery.min.js"></script>
+<script src="site_libs/header-attrs-2.11/header-attrs.js"></script>
+<script src="site_libs/jquery-3.6.0/jquery-3.6.0.min.js"></script>
 <meta name="viewport" content="width=device-width, initial-scale=1" />
 <link href="site_libs/bootstrap-3.3.5/css/cerulean.min.css" rel="stylesheet" />
 <script src="site_libs/bootstrap-3.3.5/js/bootstrap.min.js"></script>
@@ -345,6 +345,21 @@ lc_mel_state = bind_rows(state_lc_data, state_mel_data) %&gt;%
 <pre class="r"><code># Bind rows of cancer and asthma by state and arrange accordingly
 lc_mel_asthma_state &lt;- bind_rows(lc_mel_state, asthma_state) %&gt;%
   arrange(state, year, outcome)</code></pre>
+<p>Let’s plot the combined data with year on the x-axis, age-adjusted incidence rate on the y-axis, stratified by state (color) and outcome (facet).</p>
+<pre class="r"><code>lc_mel_asthma_state %&gt;%
+  ggplot(aes(x = year, y = age_adjusted_incidence_rate,
+             color = state)) +
+  geom_line() +
+  facet_wrap(~outcome) +
+  theme_bw() +
+  labs(
+    title = &quot;Age-Adjusted Incidence Rate for each Outcome by State&quot;,
+    x = &quot;Year&quot;,
+    y = &quot;Age-Adjusted Incidence Rate&quot;,
+    color = &quot;State&quot;
+  ) +
+  theme(plot.title = element_text(hjust = 0.5))</code></pre>
+<p><img src="merged_outcomes_files/figure-html/unnamed-chunk-5-1.png" width="672" /></p>
 <p>Lastly, let’s write out the combined data.</p>
 <pre class="r"><code>write_csv(lc_mel_asthma_state, here::here(&quot;data&quot;, &quot;lc_mel_asthma_state.csv&quot;))</code></pre>
 </div>
