@@ -94,6 +94,7 @@ ap_uv_df =
     ),
     year = factor(year),
     state = factor(state),
+    state = fct_relevel(state, "ME", "NY", "PA", "OH"),
     countyfips = factor(countyfips),
   ) %>% 
   select(-contains("statefips"), -date) %>% 

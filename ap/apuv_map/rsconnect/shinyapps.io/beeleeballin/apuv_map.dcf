@@ -5,9 +5,9 @@ account: beeleeballin
 server: shinyapps.io
 hostUrl: https://api.shinyapps.io/v1
 appId: 5272649
-bundleId: 5342563
+bundleId: 5343969
 url: https://beeleeballin.shinyapps.io/apuv_map/
-when: 1638912705.36565
-lastSyncTime: 1638912705.36567
+when: 1638942644.97108
+lastSyncTime: 1638942644.9711
 asMultiple: FALSE
 asStatic: FALSE

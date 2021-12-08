@@ -5,6 +5,7 @@ library(leaflet)
 library(htmlwidgets)
 library(tigris)
 library(rsconnect)
+library(ggplot2)
 
 # Load data
 # setwd("/Users/beelee/Desktop/Columbia/Fall_2021/P8105-Data_Science/p8105-final_project/ap/apuv_map/")
@@ -86,26 +87,59 @@ ui = fluidPage(
   
   titlePanel("Annual Air Pollution and UV Radiation Map"),
   
-  sidebarLayout(
-    sidebarPanel(
-      tags$a(href = "https://ephtracking.cdc.gov/download", "Go to Data Source", target = "_blank"),
-      tags$a(href = "https://19january2017snapshot.epa.gov/air-research/downscaler-model-predicting-daily-air-pollution_.html", "Learn about the Downscaler Model", target = "_blank"),
-      # tags$script(type = "text/x-mathjax-config", 'MathJax.Hub.Config({"HTML-CSS": { linebreaks: {automatic: true}},SVG: {linebreaks: {automatic: true}}});'),
-      h5("Some climate conditions and particular chronic disease risks are known to be correlated. Let's explore the Particulate Matter, Ozone, and UV radiation levels over the years in counties in New York, Pennsylvania, and Ohio."),
-      selectInput("yr", "Select a year", choices = unique(apuv_df$year)),
-      selectInput("ss", "Select a season", choices = unique(apuv_df$season))
-      # selectInput("out", "Select a outcome", choices = c("lung", "melanoma", "asthma"))
-    ),
+  fluidRow(
+    column(p("Some climate conditions and particular chronic disease risks are known to be correlated. Let's explore the Particulate Matter, Ozone, and UV radiation levels over the years in counties in New York, Pennsylvania, and Ohio.", strong("ON THE RIGHT"), "Select year and season to explore PM2.5, O3 and UV exposures in every county!",style="text-align:justify;color:black;background-color:lavender;padding:15px;border-radius:10px"), tags$a(href = "https://ephtracking.cdc.gov/download", "Go to Data Source", target = "_blank"), tags$a(href = "https://19january2017snapshot.epa.gov/air-research/downscaler-model-predicting-daily-air-pollution_.html", "Learn about the Downscaler Model", target = "_blank"), style="text-align:center;color:black", width=8),
+    column(selectInput("yr", "Select a year", choices = unique(apuv_df$year)), selectInput("ss", "Select a season", choices = unique(apuv_df$season)), width=4),
     
-    mainPanel(
+    fluidRow(
+      
       tabsetPanel(
-        tabPanel("Particulate Matter (2.5) Level", leafletOutput("pm25")),
-        tabPanel("Ozone Level", leafletOutput("o3")),
-        tabPanel("UV Radiation Level", leafletOutput("edd"))
-        # tabPanel("Outcome", leafletOutput("edd"))
+        tabPanel("Particulate Matter (2.5) Level", 
+                 column(leafletOutput("pm25"), width = 9),
+                 column(plotOutput("box1"), br(), width=3)
+        ),
+        tabPanel("Ozone Level", 
+                 column(leafletOutput("o3"), width = 9),
+                 column(plotOutput("box2"), br(), width=3)
+        ),
+        tabPanel("UV Radiation Level", 
+                 column(leafletOutput("edd"), width = 9),
+                 column(plotOutput("box3"), br(), width=3))
       )
     )
+  
+    # fluidRow(
+    #   column(
+    #     tabsetPanel(
+    #       tabPanel("Particulate Matter (2.5) Level", leafletOutput("pm25")),
+    #       tabPanel("Ozone Level", leafletOutput("o3")),
+    #       tabPanel("UV Radiation Level", leafletOutput("edd"))
+    #     ), width = 9
+    #   ),
+    #   column(plotlyOutput("box"), br(),width=3,style="border:1px solid black")
+    # )
   )
+    
+  # sidebarLayout(
+  #   sidebarPanel(
+  #     tags$a(href = "https://ephtracking.cdc.gov/download", "Go to Data Source", target = "_blank"),
+  #     tags$a(href = "https://19january2017snapshot.epa.gov/air-research/downscaler-model-predicting-daily-air-pollution_.html", "Learn about the Downscaler Model", target = "_blank"),
+  #     # tags$script(type = "text/x-mathjax-config", 'MathJax.Hub.Config({"HTML-CSS": { linebreaks: {automatic: true}},SVG: {linebreaks: {automatic: true}}});'),
+  #     h5("Some climate conditions and particular chronic disease risks are known to be correlated. Let's explore the Particulate Matter, Ozone, and UV radiation levels over the years in counties in New York, Pennsylvania, and Ohio."),
+  #     selectInput("yr", "Select a year", choices = unique(apuv_df$year)),
+  #     selectInput("ss", "Select a season", choices = unique(apuv_df$season))
+  #     # selectInput("out", "Select a outcome", choices = c("lung", "melanoma", "asthma"))
+  #   ),
+  # 
+  #   mainPanel(
+  #     tabsetPanel(
+  #       tabPanel("Particulate Matter (2.5) Level", leafletOutput("pm25")),
+  #       tabPanel("Ozone Level", leafletOutput("o3")),
+  #       tabPanel("UV Radiation Level", leafletOutput("edd"))
+  #       # tabPanel("Outcome", leafletOutput("edd"))
+  #     )
+  #   )
+  # )
 )
 
 server = function(input, output) {
@@ -190,6 +224,51 @@ server = function(input, output) {
                 values = ~edd,
                 title = "Median UV (J/m^2)",
                 opacity = 0.7)
+  })
+  
+  output$box1 = renderPlot({
+    pm_oz_uv() %>% 
+      ggplot(aes(x = factor(state, rev(levels(factor(state)))), y = pm25_med_pred, fill = state)) +
+      geom_violin(draw_quantiles = 0.5) +
+      scale_fill_viridis_d(direction = -1) +
+      labs(
+        y = "PM2.5 Level"
+      ) +
+      theme(
+        plot.title = element_text(hjust = 0.5),
+        axis.title.x = element_blank(),
+        legend.position = "none"
+      )
+  })
+  
+  output$box2 = renderPlot({
+    pm_oz_uv() %>% 
+      ggplot(aes(x = factor(state, rev(levels(factor(state)))), y = o3_med_pred, fill = state)) +
+      geom_violin(draw_quantiles = 0.5) +
+      scale_fill_viridis_d(direction = -1, option = "magma") +
+      labs(
+        y = "O3 Level"
+      ) +
+      theme(
+        plot.title = element_text(hjust = 0.5),
+        axis.title.x = element_blank(),
+        legend.position = "none"
+      )
+  })
+  
+  output$box3 = renderPlot({
+    pm_oz_uv() %>% 
+      ggplot(aes(x = factor(state, rev(levels(factor(state)))), y = edd, fill = state))+
+      geom_violin(draw_quantiles = 0.5) +
+      scale_fill_brewer(palette="BuPu") +
+      labs(
+        y = "UV Level"
+      ) +
+      theme(
+        plot.title = element_text(hjust = 0.5),
+        axis.title.x = element_blank(),
+        legend.position = "none"
+      )
   })
   
 }
