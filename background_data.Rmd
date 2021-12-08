@@ -52,9 +52,10 @@ the skin cancer and lung cancer data is averaged over the years 2014-2018.
 
 Each of these data sets were exported and each imported into R. For each
 of the three health outcomes, the data sets were merged across the three states 
-for the longitudinal data and for the cross-sectional data. This effort resulted in six 
-data sets. The data import and cleaning of the original data can be found in the 
-data import folder on our github repository.
+for the longitudinal data and for the cross-sectional data. This effort resulted 
+in six data sets. The data import and cleaning of the original data can be found 
+in the [data import folder](https://github.com/beeleeballin/p8105-final_project/tree/main/data_import)
+on our github repository.
 
 We will now import the six data sets and merge all longitudinal data together
 and merge all cross-sectional data together to have two data sets.
