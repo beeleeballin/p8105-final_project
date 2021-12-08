@@ -43,7 +43,7 @@ We also obtained age-adjusted incidence rates data for these three health
 outcomes for the U.S. states New York, Ohio and Pennsylvania at the county-level
 at fixed time points. The following bullet points provide links from 
 where we obtained the data. The asthma data is provided for the year 2016 and
-the skin cancer and lunger cancer data is average over the years 2014-2018.
+the skin cancer and lung cancer data is averaged over the years 2014-2018.
 
 *   Asthma
     *   Provide source
@@ -61,7 +61,8 @@ and merge all cross-sectional data together to have two data sets.
 
 ## Combining longitudinal state-level health outcome data
 
-First, let's combine longitudinal lung and skin cancer data at the state level.
+First, let's combine the longitudinal lung and skin cancer data at the state 
+level.
 ```{r warning=FALSE, message=FALSE}
 # read in longitudinal state data for lung and skin cancer
 
@@ -77,18 +78,20 @@ lc_mel_state = bind_rows(state_lc_data, state_mel_data) %>%
   select(state, year, outcome, age_adjusted_incidence_rate)
 ```
 
-Next, let's combine longitudinal asthma data with the longitudinal cancer data 
-at the state level.
+Next, let's combine the longitudinal asthma data with the longitudinal cancer 
+data at the state level.
 
-First, let's read in the longitudinal asthma state-level data.
+We begin by reading in the longitudinal state-level asthma data.
 ```{r warning=FALSE, message=FALSE}
+# Read in longitudinal state-level asthma data
+# Rename and select columns
 asthma_state <- read_csv(here::here("data", "asthma_state.csv")) %>%
   rename(age_adjusted_incidence_rate = rate) %>%
   select(state, year, outcome, age_adjusted_incidence_rate)
 ```
 
-Next, let's combine the longitudinal asthma and longitudinal cancer state-level 
-data.
+Next, we can combine the longitudinal asthma and the longitudinal cancer 
+state-level data.
 ```{r warning=FALSE}
 # Bind rows of longitudinal asthma and longitudinal cancer by state and arrange 
 # accordingly
@@ -104,7 +107,7 @@ write_csv(lc_mel_asthma_state, here::here("data", "lc_mel_asthma_state.csv"))
 ## Combining cross-sectional county-level health outcome data
 
 First, let's combine the cross-sectional lung and skin cancer data at the county 
-level.
+level. We will add a column here for the county FIPS code for mapping purposes.
 ```{r warning=FALSE, message=FALSE}
 # read in cross-sectional county data for lung and skin cancer
 
@@ -134,7 +137,7 @@ county_lc$county <- gsub(" County","", county_lc$county)
 lc_mel_county = bind_rows(county_lc, county_mel) %>%
   filter(complete.cases(.)) 
 
-
+# Add FIPS column to the data
 fips = fips_codes %>%
     janitor::clean_names() %>%
     rename(c("county" = "name"))
@@ -142,10 +145,11 @@ fips = fips_codes %>%
 lc_mel_county = merge(lc_mel_county, fips, by = c("state", "county"))
 ```
 
-Next, we will read in asthma data and combine it with the cancer data. 
+Next, we will read in  the cross-sectional asthma county data and combine it 
+with the cross-sectional cancer data. 
 
-First, let's read in the cross-sectional asthma county data, rename column 
-names and add an additional column for county fips code.
+We begin by reading in the cross-sectional asthma county data, renaming column 
+names and adding a column for county FIPS code.
 ```{r warning=FALSE, message=FALSE}
 # Read in cross-sectional asthma data
 # Only get county data for the year 2016 since we need county data at
@@ -172,7 +176,7 @@ Lastly, let's write out the combined data.
 write_csv(lc_mel_asthma_county, here::here("data", "lc_mel_asthma_county.csv"))
 ```
 
-Now, that we have merged the health outcomes data, we can explore.
+Now, that we have combined the health outcomes data, we can explore.
 ```{r explore, include=FALSE}
 
 url <- 'https://raw.githubusercontent.com/plotly/datasets/master/geojson-counties-fips.json'
@@ -342,7 +346,25 @@ state_mel_plot
 
 ```
 
-
+Let's plot the combined longitudinal state-level health outcomes data with 
+year on the x-axis, age-adjusted incidence rate on the y-axis, stratified by 
+state (color) and outcome (facet). Please note each y-axis has its own scale.
+```{r}
+# Scales = free allows each y-axis to be independent of the others
+lc_mel_asthma_state %>%
+  ggplot(aes(x = year, y = age_adjusted_incidence_rate,
+             color = state)) +
+  geom_line() +
+  facet_wrap(~outcome, scales = "free") +
+  theme_bw() +
+  labs(
+    title = "Age-Adjusted Incidence Rate for each Outcome by State",
+    x = "Year",
+    y = "Age-Adjusted Incidence Rate",
+    color = "State"
+  ) +
+  theme(plot.title = element_text(hjust = 0.5))
+```
 
 
 
