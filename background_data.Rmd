@@ -359,12 +359,71 @@ lc_mel_asthma_state %>%
   facet_wrap(~outcome, scales = "free") +
   theme_bw() +
   labs(
-    title = "Age-Adjusted Incidence Rate for each Outcome by State",
+    title = "Age-Adjusted Incidence Rate for each Health Outcome by State",
     x = "Year",
     y = "Age-Adjusted Incidence Rate",
     color = "State"
   ) +
   theme(plot.title = element_text(hjust = 0.5))
+```
+
+We can define a function to generate maps for a given outcome.
+```{r}
+# Purpose: Generates a map for the given county-level health outcome data, 
+#          outcome and plot title.
+# Arguments: df: The data frame, the county-level health outcome data. 
+#            outcome_var: a character, the health outcome of interest.
+#            plot_title: a character, the plot title.
+# Returns: The plotly map.
+map_by_outcome <- function(df, outcome_var, plot_title) {
+  url <- 'https://raw.githubusercontent.com/plotly/datasets/master/geojson-counties-fips.json'
+  counties <- rjson::fromJSON(file = url)
+
+  df %>%
+    filter(outcome == outcome_var) %>%
+    plot_ly() %>%
+    add_trace(
+      type = "choroplethmapbox",
+      geojson = counties,
+      locations = ~fips,
+      z = ~age_adjusted_incidence_rate,
+      text = ~county,
+      colorscale = "Viridis",
+      reversescale = TRUE,
+      marker = list(line = list(width = 0),
+                    opacity = 0.5)
+      ) %>%
+    colorbar(title = "Age-Adjusted Incidence Rate") %>%
+    layout(
+      title = plot_title,
+      mapbox = list(
+        style = "carto-positron",
+        zoom = 4,
+        center = list(lon = -77.215135, lat = 41.164818)
+        )
+      )
+}
+```
+
+Asthma:
+```{r warning=FALSE}
+map_by_outcome(lc_mel_asthma_county, 
+               "asthma", 
+               "Age-Adjusted Asthma Incidence Rates (2016)")
+```
+
+Melanoma of the skin:
+```{r}
+map_by_outcome(lc_mel_asthma_county, 
+               "melanoma", 
+               "Age-Adjusted Melanoma of the skin Incidence Rates (2014-2018)")
+```
+
+Lung Cancer:
+```{r}
+map_by_outcome(lc_mel_asthma_county, 
+               "lung cancer", 
+               "Age-Adjusted Lung Cancer Incidence Rates (2014-2018)")
 ```
 
 
