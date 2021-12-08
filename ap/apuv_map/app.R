@@ -85,10 +85,10 @@ merged_2015_df = filter_merge(2015)
 # Shiny.app
 ui = fluidPage(
   
-  titlePanel("Annual Air Pollution and UV Radiation Map"),
+  titlePanel("Air Pollution and UV Radiation Exposure Map"),
   
   fluidRow(
-    column(p("Some climate conditions and particular chronic disease risks are known to be correlated. Let's explore the Particulate Matter, Ozone, and UV radiation levels over the years in counties in New York, Pennsylvania, and Ohio.", strong("ON THE RIGHT"), "Select year and season to explore PM2.5, O3 and UV exposures in every county!",style="text-align:justify;color:black;background-color:lavender;padding:15px;border-radius:10px"), tags$a(href = "https://ephtracking.cdc.gov/download", "Go to Data Source", target = "_blank"), tags$a(href = "https://19january2017snapshot.epa.gov/air-research/downscaler-model-predicting-daily-air-pollution_.html", "Learn about the Downscaler Model", target = "_blank"), style="text-align:center;color:black", width=8),
+    column(p("Some climate conditions and particular chronic disease risks are known to be correlated. Let's explore the Particulate Matter, Ozone, and UV radiation levels over the years in counties in New York, Pennsylvania, and Ohio.", strong("ON THE RIGHT"), ", select year and season to these climate exposures in every county!",style="text-align:justify;color:black;background-color:lavender;padding:15px;border-radius:10px"), tags$a(href = "https://ephtracking.cdc.gov/download", "Go to Data Source", target = "_blank"), tags$a(href = "https://19january2017snapshot.epa.gov/air-research/downscaler-model-predicting-daily-air-pollution_.html", "Learn about the Downscaler Model", target = "_blank"), style="text-align:center;color:black", width=8),
     column(selectInput("yr", "Select a year", choices = unique(apuv_df$year)), selectInput("ss", "Select a season", choices = unique(apuv_df$season)), width=4),
     
     fluidRow(
@@ -153,7 +153,8 @@ server = function(input, output) {
   
   output$pm25 = renderLeaflet({
     pal = colorBin(palette = "viridis", bins = 9, domain = c(as.numeric(ext_val[4]), as.numeric(ext_val[1])), reverse = T)
-    labels = sprintf("<strong>%s, %s</strong><br/>Mean: %g ug/m^3<br/>Max: %g ug/m^3", pm_oz_uv()$county, pm_oz_uv()$state, pm_oz_uv()$pm25_pop_pred, pm_oz_uv()$pm25_max_pred) %>% lapply(htmltools::HTML)
+    # labels = sprintf("<strong>%s, %s</strong><br/>Mean: %g ug/m^3<br/>Max: %g ug/m^3", pm_oz_uv()$county, pm_oz_uv()$state, pm_oz_uv()$pm25_pop_pred, pm_oz_uv()$pm25_max_pred) %>% lapply(htmltools::HTML)
+    labels = sprintf("<strong>%s, %s</strong><br/>%g \u00b5g/m\u00b3", pm_oz_uv()$county, pm_oz_uv()$state, pm_oz_uv()$pm25_pop_pred) %>% lapply(htmltools::HTML)
     pm_oz_uv() %>% 
       leaflet() %>% 
       addProviderTiles(provider = "Stamen.Toner") %>% 
@@ -172,13 +173,14 @@ server = function(input, output) {
       addLegend("bottomright",
                 pal = pal,
                 values = ~pm25_pop_pred,
-                title = "Median PM 2.5 (ug/m^3)",
+                title = "Concentration (\u00b5g/m\u00b3)",
                 opacity = 0.7)
   })
   
   output$o3 = renderLeaflet({
     pal = colorBin(palette = "inferno", bins = 9, domain = c(as.numeric(ext_val[5]),as.numeric(ext_val[2])), reverse = T)
-    labels = sprintf("<strong>%s, %s</strong><br/>Mean: %g ppm<br/>Max: %g ppm", pm_oz_uv()$county, pm_oz_uv()$state, pm_oz_uv()$o3_pop_pred, pm_oz_uv()$o3_max_pred) %>% lapply(htmltools::HTML)
+    # labels = sprintf("<strong>%s, %s</strong><br/>Mean: %g ppm<br/>Max: %g ppm", pm_oz_uv()$county, pm_oz_uv()$state, pm_oz_uv()$o3_pop_pred, pm_oz_uv()$o3_max_pred) %>% lapply(htmltools::HTML)
+    labels = sprintf("<strong>%s, %s</strong><br/> %g ppm", pm_oz_uv()$county, pm_oz_uv()$state, pm_oz_uv()$o3_pop_pred) %>% lapply(htmltools::HTML)
     pm_oz_uv() %>% 
       leaflet() %>% 
       addProviderTiles(provider = "Stamen.Toner") %>% 
@@ -197,13 +199,14 @@ server = function(input, output) {
       addLegend("bottomright",
                 pal = pal,
                 values = ~o3_pop_pred,
-                title = "Median O3 (ppm)",
+                title = "Concentration (ppm)",
                 opacity = 0.7)
   })
   
   output$edd = renderLeaflet({
     pal = colorBin(palette = "BuPu", bins = 9, domain = c(as.numeric(ext_val[6]),as.numeric(ext_val[3])))
-    labels = sprintf("<strong>%s, %s</strong><br/>edd: %g J/m^2 <br/>edr: %g J/m^2", pm_oz_uv()$county, pm_oz_uv()$state, pm_oz_uv()$edd, pm_oz_uv()$edr) %>% lapply(htmltools::HTML)
+    # labels = sprintf("<strong>%s, %s</strong><br/>edd: %g J/m^2 <br/>edr: %g J/m^2", pm_oz_uv()$county, pm_oz_uv()$state, pm_oz_uv()$edd, pm_oz_uv()$edr) %>% lapply(htmltools::HTML)
+    labels = sprintf("<strong>%s, %s</strong><br/> %g J/m\u00b2", pm_oz_uv()$county, pm_oz_uv()$state, pm_oz_uv()$edd) %>% lapply(htmltools::HTML)
     pm_oz_uv() %>% 
       leaflet() %>% 
       addProviderTiles(provider = "Stamen.Toner") %>% 
@@ -222,17 +225,19 @@ server = function(input, output) {
       addLegend("bottomright",
                 pal = pal,
                 values = ~edd,
-                title = "Median UV (J/m^2)",
+                title = "Intensity (J/m\u00b2)",
                 opacity = 0.7)
   })
   
   output$box1 = renderPlot({
     pm_oz_uv() %>% 
       ggplot(aes(x = factor(state, rev(levels(factor(state)))), y = pm25_med_pred, fill = state)) +
-      geom_violin(draw_quantiles = 0.5) +
+      geom_violin(color = "#5240f1", draw_quantiles = 0.5) +
+      theme_minimal() +
       scale_fill_viridis_d(direction = -1) +
       labs(
-        y = "PM2.5 Level"
+        title = "County PM Level Distribution by State",
+        y = bquote(PM[.(2.5)] * " (" * mu * "g/" * m^3 * ")")
       ) +
       theme(
         plot.title = element_text(hjust = 0.5),
@@ -244,10 +249,12 @@ server = function(input, output) {
   output$box2 = renderPlot({
     pm_oz_uv() %>% 
       ggplot(aes(x = factor(state, rev(levels(factor(state)))), y = o3_med_pred, fill = state)) +
-      geom_violin(draw_quantiles = 0.5) +
+      geom_violin(color = "#f17b12", draw_quantiles = 0.5) +
+      theme_minimal() +
       scale_fill_viridis_d(direction = -1, option = "magma") +
       labs(
-        y = "O3 Level"
+        title = "County Ozone Level Distribution by State",
+        y = bquote(O[.(3)] * " (ppm)")
       ) +
       theme(
         plot.title = element_text(hjust = 0.5),
@@ -259,10 +266,12 @@ server = function(input, output) {
   output$box3 = renderPlot({
     pm_oz_uv() %>% 
       ggplot(aes(x = factor(state, rev(levels(factor(state)))), y = edd, fill = state))+
-      geom_violin(draw_quantiles = 0.5) +
+      geom_violin(color = "#3d0071", draw_quantiles = 0.5) +
+      theme_minimal() +
       scale_fill_brewer(palette="BuPu") +
       labs(
-        y = "UV Level"
+        title = "County UV Level Distribution by State",
+        y = bquote("UV (J/" * m^2 *")")
       ) +
       theme(
         plot.title = element_text(hjust = 0.5),
