@@ -1,0 +1,175 @@
+---
+title: "Regression Analysis, Part 1"
+author: "Jesse R. Ames"
+date: "12/6/2021"
+output: github_document
+---
+
+## Data
+
+```{r}
+library(tidyverse)
+
+outcomes_state <- read_csv("data/lc_mel_asthma_state.csv")
+outcomes_county <- read_csv("data/lc_mel_asthma_county.csv")
+ap_uv <- read_csv("ap/ap_uv/apuv.csv")
+
+#State-level analysis - fewer predictors
+ap_uv_state_slim <- ap_uv %>%
+  select(-c(countyfips, county,
+            pm25_max_pred, pm25_mean_pred, pm25_pop_pred,
+            o3_max_pred, o3_mean_pred, o3_pop_pred,
+            i310, i305, i380, edr)) %>%
+  group_by(state, year, season) %>%
+  #Take medians across county for each season
+  summarize(across(pm25_med_pred:edd, median)) %>%
+  pivot_wider(names_from = season, values_from = pm25_med_pred:edd)
+
+#State-level analysis - more predictors
+ap_uv_state <- ap_uv %>%
+  select(-c(countyfips, county)) %>%
+  group_by(state, year, season) %>%
+  #Take medians across county for each season
+  summarize(across(pm25_max_pred:i380, median)) %>%
+  pivot_wider(names_from = season, values_from = pm25_max_pred:i380)
+
+outcomes_wider_state <- outcomes_state %>%
+  pivot_wider(names_from = outcome, values_from = age_adjusted_incidence_rate)
+  
+state_analysis <- left_join(outcomes_wider_state, ap_uv_state_slim)
+
+#Check for correlations
+state_analysis_corr <- state_analysis %>% 
+  select(`lung cancer`:edd_Winter) %>% 
+  do(as.data.frame(cor(., method="pearson", use="pairwise.complete.obs")))
+```
+
+## Lung Cancer
+
+### Exploration
+
+```{r}
+state_plot <- state_analysis %>%
+  ggplot(aes(x = year, y = `lung cancer`, group = state, color = state)) +
+  geom_path()
+
+spring_plot <- state_analysis %>%
+  ggplot(aes(x = o3_med_pred_Spring, y = `lung cancer`, group = state, color = state)) +
+  geom_point()
+
+summer_plot <- state_analysis %>%
+  ggplot(aes(x = o3_med_pred_Summer, y = `lung cancer`, group = state, color = state)) +
+  geom_point()
+
+fall_plot <- state_analysis %>%
+  ggplot(aes(x = o3_med_pred_Fall, y = `lung cancer`, group = state, color = state)) +
+  geom_point()
+
+library(patchwork)
+(state_plot + spring_plot) / (summer_plot + fall_plot)
+```
+
+
+### Model Fit
+
+We proceed using the BIC criterion working forwards from 2001 to 2015
+
+```{r}
+state_2001_2015 <- state_analysis %>%
+  filter(year %in% 2001:2015) %>%
+  #exclude asthma, lots of missingness
+  select(-asthma)
+
+fit <- lm(`lung cancer` ~ ., data = state_2001_2015)
+step_bic <- step(fit, trace = 0, k = log(nobs(fit)), direction = "backward")
+summary(step_bic)
+```
+
+Am I reading that right? $R^2$ of 0.98! That sounds too good to be true. Let's look at some diagnostic plots.
+
+```{r}
+lung_fit <- state_2001_2015 %>%
+  modelr::add_residuals(step_bic) %>%
+  modelr::add_predictions(step_bic)
+
+lung_fit %>%
+  ggplot(aes(x = pred, y = resid)) + geom_point() + labs(x = "Predicted value", y = "Residual")
+```
+
+Residuals appear to have a slight upward curvature overall. What variables are driving this?
+```{r}
+spring_resid <- lung_fit %>%
+  ggplot(aes(x = o3_med_pred_Spring, y = resid)) + geom_point() + labs(x = "Spring Median O3",
+                                                          y = "Residual")
+summer_resid <- lung_fit %>%
+  ggplot(aes(x = o3_med_pred_Summer, y = resid)) + geom_point() + labs(x = "Summer Median O3", y = "Residual")
+
+fall_resid <- lung_fit %>%
+  ggplot(aes(x = o3_med_pred_Fall, y = resid)) + geom_point() + labs(x = "Fall Median O3", y = "Residual")
+
+state_resid <- lung_fit %>%
+  ggplot(aes(x = state, y = resid)) + geom_violin() + labs(x = "State", y = "Residual")
+
+(spring_resid + summer_resid) / (fall_resid + state_resid)
+```
+
+Hm...
+
+```{r}
+plot(step_bic, which = 2)
+```
+
+Normality assumption doesn't look so great.
+
+```{r}
+plot(step_bic, which = 5)
+```
+
+Datapoint number 28 is a borderline outlier.
+
+### Cross validation
+
+What happens if we crossvalidate against simpler models? I suspect we are overfit. We will use leave-one-out cross-validation.
+
+```{r}
+library(modelr)
+set.seed(15)
+cv_df <- crossv_loo(state_2001_2015)
+    
+cv_df <- cv_df %>% 
+  mutate(
+    #Ozone only
+    ozone  = map(train, ~lm(`lung cancer` ~ o3_med_pred_Spring + o3_med_pred_Summer +
+                              o3_med_pred_Fall, data = .x)),
+    #Ozone with year and state
+    ozone_state_year  = map(train, ~lm(`lung cancer` ~ o3_med_pred_Spring + o3_med_pred_Summer +
+                                         o3_med_pred_Fall + year + state, data = .x)),
+    #Ozone with year and state with time interactions
+    ozone_state_year2  = map(train, ~lm(`lung cancer` ~ year*(o3_med_pred_Spring +
+                                                              o3_med_pred_Summer +
+                                                              o3_med_pred_Fall) + year + state +
+                                                              year*state, data = .x)),
+    
+    #BIC model
+    bic_fit = map(train, ~lm(`lung cancer` ~ state + year + o3_med_pred_Fall +
+                               o3_med_pred_Spring + o3_med_pred_Summer + edd_Fall + edd_Spring +
+                               edd_Summer, data = .x))) %>% 
+  mutate(
+    rmse_ozone = map2_dbl(ozone, test, ~rmse(model = .x, data = .y)),
+    rmse_ozone_state_year = map2_dbl(ozone_state_year, test, ~rmse(model = .x, data = .y)),
+    rmse_ozone_state_year2 = map2_dbl(ozone_state_year2, test, ~rmse(model = .x, data = .y)),
+    rmse_bic_fit = map2_dbl(bic_fit, test, ~rmse(model = .x, data = .y)))
+
+cv_df %>% 
+  select(starts_with("rmse")) %>% 
+  pivot_longer(
+    everything(),
+    names_to = "model", 
+    values_to = "rmse",
+    names_prefix = "rmse_") %>% 
+  mutate(model = fct_inorder(model)) %>% 
+  ggplot(aes(x = model, y = rmse)) + geom_violin() + labs(x = "Model", y = "RMSE")
+```
+
+In retrospect, this model really isn't appropriate for these data - this is a time series. We should probably include time interaction effects, and maybe use generalized least squares. Also cross-validation with a rolling window is probably better. But still, somehow including EDD makes the model better for some reason??
+

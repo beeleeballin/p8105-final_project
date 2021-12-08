@@ -1,0 +1,192 @@
+---
+title: "Looking at the numbers"
+output: 
+  html_document:
+    toc: true
+    toc_float: true
+    code_folding: hide
+---
+
+```{r setup, include=FALSE}
+
+library(tidyverse)
+library(dplyr)
+library(usmap)
+library(ggplot2)
+library(maps)
+library(mapdata)
+library(plotly)
+library(rjson)
+
+url <- 'https://raw.githubusercontent.com/plotly/datasets/master/geojson-counties-fips.json'
+counties <- rjson::fromJSON(file = url)
+
+
+state_lc_wide = read_csv("./data/state_lc_wide.csv")
+
+# plotly of county level data
+
+fig <- plot_ly(state_lc_wide, x = ~year)
+fig <- fig %>% add_lines(y = ~PA_AAIR, name = "Pennsylvania")
+fig <- fig %>% add_lines(y = ~NY_AAIR, name = "New York")
+fig <- fig %>% add_lines(y = ~OH_AAIR, name = "Ohio")
+fig <- fig %>% layout(
+    title = "Lung Cancer Age-Adjusted Incidence Rates",
+    xaxis = list(
+      rangeselector = list(
+        buttons = list(
+          list(
+            count = 1,
+            label = "1 yr",
+            step = "year",
+            stepmode = "backward"),
+          list(
+            count = 5,
+            label = "5 yr",
+            step = "year",
+            stepmode = "backward"),
+          list(
+            count = 10,
+            label = "10 yr",
+            step = "year",
+            stepmode = "backward"),
+          list(step = "all"))),
+
+      rangeslider = list(type = "year")),
+
+    yaxis = list(title = "Age-Adjusted Incidence Rate (per 100,000"))
+
+fig
+
+lc_aqi_data = read_csv("./data/lc_aqi_data.csv")
+
+fig1 <- lc_aqi_data %>%
+  plot_ly(
+    x = ~age_adjusted_incidence,
+    y = ~y,
+    frame = ~f,
+    type = 'scatter',
+    mode = 'markers',
+    showlegend = F
+  )
+
+fig1 <- lc_aqi_data %>%
+  plot_ly(
+    x = ~avg_med_aqi, 
+    y = ~age_adjusted_incidence_rate, 
+    color = ~state, 
+    frame = ~year, 
+    text = ~state, 
+    hoverinfo = "text",
+    type = 'scatter',
+    mode = 'markers'
+  )
+fig1 <- fig1 %>% layout(
+  title = "Lung Cancer AAIR and Average Median AQI",
+    xaxis = list(title = "Average Median AQI", 
+      type = "log"
+    ),
+    yaxis = list(title = "Age Adjusted Incidence Rate")
+  )
+
+
+fig1
+
+lc_fips = read_csv("./data/lung/lc_fips.csv")
+
+
+county_map_lc <- plot_ly()
+county_map_lc <- county_map_lc %>%
+  add_trace(
+    type = "choroplethmapbox",
+    geojson = counties,
+    locations = lc_fips$fips,
+    z = lc_fips$age_adjusted_incidence_rate,
+    text = lc_fips$county,
+    colorscale = "Viridis",
+    reversescale = TRUE,
+    marker = list(line = list(
+      width = 0),
+      opacity = 0.5)
+    )
+county_map_lc <- county_map_lc %>%
+  layout(
+    title = "Age-Adjusted Lung Cancer Incidence Rates (2014-2018)",
+    mapbox = list(
+      style = "carto-positron",
+      zoom = 4,
+      center = list(lon = -77.215135, lat = 41.164818)
+    )
+  )
+
+
+county_map_lc
+
+
+state_melanoma_age_adjusted = read_csv("./data/incidence_melanoma_data/state_melanoma_age_adjusted.csv")
+
+state_mel_plot = state_melanoma_age_adjusted %>%
+  ggplot(aes(x = year, y = age_adjusted_incidence_rate, color = state)) +
+  geom_line() +
+  labs(
+    title = "Age-adjusted incidence rate of Melanoma by Year colored by State",
+    x = "Year",
+    y = "Age-adjusted incidence rate of Melanoma", 
+    color = "State"
+  ) +
+  scale_x_continuous(breaks = seq(1976, 2018, by = 4)) +
+  theme_bw() +
+  theme(plot.title = element_text(hjust = 0.5))
+
+
+
+```
+
+
+
+## Let's talk health outcomes:
+
+To discuss how climate change has impacted the rate of certain negative health
+outcomes, let's first assess their general prevalence.
+
+
+# Recent County-Level Trends
+
+
+Clearly, according to the map below, lung cancer is a relevant issue in 
+our three states of interest (NY, PA, and OH). They also provide a good
+range of examples, as we can see multiple counties with high age-adjusted 
+incidence rates in Ohio, a few in New York, and virtually none in Pennsylvania.
+
+
+```{r}
+
+# plotly of county level data
+
+county_map_lc
+
+```
+
+
+# Recent State Level Trends
+
+We can also check how these rates have changed by state over time:
+
+
+
+```{r}
+
+# plotly of county level data
+
+fig
+
+state_mel_plot
+
+
+```
+
+
+
+
+
+

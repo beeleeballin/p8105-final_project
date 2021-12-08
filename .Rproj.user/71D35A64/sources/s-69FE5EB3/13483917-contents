@@ -1,0 +1,186 @@
+---
+title: "Brian Edited - Looking at the numbers"
+output: 
+  html_document:
+    toc: true
+    toc_float: true
+    code_folding: hide
+---
+
+```{r, include=FALSE}
+library(tidyverse)
+library(plotly)
+library(rjson)
+library(tigris)
+library(leaflet)
+library(htmlwidgets)
+```
+
+
+```{r, include=FALSE}
+url <- 'https://raw.githubusercontent.com/plotly/datasets/master/geojson-counties-fips.json'
+counties <- rjson::fromJSON(file = url)
+
+state_lc_wide = read_csv("./data/state_lc_wide.csv")
+
+lc_plot =
+  plot_ly(state_lc_wide, x = ~year) %>% 
+  add_lines(y = ~NY_AAIR, name = "New York") %>% 
+  add_lines(y = ~PA_AAIR, name = "Pennsylvania") %>% 
+  add_lines(y = ~OH_AAIR, name = "Ohio") %>% 
+  layout(
+    title = "Age-Adjusted Lung Cancer Incidence Rates",
+    xaxis = list(
+      rangeselector = list(
+        buttons = list(
+          list(
+            count = 1,
+            label = "1 yr",
+            step = "year",
+            stepmode = "backward"),
+          list(
+            count = 5,
+            label = "5 yr",
+            step = "year",
+            stepmode = "backward"),
+          list(
+            count = 10,
+            label = "10 yr",
+            step = "year",
+            stepmode = "backward"),
+          list(step = "all"))),
+      rangeslider = list(type = "year")),
+    yaxis = list(title = "Age-Adjusted Incidence Rate (per 100,000"))
+
+state_melanoma_age_adjusted = read_csv("./data/incidence_melanoma_data/state_melanoma_age_adjusted.csv")
+
+mel_plot = 
+  state_melanoma_age_adjusted %>%
+  pivot_wider(
+    names_from = state,
+    values_from = age_adjusted_incidence_rate
+  ) %>% 
+  plot_ly(x = ~year) %>% 
+  add_lines(y = ~NY, name = "New York") %>% 
+  add_lines(y = ~PA, name = "Pennsylvania") %>% 
+  add_lines(y = ~OH, name = "Ohio") %>% 
+  layout(
+    title = "Age-Adjusted Melanoma Incidence Rates",
+    xaxis = list(
+      rangeselector = list(
+        buttons = list(
+          list(
+            count = 1,
+            label = "1 yr",
+            step = "year",
+            stepmode = "backward"),
+          list(
+            count = 5,
+            label = "5 yr",
+            step = "year",
+            stepmode = "backward"),
+          list(
+            count = 10,
+            label = "10 yr",
+            step = "year",
+            stepmode = "backward"),
+          list(step = "all"))),
+      rangeslider = list(type = "year")),
+    yaxis = list(title = "Incidence Rate (per ?)"))
+
+lc_aqi_data = read_csv("./data/lc_aqi_data.csv")
+
+lc_ap_plot =
+  lc_aqi_data %>%
+  plot_ly(
+    x = ~avg_med_aqi, 
+    y = ~age_adjusted_incidence_rate, 
+    color = ~state, 
+    frame = ~year, 
+    text = ~state, 
+    hoverinfo = "text",
+    type = 'scatter',
+    mode = 'markers'
+  ) %>% 
+  layout(
+    title = "Lung Cancer AAIR and Average Median AQI",
+    xaxis = list(title = "Average Median AQI", 
+      type = "log"),
+    yaxis = list(title = "Age Adjusted Incidence Rate")
+  )
+
+lc_fips = read_csv("./data/lung/lc_fips.csv")
+# saveRDS(lc_fips, "./data/lung/lc_fips.RDS")
+# lc_fips = readRDS("./data/lung/lc_fips.RDS")
+us_counties = tigris::counties(c("NY", "PA", "OH"))
+
+pal = colorBin(palette = "viridis", bins = 9, domain = lc_fips$age_adjusted_incidence_rate, reverse = T)
+labels = sprintf("<strong>%s, %s</strong><br/>Rate: %g <br/>", lc_fips$county, lc_fips$state, lc_fips$age_adjusted_incidence_rate) %>% lapply(htmltools::HTML)
+county_map_lc_leaf = 
+  lc_fips %>% 
+  mutate(
+    fips = factor(fips)
+  ) %>% 
+  geo_join(us_counties, ., "GEOID",  "fips") %>%
+  sf::st_transform('+proj=longlat +datum=WGS84') %>% 
+  leaflet() %>% 
+  addProviderTiles(provider = "Stamen.Toner") %>% 
+  setView(-78, 41.8, zoom = 5.5) %>% 
+  addPolygons(label = labels,
+              stroke = FALSE,
+              smoothFactor = 0.5,
+              opacity = 1,
+              fillOpacity = 0.8,
+              fillColor = ~pal(lc_fips$age_adjusted_incidence_rate),
+              highlightOptions = highlightOptions(weight = 5,
+                                                  fillOpacity = 1,
+                                                  color = "black",
+                                                  opacity = 1,
+                                                  bringToFront = TRUE)) %>%
+  addLegend("bottomright",
+            pal = pal,
+            values = ~age_adjusted_incidence_rate,
+            title = "Rate (unit?)",
+            opacity = 0.7)
+```
+
+
+## Let's talk health outcomes:
+
+To discuss how climate change has impacted the rate of certain negative health
+outcomes, let's first assess their general prevalence.
+
+
+# Recent County-Level Trends
+
+
+Clearly, according to the map below, lung cancer is a relevant issue in 
+our three states of interest (NY, PA, and OH). They also provide a good
+range of examples, as we can see multiple counties with high age-adjusted 
+incidence rates in Ohio, a few in New York, and virtually none in Pennsylvania.
+
+
+```{r}
+
+# plotly of county level data
+county_map_lc_leaf
+
+```
+
+
+# Recent State Level Trends
+
+We can also check how these rates have changed by state over time:
+
+
+
+```{r}
+
+# plotly of county level data
+
+lc_plot
+mel_plot
+lc_ap_plot
+
+```
+

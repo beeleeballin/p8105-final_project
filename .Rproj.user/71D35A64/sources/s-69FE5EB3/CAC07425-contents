@@ -1,0 +1,239 @@
+---
+title: "P8105 HW6"
+author: Brian Jo Hsuan Lee
+date: 2021-12-01
+output: github_document
+---
+
+Load libraries
+```{r, message=F}
+library(tidyverse)
+library(modelr)
+library(patchwork)
+setwd("~/Desktop/Columbia/Fall_2021/P8105-Data_Science/HW/p8105_hw6_jl6046/")
+```
+
+Set knitr options and seed for reproducibility
+```{r}
+knitr::opts_chunk$set(
+  fig.width = 7,
+  fig.asp = .7,
+  out.width = "90%"
+)
+
+theme_set(theme_minimal() + theme(legend.position = "bottom"))
+
+options(
+  ggplot2.continuous.colour = "viridis",
+  ggplot2.continuous.fill = "viridis"
+)
+
+scale_colour_discrete = scale_colour_viridis_d
+scale_fill_discrete = scale_fill_viridis_d
+
+set.seed(33)
+```
+
+## Problem 1: Linear Modeling and Cross Validation
+
+Import .csv and convert columns
+```{r, message=F}
+bw_df = 
+  read_csv("./data/birthweight.csv") %>% 
+  mutate(
+    babysex = recode_factor(babysex, `2` = "F", `1` = "M"),
+    # babysex = factor(babysex, levels = c("F", "M")),
+    frace = recode_factor(frace, `1` = "White", `2` = "Black", `3` = "Asian", `4` = "Puerto Rico", `8` = "Other", `9` = "Unknown"),
+    malform = recode_factor(malform, `0` = "Absent", `1` = "Present"),
+    mrace = recode_factor(mrace, `1` = "White", `2` = "Black", `3` = "Asian", `4` = "Puerto Rico", `8` = "Other")
+  )
+```
+
+Develop a robust linear model. I decided to use step-wise regression for the predictor selection process to optimizes my model AIC. 
+```{r, message=F, warning=F}
+my_fit = 
+  lm(bwt ~ ., data = bw_df) %>% 
+  step(direction = 'both')
+```
+
+Introduce the 2 suggested models.
+```{r}
+fit_1 = 
+  lm(bwt ~ blength + gaweeks, data = bw_df)
+fit_2 = 
+  lm(bwt ~ babysex * bhead + babysex * blength + bhead * blength + babysex * bhead * blength, data = bw_df)
+```
+
+Compare the 3 models using residual vs fitted/predicted values plots. Note that an extra plot of the same nature is included for extra information on the the models' goodness of fit. 
+```{r}
+bw_df %>% 
+  modelr::add_predictions(my_fit) %>% 
+  modelr::add_residuals(my_fit) %>%
+  mutate(
+    model = factor("my_model", labels = "My Model")
+  ) %>% 
+  bind_rows(
+    bw_df %>% 
+      modelr::add_predictions(fit_1) %>% 
+      modelr::add_residuals(fit_1) %>% 
+      mutate(
+        model = factor("model_1", labels = "Model A")
+      )
+  ) %>% 
+  bind_rows(
+    bw_df %>% 
+      modelr::add_predictions(fit_2) %>% 
+      modelr::add_residuals(fit_2) %>% 
+      mutate(
+        model = factor("model_2", labels = "Model B")
+      )
+  ) %>% 
+  ggplot(aes(x = pred, y = resid)) +
+  geom_point(aes(color = model, alpha = 0.5)) +
+  stat_smooth(method = "lm") + 
+  labs(
+    title = "Residual vs Fitted/Predicted Values Across 3 Models",
+    x = "Predicted Values",
+    y = "Residuals"
+  ) +
+  theme(
+    axis.text.x = element_text(angle = 90),
+    plot.title = element_text(hjust = 0.5),
+    legend.position = "none"
+  ) + 
+  facet_wrap(~model)
+
+par(mfrow=c(1,3))
+my_plot = plot(my_fit, which = 1)
+plot_a = plot(fit_1, which = 1)
+plot_b = plot(fit_2, which = 1)
+```
+
+Cross Validation using RMSE. My model happened to have the lowest RMSE of the three, followed by Model B and then Model A. 
+```{r, message=F}
+all_fit_df = 
+  bw_df %>% 
+  gather_predictions(my_fit, fit_1, fit_2) %>% 
+  left_join(
+    bw_df %>% 
+      gather_residuals(my_fit, fit_1, fit_2)
+  ) %>% 
+  mutate(model = fct_inorder(model)) 
+
+## the above basically does the same thing as the tidying process shown in the previous code chunk lol
+
+cv_df = 
+  crossv_mc(all_fit_df, 100) %>% 
+  mutate(
+    my_model  = map(train, ~my_fit),
+    model_a  = map(train, ~fit_1),
+    model_b  = map(train, ~fit_2),
+    rmse_my_model = map2_dbl(my_model, test, ~rmse(model = .x, data = .y)),
+    rmse_model_a = map2_dbl(model_a, test, ~rmse(model = .x, data = .y)),
+    rmse_model_b = map2_dbl(model_b, test, ~rmse(model = .x, data = .y))
+  ) %>% 
+  select(starts_with("rmse")) %>% 
+  pivot_longer(
+    everything(),
+    names_to = "model", 
+    values_to = "rmse",
+    names_prefix = "rmse_") %>% 
+  mutate(model = fct_inorder(model))
+
+SoilSciGuylabs = c("Mine", "A (suggested)", "B (suggested)")
+
+cv_df %>% 
+  ggplot(aes(x = model, y = rmse, fill = model, color = model)) + 
+  geom_violin() +
+  labs(
+    title = "Model RMSE Distribution Across 3 Models",
+    x = "Models",
+    y = "RMSE"
+  ) +
+  scale_x_discrete(labels= SoilSciGuylabs) +
+  theme(
+    plot.title = element_text(hjust = 0.5),
+    legend.position = "none"
+  )
+```
+
+## Problem 2: Bootstrapping
+
+Load and tidy weather data
+```{r, message=F}
+weather_df = 
+  rnoaa::meteo_pull_monitors(
+    c("USW00094728"),
+    var = c("PRCP", "TMIN", "TMAX"), 
+    date_min = "2017-01-01",
+    date_max = "2017-12-31") %>%
+  mutate(
+    name = recode(id, USW00094728 = "CentralPark_NY"),
+    tmin = tmin / 10,
+    tmax = tmax / 10) %>%
+  select(name, id, everything())
+```
+
+Run bootstrap to evaluate sample distribution in preparation for further statistical inference methods. We are interested in the distribution of 2 particular measures: one is the $r^{2}$ of minimum temperature as a predictor and maximum temperature as a response, the other is the log transformation of the product of 2 regression coefficients of that SLR regression model. Bootstrapping at 5000 samples, we see that there is a slight left skew to both measures, but it is mostly symmetrical and could likely be treated as normal upon data visualization.
+```{r}
+bs_weather =
+  weather_df %>% 
+  modelr::bootstrap(n = 5000) %>% 
+  mutate(
+    models = map(strap, ~lm(tmax ~ tmin, data = .x)),
+    glanced_res = map(models, broom::glance),
+    tidied_res = map(models, broom::tidy)
+  ) %>% 
+  select(-strap, -models) %>% 
+  unnest(c(glanced_res, tidied_res), names_repair = "unique") %>% 
+  select(r.squared, term, estimate) %>% 
+  pivot_wider(
+    names_from = term,
+    values_from = estimate
+  ) %>% 
+  mutate(
+    log_B0B1 = log(`(Intercept)`*tmin)
+  ) %>% 
+  select(-`(Intercept)`, -tmin)
+
+r2_dist = 
+  bs_weather %>% 
+  ggplot(aes(x = r.squared)) + 
+  geom_density()+
+  labs(
+    title = "",
+    x = expression(r^{2}),
+    y = "Frequency"
+  )
+
+logb0b1_dist =
+  bs_weather %>% 
+  ggplot(aes(x = log_B0B1)) +
+  geom_density() +
+  labs(
+    title = "",
+    x = expression(log(beta[0]*beta[1])),
+    y = ""
+  )
+
+r2_dist + logb0b1_dist
+```
+
+Define helper functions and calculate 95% confidence interval. The CI of $r^{2}$ is (0.894, 0.927), and of $log(\beta_0\beta_1)$ is (1.963, 2.057)
+```{r}
+ci_lower_bound = function(x){
+  return(quantile(x, 0.025))
+}
+
+ci_upper_bound = function(x){
+  return(quantile(x, 0.975))
+}
+bs_weather %>% 
+  summarize(across(everything(), list(ci_lower = ci_lower_bound, ci_upper = ci_upper_bound))) %>% 
+  knitr::kable(digits = 3)
+```
+
+
+
+
+
