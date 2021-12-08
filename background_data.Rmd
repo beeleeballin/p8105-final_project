@@ -7,6 +7,47 @@ output:
     code_folding: hide
 ---
 
+## Data Sources
+
+For weather data...
+
+For outcomes data, we are interested in the incidence of asthma, skin cancer and
+lung cancer across time and space. We obtained age-adjusted incidence rates data 
+for these three health outcomes for the U.S. states New York, Ohio and 
+Pennsylvania over multiple years. The following bullet points provide links from 
+where we obtained the data.
+
+*   Asthma
+    *   Provide source
+*   Melanoma of the skin (skin cancer)
+    *   [New York](https://www.health.ny.gov/statistics/cancer/registry/table2/tb2melanomanys.htm)
+    *   [Ohio](https://publicapps.odh.ohio.gov/EDW/DataBrowser/Browse/StateLayoutLockdownCancers)
+    *   [Pennsylvania](https://www.phaim1.health.pa.gov/EDD/)
+*   Lung cancer
+    *   [New York](https://www.health.ny.gov/statistics/cancer/registry/table2/tb2lungnys.htm)
+    *   [Ohio](https://publicapps.odh.ohio.gov/EDW/DataBrowser/Browse/StateLayoutLockdownCancers)
+    *   [Pennsylvania](https://www.phaim1.health.pa.gov/EDD/)
+
+We also obtained age-adjusted incidence rates data for these three health
+outcomes for the U.S. states New York, Ohio and Pennsylvania at the county-level
+at fixed time points. The following bullet points provide links from 
+where we obtained the data. The asthma data is provided for the year 2016 and
+the skin cancer and lunger cancer data is average over the years 2014-2018.
+
+*   Asthma
+    *   Provide source
+*   Melanoma of the skin (skin cancer) and lung cancer
+    *   [All 50 states](https://statecancerprofiles.cancer.gov/quick-profiles/index.php?tabSelected=2&statename=newyork)
+
+Each of these data sets were exported and each imported into R. For each
+of the three health outcomes, the data sets were merged across the three states 
+for the longitudinal data and for the cross-sectional data. This effort resulted in six 
+data sets. The data import and cleaning of the original data can be found in the 
+data import folder on our github repository.
+
+We will now import the six data sets and merge all longitudinal data together
+and merge all cross-sectional data together to have two data sets.
+
 ```{r setup, include=FALSE}
 
 library(tidyverse)
