@@ -20,7 +20,7 @@ library(here)
 ## Motivation: 
 
 ```{r, echo=FALSE, out.width="65%", fig.cap="Climate Change", fig.align = 'center'}
-knitr::include_graphics("./images/climate2.png")
+knitr::include_graphics("./images/climate2.jpeg")
 ```
 
 If you've spent time on social media in the last few years, you may have noticed
@@ -28,8 +28,8 @@ one particular topic trending often. Now, more than ever, discussions of climate
 change and its impacts are mainstream. As students in the School of Public Health,
 our group was united by an interest in climate change and public health. We 
 wanted to quantify the relationship between climate measure variables like 
-particulate matter and ozone levels, and see how they may impact health outcomes 
-like asthma, lung cancer, and melanoma. 
+particulate matter, ozone levels, and uv radiation, and see how they may impact 
+health outcomes like asthma hospitalizations, lung cancer, and melanoma. 
 
 ### Related work: 
 
@@ -68,15 +68,16 @@ particulate matter levels? Does this change from state to state?
 - How do emergency department visit rates for asthma vary annually based on  
 median particulate matter levels? Does this change from state to state?
 
-- How do melanoma age-adjusted incidence rates vary annually based on median 
-ozone levels? Does this change from state to state?
+- How do melanoma age-adjusted incidence rates vary annually based on uv or ozone
+levels? Does this change from state to state?
 
 - Is annual median particulate matter level a good predictor of lung cancer 
 age-adjusted incidence rates? How does the regression change when state is added 
 to the model?
 
-- Is annual median ozone level a good predictor of melanoma age-adjusted incidence 
-rates? How does the regression change when state is added to the model?
+- Is annual median ozone level or uv level a good predictor of melanoma 
+age-adjusted incidence rates? How does the regression change when state is added 
+to the model?
 
 - Is annual median particulate matter level a good predictor of annual 
 asthma-related emergency room visit rates? How does the regression change when 

@@ -33,6 +33,7 @@
 <link href="site_libs/tocify-1.9.1/jquery.tocify.css" rel="stylesheet" />
 <script src="site_libs/tocify-1.9.1/jquery.tocify.js"></script>
 <script src="site_libs/navigation-1.1/tabsets.js"></script>
+<script src="site_libs/navigation-1.1/codefolding.js"></script>
 <link href="site_libs/highlightjs-9.12.0/default.css" rel="stylesheet" />
 <script src="site_libs/highlightjs-9.12.0/highlight.js"></script>
 <link href="site_libs/font-awesome-5.1.0/css/all.css" rel="stylesheet" />
@@ -220,6 +221,9 @@ $(document).ready(function () {
 </style>
 
 <!-- code folding -->
+<style type="text/css">
+.code-folding-btn { margin-bottom: 4px; }
+</style>
 
 
 
@@ -326,14 +330,23 @@ div.tocify {
   <a href="about.html">About</a>
 </li>
 <li>
-  <a href="https://beeleeballin.shinyapps.io/apuv_map/">Map</a>
+  <a href="background_data.html">Background Data</a>
+</li>
+<li>
+  <a href="https://beeleeballin.shinyapps.io/apuv_map/">Data Exploration: Map</a>
+</li>
+<li>
+  <a href="regression.html">Regression</a>
+</li>
+<li>
+  <a href="report.html">Report</a>
+</li>
+<li>
+  <a href="merge_ap_uv.html">Climate Data</a>
 </li>
       </ul>
       <ul class="nav navbar-nav navbar-right">
         <li>
-  <a href="report.html">Report</a>
-</li>
-<li>
   <a href="mailto:&lt;johsuan.lee@columbia.edu&gt;">
     <span class="fa fa-envelope fa-lg"></span>
      
@@ -358,6 +371,14 @@ div.tocify {
 
 <div id="header">
 
+<div class="btn-group pull-right float-right">
+<button type="button" class="btn btn-default btn-xs btn-secondary btn-sm dropdown-toggle" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false"><span>Code</span> <span class="caret"></span></button>
+<ul class="dropdown-menu dropdown-menu-right" style="min-width: 50px;">
+<li><a id="rmd-show-all-code" href="#">Show All Code</a></li>
+<li><a id="rmd-hide-all-code" href="#">Hide All Code</a></li>
+</ul>
+</div>
+
 
 
 <h1 class="title toc-ignore">Report</h1>
@@ -367,19 +388,104 @@ div.tocify {
 
 <div id="motivation" class="section level2">
 <h2>Motivation:</h2>
-<p>Provide an overview of the project goals and motivation.</p>
+<div class="figure" style="text-align: center">
+<img src="images/climate2.jpeg" alt="Climate Change" width="65%" />
+<p class="caption">
+Climate Change
+</p>
+</div>
+<p>If you’ve spent time on social media in the last few years, you may have noticed one particular topic trending often. Now, more than ever, discussions of climate change and its impacts are mainstream. As students in the School of Public Health, our group was united by an interest in climate change and public health. We wanted to quantify the relationship between climate measure variables like particulate matter, ozone levels, and uv radiation, and see how they may impact health outcomes like asthma hospitalizations, lung cancer, and melanoma.</p>
 <div id="related-work" class="section level3">
 <h3>Related work:</h3>
-<p>Anything that inspired you, such as a paper, a web site, or something we discussed in class.</p>
+<p>Some articles that inspired our research are:</p>
+<ul>
+<li><p><a href="https://www.nature.com/articles/s41467-021-24823-0">Head waves and heat strokes</a></p></li>
+<li><p><a href="https://www.sciencedirect.com/science/article/abs/pii/S0165178109003618?casa_token=3nyJE_3V5AIAAAAA:k29sL6VeAxFiFXV4N7jjJ7oUNI75QJAGu82LI7Ii5_gKq6I5zwqxkZLNzq1Cy8df0H4yN56LaMM">Precipitation, daylight, and depression</a></p></li>
+<li><p><a href="https://toolkit.climate.gov/topics/human-health">Climate impact on human health</a></p></li>
+<li><p><a href="https://rucore.libraries.rutgers.edu/rutgers-lib/47317/PDF/1/play/">Hurricane Sandy child and family health study</a></p></li>
+<li><p><a href="https://journals.plos.org/plosone/article?id=10.1371/journal.pone.0170965">Hurricane Sandy flood exposure assessment</a></p></li>
+</ul>
 </div>
 <div id="initial-questions" class="section level3">
 <h3>Initial questions:</h3>
-<p>What questions are you trying to answer? How did these questions evolve over the course of the project? What new questions did you consider in the course of your analysis?</p>
+<p>In exploring our outcomes, we asked the following questions in getting to know our data sets:</p>
+<ul>
+<li><p>What are the current incidence rates of lung cancer, melanoma, and asthma emergency room visits? Do these trends differ significantly at the county and state levels?</p></li>
+<li><p>How have these rates changed by state over time?</p></li>
+</ul>
+<p>In analyzing our exposures and how they impact our outcomes, we asked the following:</p>
+<ul>
+<li><p>How do lung cancer age-adjusted incidence rates vary annually based on median particulate matter levels? Does this change from state to state?</p></li>
+<li><p>How do emergency department visit rates for asthma vary annually based on<br />
+median particulate matter levels? Does this change from state to state?</p></li>
+<li><p>How do melanoma age-adjusted incidence rates vary annually based on uv or ozone levels? Does this change from state to state?</p></li>
+<li><p>Is annual median particulate matter level a good predictor of lung cancer age-adjusted incidence rates? How does the regression change when state is added to the model?</p></li>
+<li><p>Is annual median ozone level or uv level a good predictor of melanoma age-adjusted incidence rates? How does the regression change when state is added to the model?</p></li>
+<li><p>Is annual median particulate matter level a good predictor of annual asthma-related emergency room visit rates? How does the regression change when state is added to the model?</p></li>
+</ul>
 </div>
 </div>
 <div id="data" class="section level2">
 <h2>Data:</h2>
-<p>Source, scraping method, cleaning, etc.</p>
+<p><strong>Exposures</strong></p>
+<p>Our <a href="https://data.cdc.gov/Environmental-Health-Toxicology/Daily-County-Level-Ozone-Concentrations-2001-2016/kmf5-t9yc">ozone data</a> and our <a href="https://data.cdc.gov/Environmental-Health-Toxicology/Daily-PM2-5-Concentrations-All-County-2001-2016/7vdq-ztk9">air pollution data</a> were both sourced from the CDC’s National Environmental Public Health Tracking website.</p>
+<p><strong>Outcomes</strong></p>
+<p>For county level cancer outcomes, each state’s data set was sourced from the <a href="https://statecancerprofiles.cancer.gov/">NIH State Cancer Profiles</a>.</p>
+<p>For state level outcomes, each data set was sourced directly from health departments of each respective state.</p>
+<ul>
+<li><p><strong>Asthma ED</strong> ?????</p></li>
+<li><p><strong>Melanoma</strong></p></li>
+<li><p><a href="https://publicapps.odh.ohio.gov/EDW/DataCatalog">Ohio</a></p></li>
+<li><p><a href="https://www.health.ny.gov/statistics/cancer/registry/table2/tb2melanomanys.htm">New York</a></p></li>
+<li><p><a href="https://www.phaim1.health.pa.gov/EDD/">Pennsylvania</a></p></li>
+<li><p><strong>Lung Cancer</strong></p></li>
+<li><p><a href="https://publicapps.odh.ohio.gov/EDW/DataCatalog">Ohio</a></p></li>
+<li><p><a href="https://www.health.ny.gov/statistics/cancer/registry/table2/tb2lungnys.htm">New York</a></p></li>
+<li><p><a href="https://www.phaim1.health.pa.gov/EDD/">Pennsylvania</a></p></li>
+</ul>
+<p>A significant amount of cleaning was required, as can be seen in the code chunks below:</p>
+<p><strong>exposures data</strong> <strong>NEEDS CODE CHUNKS</strong></p>
+<p><strong>county level outcomes data</strong> <strong>NEEDS CODE CHUNKS</strong></p>
+<p>Then, we were able to merge both of our exposures into one data set, <em>apuv</em>, with the following variables:</p>
+<p><strong>NEEDS CODE CHUNKS</strong></p>
+<ul>
+<li><p><code>Year</code>. Year</p></li>
+<li><p><code>Countyfips</code>. County-level unique identifier</p></li>
+<li><p><code>County</code>. Name of county</p></li>
+<li><p><code>State</code>. 2-character abbreviation of state name</p></li>
+<li><p><code>Season</code>. Period of year in which data was collected</p></li>
+<li><p><code>Pm25_max_pred</code>.</p></li>
+<li><p><code>Pm25_med_pred</code>.</p></li>
+<li><p><code>Pm25_mean_pred</code>.</p></li>
+<li><p><code>Pm25_pop_pred</code>.</p></li>
+<li><p><code>O3_max_pred</code>.</p></li>
+<li><p><code>O3_med_pred</code>.</p></li>
+<li><p><code>O3_mean_pred</code>.</p></li>
+<li><p><code>O3_pop_pred</code>.</p></li>
+<li><p><code>Edd</code>.</p></li>
+<li><p><code>Edr</code>.</p></li>
+<li><p><code>I305</code>.</p></li>
+<li><p><code>I310</code>.</p></li>
+<li><p><code>I324</code>.</p></li>
+<li><p><code>I380</code>.</p></li>
+</ul>
+<p>Next, we were able to merge all of our state level outcomes into one data set, <em>lc_mel_asthma_state</em>: <strong>NEEDS CODE CHUNK</strong></p>
+<p>Then, we could do the same with our county-level outcomes to get our <em>lc_mel_asthma_county</em> data set <strong>NEEDS CODE CHUNK</strong></p>
+<p><strong>lc_mel_asthma_county</strong></p>
+<ul>
+<li><p><code>state</code>. 2-letter abbreviation</p></li>
+<li><p><code>county</code>. name of county</p></li>
+<li><p><code>outcome</code>. type of outcome (lung cancer, melanoma, asthma ED visit)</p></li>
+<li><p><code>age_adjusted_incidence_rate</code>. per 100,000</p></li>
+<li><p><code>fips</code>. county-level unique identifier</p></li>
+</ul>
+<p><strong>lc_mel_asthma_state</strong></p>
+<ul>
+<li><p><code>state</code>. 2-letter abbreviation</p></li>
+<li><p><code>year</code>. Year</p></li>
+<li><p><code>outcome</code>. type of outcome (lung cancer, melanoma, asthma ED visit)</p></li>
+<li><p><code>age_adjusted_incidence_rate</code>. per 100,000</p></li>
+</ul>
 </div>
 <div id="exploratory-analysis" class="section level2">
 <h2>Exploratory analysis:</h2>
@@ -429,6 +535,11 @@ $(document).ready(function () {
 </script>
 
 <!-- code folding -->
+<script>
+$(document).ready(function () {
+  window.initializeCodeFolding("hide" === "show");
+});
+</script>
 
 <script>
 $(document).ready(function ()  {
