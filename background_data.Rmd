@@ -1,5 +1,5 @@
 ---
-title: "Looking at the numbers"
+title: "Health Outcomes"
 output: 
   html_document:
     toc: true
@@ -19,8 +19,6 @@ library(rjson)
 ```
 
 ## Data Sources
-
-For weather data...
 
 For health outcomes data, we are interested in the incidence of asthma, skin 
 cancer and lung cancer across time and space. We obtained age-adjusted incidence 
@@ -53,9 +51,12 @@ the skin cancer and lung cancer data is averaged over the years 2014-2018.
 Each of these data sets were exported and each imported into R. For each
 of the three health outcomes, the data sets were merged across the three states 
 for the longitudinal data and for the cross-sectional data. This effort resulted 
-in six data sets. The data import and cleaning of the original data can be found 
-in the [data import folder](https://github.com/beeleeballin/p8105-final_project/tree/main/data_import)
-on our github repository.
+in six data sets. The data import and cleaning of the original data for
+[asthma](), 
+[melanoma of the skin](https://github.com/beeleeballin/p8105-final_project/blob/main/melanoma_data_import.Rmd)
+and [lung cancer](https://github.com/beeleeballin/p8105-final_project/blob/main/lung_cancer_data.Rmd) 
+can be found in our 
+[github repository](https://github.com/beeleeballin/p8105-final_project).
 
 We will now import the six data sets and merge all longitudinal data together
 and merge all cross-sectional data together to have two data sets.
@@ -178,196 +179,11 @@ write_csv(lc_mel_asthma_county, here::here("data", "lc_mel_asthma_county.csv"))
 ```
 
 Now, that we have combined the health outcomes data, we can explore.
-```{r explore, include=FALSE}
 
-url <- 'https://raw.githubusercontent.com/plotly/datasets/master/geojson-counties-fips.json'
-counties <- rjson::fromJSON(file = url)
+## Visualizing Trends in Health Outcomes over Space and Time
 
-
-state_lc_wide = read_csv("./data/state_lc_wide.csv")
-
-# plotly of county level data
-
-fig <- plot_ly(state_lc_wide, x = ~year)
-fig <- fig %>% add_lines(y = ~PA_AAIR, name = "Pennsylvania")
-fig <- fig %>% add_lines(y = ~NY_AAIR, name = "New York")
-fig <- fig %>% add_lines(y = ~OH_AAIR, name = "Ohio")
-fig <- fig %>% layout(
-    title = "Lung Cancer Age-Adjusted Incidence Rates",
-    xaxis = list(
-      rangeselector = list(
-        buttons = list(
-          list(
-            count = 1,
-            label = "1 yr",
-            step = "year",
-            stepmode = "backward"),
-          list(
-            count = 5,
-            label = "5 yr",
-            step = "year",
-            stepmode = "backward"),
-          list(
-            count = 10,
-            label = "10 yr",
-            step = "year",
-            stepmode = "backward"),
-          list(step = "all"))),
-
-      rangeslider = list(type = "year")),
-
-    yaxis = list(title = "Age-Adjusted Incidence Rate (per 100,000"))
-
-fig
-
-lc_aqi_data = read_csv("./data/lc_aqi_data.csv")
-
-fig1 <- lc_aqi_data %>%
-  plot_ly(
-    x = ~age_adjusted_incidence,
-    y = ~y,
-    frame = ~f,
-    type = 'scatter',
-    mode = 'markers',
-    showlegend = F
-  )
-
-fig1 <- lc_aqi_data %>%
-  plot_ly(
-    x = ~avg_med_aqi, 
-    y = ~age_adjusted_incidence_rate, 
-    color = ~state, 
-    frame = ~year, 
-    text = ~state, 
-    hoverinfo = "text",
-    type = 'scatter',
-    mode = 'markers'
-  )
-fig1 <- fig1 %>% layout(
-  title = "Lung Cancer AAIR and Average Median AQI",
-    xaxis = list(title = "Average Median AQI", 
-      type = "log"
-    ),
-    yaxis = list(title = "Age Adjusted Incidence Rate")
-  )
-
-
-fig1
-
-lc_fips = read_csv("./data/lung/lc_fips.csv")
-
-
-county_map_lc <- plot_ly()
-county_map_lc <- county_map_lc %>%
-  add_trace(
-    type = "choroplethmapbox",
-    geojson = counties,
-    locations = lc_fips$fips,
-    z = lc_fips$age_adjusted_incidence_rate,
-    text = lc_fips$county,
-    colorscale = "Viridis",
-    reversescale = TRUE,
-    marker = list(line = list(
-      width = 0),
-      opacity = 0.5)
-    )
-county_map_lc <- county_map_lc %>%
-  layout(
-    title = "Age-Adjusted Lung Cancer Incidence Rates (2014-2018)",
-    mapbox = list(
-      style = "carto-positron",
-      zoom = 4,
-      center = list(lon = -77.215135, lat = 41.164818)
-    )
-  )
-
-
-county_map_lc
-
-
-state_melanoma_age_adjusted = read_csv("./data/incidence_melanoma_data/state_melanoma_age_adjusted.csv")
-
-state_mel_plot = state_melanoma_age_adjusted %>%
-  ggplot(aes(x = year, y = age_adjusted_incidence_rate, color = state)) +
-  geom_line() +
-  labs(
-    title = "Age-adjusted incidence rate of Melanoma by Year colored by State",
-    x = "Year",
-    y = "Age-adjusted incidence rate of Melanoma", 
-    color = "State"
-  ) +
-  scale_x_continuous(breaks = seq(1976, 2018, by = 4)) +
-  theme_bw() +
-  theme(plot.title = element_text(hjust = 0.5))
-
-
-
-```
-
-
-
-## Let's talk health outcomes:
-
-To discuss how climate change has impacted the rate of certain negative health
-outcomes, let's first assess their general prevalence.
-
-
-# Recent County-Level Trends
-
-
-Clearly, according to the map below, lung cancer is a relevant issue in 
-our three states of interest (NY, PA, and OH). They also provide a good
-range of examples, as we can see multiple counties with high age-adjusted 
-incidence rates in Ohio, a few in New York, and virtually none in Pennsylvania.
-
-
-```{r}
-
-# plotly of county level data
-
-county_map_lc
-
-```
-
-
-# Recent State Level Trends
-
-We can also check how these rates have changed by state over time:
-
-
-
-```{r}
-
-# plotly of county level data
-
-fig
-
-state_mel_plot
-
-
-```
-
-Let's plot the combined longitudinal state-level health outcomes data with 
-year on the x-axis, age-adjusted incidence rate on the y-axis, stratified by 
-state (color) and outcome (facet). Please note each y-axis has its own scale.
-```{r}
-# Scales = free allows each y-axis to be independent of the others
-lc_mel_asthma_state %>%
-  ggplot(aes(x = year, y = age_adjusted_incidence_rate,
-             color = state)) +
-  geom_line() +
-  facet_wrap(~outcome, scales = "free") +
-  theme_bw() +
-  labs(
-    title = "Age-Adjusted Incidence Rate for each Health Outcome by State",
-    x = "Year",
-    y = "Age-Adjusted Incidence Rate",
-    color = "State"
-  ) +
-  theme(plot.title = element_text(hjust = 0.5))
-```
-
-We can define a function to generate maps for a given outcome.
+We can define a function to generate cross-sectional maps for a given health 
+outcome at the county-level.
 ```{r}
 # Purpose: Generates a map for the given county-level health outcome data, 
 #          outcome and plot title.
@@ -405,27 +221,95 @@ map_by_outcome <- function(df, outcome_var, plot_title) {
 }
 ```
 
+We can also define a function to generate longitudinal line graphs of the
+age-adjusted incidence rate of the specified health outcome by year for all 
+three states.
+```{r}
+# Purpose: Generate longitudinal line graphs of the age-adjusted incidence rate 
+# of the specified health outcome by year for all three states.
+# Arguments: df: The data frame, the longitudinal state-level health outcome 
+#                data.
+#            outcome_var: a character, the health outcome of interest.
+#            plot_title: a character, the plot title.
+# Returns: The plotly map.
+aair_by_year_by_outcome <- function(df, outcome_var, plot_title) {
+  df %>%
+    filter(outcome == outcome_var) %>%
+    pivot_wider(names_from = "state",
+                values_from = "age_adjusted_incidence_rate") %>%
+    plot_ly(x = ~year) %>%
+    add_lines(y = ~NY, name = "New York") %>%
+    add_lines(y = ~OH, name = "Ohio") %>%
+    add_lines(y = ~PA, name = "Pennsylvania") %>% 
+    layout(
+      title = plot_title,
+      xaxis = list(
+        rangeselector = list(buttons = list(list(count = 1,
+                                                 label = "1 yr",
+                                                 step = "year",
+                                                 stepmode = "backward"),
+                                            list(count = 5,
+                                                 label = "5 yr",
+                                                 step = "year",
+                                                 stepmode = "backward"),
+                                            list(count = 10,
+                                                 label = "10 yr",
+                                                 step = "year",
+                                                 stepmode = "backward"),
+                                            list(step = "all"))),
+        rangeslider = list(type = "year"),
+        title = "Year"),
+      yaxis = list(title = "Age-Adjusted Incidence Rate per 100,000")
+  )  
+}
+```
+
+Now, let's plot the cross-sectional map for each health 
+outcome at the county-level followed by the longitudinal line graph of the
+age-adjusted incidence rate of the health outcome by year for all 
+three states.
+
 Asthma:
 ```{r warning=FALSE}
 map_by_outcome(lc_mel_asthma_county, 
                "asthma", 
-               "Age-Adjusted Asthma Incidence Rates (2016)")
+               "Asthma Age-Adjusted Incidence Rates (2016)")
+```
+
+```{r}
+aair_by_year_by_outcome(lc_mel_asthma_state, 
+                        "asthma",  
+                        "Asthma Age-Adjusted Incidence Rates")
 ```
 
 Melanoma of the skin:
 ```{r}
 map_by_outcome(lc_mel_asthma_county, 
                "melanoma", 
-               "Age-Adjusted Melanoma of the skin Incidence Rates (2014-2018)")
+               "Melanoma of the Skin Age-Adjusted Incidence Rates (2014-2018)")
+```
+
+```{r}
+aair_by_year_by_outcome(lc_mel_asthma_state, 
+                        "melanoma", 
+                        "Melanoma of the Skin Age-Adjusted Incidence Rates")
 ```
 
 Lung Cancer:
 ```{r}
 map_by_outcome(lc_mel_asthma_county, 
                "lung cancer", 
-               "Age-Adjusted Lung Cancer Incidence Rates (2014-2018)")
+               "Lung Cancer Age-Adjusted Incidence Rates (2014-2018)")
 ```
 
+```{r}
+aair_by_year_by_outcome(lc_mel_asthma_state, 
+                        "lung cancer", 
+                        "Lung Cancer Age-Adjusted Incidence Rates")
+```
 
-
+Clearly, according to the map below, lung cancer is a relevant issue in 
+our three states of interest (NY, PA, and OH). They also provide a good
+range of examples, as we can see multiple counties with high age-adjusted 
+incidence rates in Ohio, a few in New York, and virtually none in Pennsylvania.
 
