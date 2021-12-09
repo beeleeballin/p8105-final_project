@@ -1,11 +1,17 @@
 ---
-title: "Regression Analysis, Part 1"
-author: "Jesse R. Ames"
-date: "12/6/2021"
-output: github_document
+title: "Regression Analyses"
+output: 
+  html_document:
+    toc: true
+    toc_float: true
+    code_folding: hide
 ---
 
+#Part 1: State Level Trends, 2001-2015
+
 ## Data
+
+We begin by reading in the combined health outcomes data and the combined air pollution and UV radiation data to produce an analysis at the state level. We quickly noticed that some of our variables in the air pollution and UV data were strongly correlated with each other, so we omitted several for the purposes of our regression analysis (collinearity violates our assumptions); the final correlation matrix is given below.
 
 ```{r}
 library(tidyverse)
@@ -41,14 +47,26 @@ state_analysis <- left_join(outcomes_wider_state, ap_uv_state_slim)
 #Check for correlations
 state_analysis_corr <- state_analysis %>% 
   select(`lung cancer`:edd_Winter) %>% 
-  do(as.data.frame(cor(., method="pearson", use="pairwise.complete.obs")))
+  do(as.data.frame(cor(., method="pearson", use="pairwise.complete.obs"))) %>%
+  knitr::kable()
 ```
 
 ## Lung Cancer
 
 ### Exploration
 
+Before performing our analysis, we may want to look at some bivariate plots with trends over time to see if there are general trends from 2001 to 2015.
+
 ```{r}
+library(GGally)
+
+state_analysis %>%
+  filter(year %in% 2001:2015) %>%
+  ggpairs(columns = c("year","lung cancer", "o3_med_pred_Summer", "pm25_med_pred_Summer"),
+          mapping = aes(group = state, color = state),
+          columnLabels = c("Year", "Lung Cancer/100,000","Median summer O3, ppm", "PM 2.5, ug/m^3"))
+
+  
 state_plot <- state_analysis %>%
   ggplot(aes(x = year, y = `lung cancer`, group = state, color = state)) +
   geom_path()
@@ -69,10 +87,9 @@ library(patchwork)
 (state_plot + spring_plot) / (summer_plot + fall_plot)
 ```
 
-
 ### Model Fit
 
-We proceed using the BIC criterion working forwards from 2001 to 2015
+We proceed using backwards selection BIC from 2001 to 2015
 
 ```{r}
 state_2001_2015 <- state_analysis %>%
@@ -129,7 +146,7 @@ Datapoint number 28 is a borderline outlier.
 
 ### Cross validation
 
-What happens if we crossvalidate against simpler models? I suspect we are overfit. We will use leave-one-out cross-validation.
+What happens if we cross-validate against simpler models? I suspect we are overfit. We will use leave-one-out cross-validation.
 
 ```{r}
 library(modelr)
@@ -171,5 +188,5 @@ cv_df %>%
   ggplot(aes(x = model, y = rmse)) + geom_violin() + labs(x = "Model", y = "RMSE")
 ```
 
-In retrospect, this model really isn't appropriate for these data - this is a time series. We should probably include time interaction effects, and maybe use generalized least squares. Also cross-validation with a rolling window is probably better. But still, somehow including EDD makes the model better for some reason??
+In retrospect, this model really isn't appropriate for these data - this is a time series. We should probably include time interaction effects, and maybe use generalized least squares. Also cross-validation with a rolling window may be better. But still, somehow including EDD—a UV radiation variable makes the model for lung cancer better for some reason??
 
