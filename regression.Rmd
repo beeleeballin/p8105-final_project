@@ -114,6 +114,7 @@ lung_fit %>%
 ```
 
 Residuals appear to have a slight upward curvature overall. What variables are driving this?
+
 ```{r}
 spring_resid <- lung_fit %>%
   ggplot(aes(x = o3_med_pred_Spring, y = resid)) + geom_point() + labs(x = "Spring Median O3",
@@ -188,5 +189,63 @@ cv_df %>%
   ggplot(aes(x = model, y = rmse)) + geom_violin() + labs(x = "Model", y = "RMSE")
 ```
 
-In retrospect, this model really isn't appropriate for these data - this is a time series. We should probably include time interaction effects, and maybe use generalized least squares. Also cross-validation with a rolling window may be better. But still, somehow including EDD—a UV radiation variable makes the model for lung cancer better for some reason??
+In retrospect, this model really isn't appropriate for these data - this is a time series. We should probably include time interaction effects, and maybe use generalized least squares. Also cross-validation with a rolling window may be better. But still, somehow including EDD—a UV radiation variable—makes the model for lung cancer better for some reason?? I wonder if we get weird results for the other outcomes...
 
+## Melanoma of the Skin
+
+### Exploration
+
+As before, we create several bivariate plots before constructing our model.
+
+```{r}
+state_analysis %>%
+  filter(year %in% 2001:2015) %>%
+  ggpairs(columns = c("year","melanoma","edd_Spring","edd_Summer"),
+          mapping = aes(group = state, color = state),
+          columnLabels = c("Year", "Melanoma/100,000", "Spring EDD (J/m^2)", "Summer EDD (J/m^2)"))
+```
+
+That's weird. There seem to be negative correlations between EDD and melanoma when we break down by state, but positive correlations overall—an instance of Simpson's paradox.
+
+### Model Fit
+
+What does our model say? Again, we'll use backward selection BIC.
+
+```{r}
+mel_fit <- lm(melanoma ~ ., data = state_2001_2015)
+step_bic_mel <- step(mel_fit, trace = 0, k = log(nobs(fit)), direction = "backward")
+summary(step_bic_mel)
+```
+
+In some ways, this makes more sense than our first model. `edd_Fall` and `edd_Summer` are the most significant model terms aside from `year`. However, they also have the smallest effect size. Also, oddly enough, lung cancer is included as a predictor in this model (though it is not statistically significant, nor is state). Even more oddly, fall ozone and winter particulate matter are included, and are significant. How do the diagnostics look?
+
+```{r}
+mel_df <- state_2001_2015 %>%
+  modelr::add_residuals(step_bic_mel) %>%
+  modelr::add_predictions(step_bic_mel)
+
+mel_df %>%
+  ggplot(aes(x = pred, y = resid)) + geom_point() + labs(x = "Predicted value", y = "Residual")
+```
+
+It appears that once again we have curvature in the residuals. What is the source?
+
+```{r}
+summer_resid <- mel_df %>%
+  ggplot(aes(x = edd_Summer, y = resid)) + geom_point() + labs(x = "Summer Median EDD", y = "Residual")
+
+fall_resid <- mel_df %>%
+  ggplot(aes(x = edd_Fall, y = resid)) + geom_point() + labs(x = "Fall Median EDD", y = "Residual")
+
+fall_ozone_resid <- mel_df %>%
+  ggplot(aes(x = o3_med_pred_Fall, y = resid)) + geom_point() + labs(x = "Fall Median O3", y = "Residual")
+
+state_resid <- mel_df %>%
+  ggplot(aes(x = state, y = resid)) + geom_violin() + labs(x = "State", y = "Residual")
+
+(summer_resid + fall_resid) / (fall_ozone_resid + state_resid)
+```
+
+Seems like ozone might be the issue. Try transforming.
+
+```{r}
