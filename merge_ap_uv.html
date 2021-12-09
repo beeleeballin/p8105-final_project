@@ -254,7 +254,7 @@ $(document).ready(function () {
   <a href="about.html">About</a>
 </li>
 <li>
-  <a href="background_data.html">Background Data</a>
+  <a href="health_outcomes_data.html">Health Outcomes Data</a>
 </li>
 <li>
   <a href="https://beeleeballin.shinyapps.io/apuv_map/">Data Exploration: Map</a>
@@ -385,6 +385,7 @@ oz_df =
     ),
     year = factor(year),
     state = factor(state),
+    state = fct_relevel(state, &quot;ME&quot;, &quot;NY&quot;, &quot;PA&quot;, &quot;OH&quot;),
     countyfips = factor(countyfips),
   ) %&gt;% 
   select(-contains(&quot;statefips&quot;), -date) %&gt;% 

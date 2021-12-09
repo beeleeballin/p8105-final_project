@@ -9,7 +9,6 @@
 <meta http-equiv="X-UA-Compatible" content="IE=EDGE" />
 
 
-<meta name="author" content="Jesse R. Ames" />
 
 
 <title>Regression Analyses</title>
@@ -30,7 +29,11 @@
        h6 {font-size: 12px;}
        code {color: inherit; background-color: rgba(0, 0, 0, 0.04);}
        pre:not([class]) { background-color: white }</style>
+<script src="site_libs/jqueryui-1.11.4/jquery-ui.min.js"></script>
+<link href="site_libs/tocify-1.9.1/jquery.tocify.css" rel="stylesheet" />
+<script src="site_libs/tocify-1.9.1/jquery.tocify.js"></script>
 <script src="site_libs/navigation-1.1/tabsets.js"></script>
+<script src="site_libs/navigation-1.1/codefolding.js"></script>
 <link href="site_libs/highlightjs-9.12.0/default.css" rel="stylesheet" />
 <script src="site_libs/highlightjs-9.12.0/highlight.js"></script>
 <link href="site_libs/font-awesome-5.1.0/css/all.css" rel="stylesheet" />
@@ -218,7 +221,73 @@ $(document).ready(function () {
 </style>
 
 <!-- code folding -->
+<style type="text/css">
+.code-folding-btn { margin-bottom: 4px; }
+</style>
 
+
+
+<style type="text/css">
+
+#TOC {
+  margin: 25px 0px 20px 0px;
+}
+@media (max-width: 768px) {
+#TOC {
+  position: relative;
+  width: 100%;
+}
+}
+
+@media print {
+.toc-content {
+  /* see https://github.com/w3c/csswg-drafts/issues/4434 */
+  float: right;
+}
+}
+
+.toc-content {
+  padding-left: 30px;
+  padding-right: 40px;
+}
+
+div.main-container {
+  max-width: 1200px;
+}
+
+div.tocify {
+  width: 20%;
+  max-width: 260px;
+  max-height: 85%;
+}
+
+@media (min-width: 768px) and (max-width: 991px) {
+  div.tocify {
+    width: 25%;
+  }
+}
+
+@media (max-width: 767px) {
+  div.tocify {
+    width: 100%;
+    max-width: none;
+  }
+}
+
+.tocify ul, .tocify li {
+  line-height: 20px;
+}
+
+.tocify-subheader .tocify-item {
+  font-size: 0.90em;
+}
+
+.tocify .list-group-item {
+  border-radius: 0px;
+}
+
+
+</style>
 
 
 
@@ -228,6 +297,16 @@ $(document).ready(function () {
 
 
 <div class="container-fluid main-container">
+
+
+<!-- setup 3col/9col grid for toc_float and main content  -->
+<div class="row">
+<div class="col-xs-12 col-sm-4 col-md-3">
+<div id="TOC" class="tocify">
+</div>
+</div>
+
+<div class="toc-content col-xs-12 col-sm-8 col-md-9">
 
 
 
@@ -251,7 +330,19 @@ $(document).ready(function () {
   <a href="about.html">About</a>
 </li>
 <li>
-  <a href="https://beeleeballin.shinyapps.io/apuv_map/">Map</a>
+  <a href="health_outcomes_data.html">Health Outcomes Data</a>
+</li>
+<li>
+  <a href="https://beeleeballin.shinyapps.io/apuv_map/">Data Exploration: Map</a>
+</li>
+<li>
+  <a href="regression.html">Regression</a>
+</li>
+<li>
+  <a href="report.html">Report</a>
+</li>
+<li>
+  <a href="merge_ap_uv.html">Climate Data</a>
 </li>
       </ul>
       <ul class="nav navbar-nav navbar-right">
@@ -280,53 +371,61 @@ $(document).ready(function () {
 
 <div id="header">
 
+<div class="btn-group pull-right float-right">
+<button type="button" class="btn btn-default btn-xs btn-secondary btn-sm dropdown-toggle" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false"><span>Code</span> <span class="caret"></span></button>
+<ul class="dropdown-menu dropdown-menu-right" style="min-width: 50px;">
+<li><a id="rmd-show-all-code" href="#">Show All Code</a></li>
+<li><a id="rmd-hide-all-code" href="#">Hide All Code</a></li>
+</ul>
+</div>
+
 
 
 <h1 class="title toc-ignore">Regression Analyses</h1>
-<h4 class="author">Jesse R. Ames</h4>
-<h4 class="date">12/6/2021</h4>
 
 </div>
 
 
+<p>#Part 1: State Level Trends, 2001-2015</p>
 <div id="data" class="section level2">
 <h2>Data</h2>
+<p>We begin by reading in the combined health outcomes data and the combined air pollution and UV radiation data to produce an analysis at the state level. We quickly noticed that some of our variables in the air pollution and UV data were strongly correlated with each other, so we omitted several for the purposes of our regression analysis (collinearity violates our assumptions); the final correlation matrix is given below.</p>
 <pre class="r"><code>library(tidyverse)</code></pre>
-<pre><code>## -- Attaching packages --------------------------------------- tidyverse 1.3.1 --</code></pre>
-<pre><code>## v ggplot2 3.3.5     v purrr   0.3.4
-## v tibble  3.1.4     v dplyr   1.0.7
-## v tidyr   1.1.3     v stringr 1.4.0
-## v readr   2.0.1     v forcats 0.5.1</code></pre>
-<pre><code>## -- Conflicts ------------------------------------------ tidyverse_conflicts() --
+<pre><code>## ── Attaching packages ─────────────────────────────────────── tidyverse 1.3.1 ──</code></pre>
+<pre><code>## ✓ ggplot2 3.3.5     ✓ purrr   0.3.4
+## ✓ tibble  3.1.5     ✓ dplyr   1.0.7
+## ✓ tidyr   1.1.4     ✓ stringr 1.4.0
+## ✓ readr   2.0.1     ✓ forcats 0.5.1</code></pre>
+<pre><code>## ── Conflicts ────────────────────────────────────────── tidyverse_conflicts() ──
 ## x dplyr::filter() masks stats::filter()
 ## x dplyr::lag()    masks stats::lag()</code></pre>
 <pre class="r"><code>outcomes_state &lt;- read_csv(&quot;data/lc_mel_asthma_state.csv&quot;)</code></pre>
-<pre><code>## Rows: 210 Columns: 4</code></pre>
-<pre><code>## -- Column specification --------------------------------------------------------
+<pre><code>## Rows: 234 Columns: 4</code></pre>
+<pre><code>## ── Column specification ────────────────────────────────────────────────────────
 ## Delimiter: &quot;,&quot;
 ## chr (2): state, outcome
 ## dbl (2): year, age_adjusted_incidence_rate</code></pre>
 <pre><code>## 
-## i Use `spec()` to retrieve the full column specification for this data.
-## i Specify the column types or set `show_col_types = FALSE` to quiet this message.</code></pre>
+## ℹ Use `spec()` to retrieve the full column specification for this data.
+## ℹ Specify the column types or set `show_col_types = FALSE` to quiet this message.</code></pre>
 <pre class="r"><code>outcomes_county &lt;- read_csv(&quot;data/lc_mel_asthma_county.csv&quot;)</code></pre>
 <pre><code>## Rows: 642 Columns: 5</code></pre>
-<pre><code>## -- Column specification --------------------------------------------------------
+<pre><code>## ── Column specification ────────────────────────────────────────────────────────
 ## Delimiter: &quot;,&quot;
 ## chr (3): state, county, outcome
 ## dbl (2): age_adjusted_incidence_rate, fips</code></pre>
 <pre><code>## 
-## i Use `spec()` to retrieve the full column specification for this data.
-## i Specify the column types or set `show_col_types = FALSE` to quiet this message.</code></pre>
+## ℹ Use `spec()` to retrieve the full column specification for this data.
+## ℹ Specify the column types or set `show_col_types = FALSE` to quiet this message.</code></pre>
 <pre class="r"><code>ap_uv &lt;- read_csv(&quot;ap/ap_uv/apuv.csv&quot;)</code></pre>
 <pre><code>## Rows: 14912 Columns: 19</code></pre>
-<pre><code>## -- Column specification --------------------------------------------------------
+<pre><code>## ── Column specification ────────────────────────────────────────────────────────
 ## Delimiter: &quot;,&quot;
 ## chr  (3): county, state, season
 ## dbl (16): year, countyfips, pm25_max_pred, pm25_med_pred, pm25_mean_pred, pm...</code></pre>
 <pre><code>## 
-## i Use `spec()` to retrieve the full column specification for this data.
-## i Specify the column types or set `show_col_types = FALSE` to quiet this message.</code></pre>
+## ℹ Use `spec()` to retrieve the full column specification for this data.
+## ℹ Specify the column types or set `show_col_types = FALSE` to quiet this message.</code></pre>
 <pre class="r"><code>#State-level analysis - fewer predictors
 ap_uv_state_slim &lt;- ap_uv %&gt;%
   select(-c(countyfips, county,
@@ -354,12 +453,24 @@ state_analysis &lt;- left_join(outcomes_wider_state, ap_uv_state_slim)</code></p
 <pre class="r"><code>#Check for correlations
 state_analysis_corr &lt;- state_analysis %&gt;% 
   select(`lung cancer`:edd_Winter) %&gt;% 
-  do(as.data.frame(cor(., method=&quot;pearson&quot;, use=&quot;pairwise.complete.obs&quot;)))</code></pre>
+  do(as.data.frame(cor(., method=&quot;pearson&quot;, use=&quot;pairwise.complete.obs&quot;))) %&gt;%
+  knitr::kable()</code></pre>
 </div>
 <div id="lung-cancer" class="section level2">
 <h2>Lung Cancer</h2>
 <div id="exploration" class="section level3">
 <h3>Exploration</h3>
+<p>Before performing our analysis, we may want to look at some bivariate plots with trends over time to see if there are general trends from 2001 to 2015.</p>
+<pre class="r"><code>library(GGally)</code></pre>
+<pre><code>## Registered S3 method overwritten by &#39;GGally&#39;:
+##   method from   
+##   +.gg   ggplot2</code></pre>
+<pre class="r"><code>state_analysis %&gt;%
+  filter(year %in% 2001:2015) %&gt;%
+  ggpairs(columns = c(&quot;year&quot;,&quot;lung cancer&quot;, &quot;o3_med_pred_Summer&quot;, &quot;pm25_med_pred_Summer&quot;),
+          mapping = aes(group = state, color = state),
+          columnLabels = c(&quot;Year&quot;, &quot;Lung Cancer/100,000&quot;,&quot;Median summer O3, ppm&quot;, &quot;PM 2.5, ug/m^3&quot;))</code></pre>
+<p><img src="regression_files/figure-html/unnamed-chunk-2-1.png" width="672" /></p>
 <pre class="r"><code>state_plot &lt;- state_analysis %&gt;%
   ggplot(aes(x = year, y = `lung cancer`, group = state, color = state)) +
   geom_path()
@@ -378,17 +489,17 @@ fall_plot &lt;- state_analysis %&gt;%
 
 library(patchwork)
 (state_plot + spring_plot) / (summer_plot + fall_plot)</code></pre>
-<pre><code>## Warning: Removed 1 row(s) containing missing values (geom_path).</code></pre>
-<pre><code>## Warning: Removed 48 rows containing missing values (geom_point).
+<pre><code>## Warning: Removed 2 row(s) containing missing values (geom_path).</code></pre>
+<pre><code>## Warning: Removed 49 rows containing missing values (geom_point).
 
-## Warning: Removed 48 rows containing missing values (geom_point).
+## Warning: Removed 49 rows containing missing values (geom_point).
 
-## Warning: Removed 48 rows containing missing values (geom_point).</code></pre>
-<p><img src="regression_files/figure-html/unnamed-chunk-2-1.png" width="672" /></p>
+## Warning: Removed 49 rows containing missing values (geom_point).</code></pre>
+<p><img src="regression_files/figure-html/unnamed-chunk-2-2.png" width="672" /></p>
 </div>
 <div id="model-fit" class="section level3">
 <h3>Model Fit</h3>
-<p>We proceed using the BIC criterion working forwards from 2001 to 2015</p>
+<p>We proceed using backwards selection BIC from 2001 to 2015</p>
 <pre class="r"><code>state_2001_2015 &lt;- state_analysis %&gt;%
   filter(year %in% 2001:2015) %&gt;%
   #exclude asthma, lots of missingness
@@ -466,7 +577,7 @@ state_resid &lt;- lung_fit %&gt;%
 </div>
 <div id="cross-validation" class="section level3">
 <h3>Cross validation</h3>
-<p>What happens if we crossvalidate against simpler models? I suspect we are overfit. We will use leave-one-out cross-validation.</p>
+<p>What happens if we cross-validate against simpler models? I suspect we are overfit. We will use leave-one-out cross-validation.</p>
 <pre class="r"><code>library(modelr)
 set.seed(15)
 cv_df &lt;- crossv_loo(state_2001_2015)
@@ -506,12 +617,116 @@ cv_df %&gt;%
   ggplot(aes(x = model, y = rmse)) + geom_violin() + labs(x = &quot;Model&quot;, y = &quot;RMSE&quot;)</code></pre>
 <pre><code>## Warning: Removed 12 rows containing non-finite values (stat_ydensity).</code></pre>
 <p><img src="regression_files/figure-html/unnamed-chunk-8-1.png" width="672" /></p>
-<p>In retrospect, this model really isn’t appropriate for these data - this is a time series. We should probably include time interaction effects, and maybe use generalized least squares. Also cross-validation with a rolling window is probably better. But still, somehow including EDD makes the model better for some reason??</p>
+<p>In retrospect, this model really isn’t appropriate for these data - this is a time series. We should probably include time interaction effects, and maybe use generalized least squares. Also cross-validation with a rolling window may be better. But still, somehow including EDD—a UV radiation variable—makes the model for lung cancer better for some reason?? I wonder if we get weird results for the other outcomes…</p>
+</div>
+</div>
+<div id="melanoma-of-the-skin" class="section level2">
+<h2>Melanoma of the Skin</h2>
+<div id="exploration-1" class="section level3">
+<h3>Exploration</h3>
+<p>As before, we create several bivariate plots before constructing our model.</p>
+<pre class="r"><code>state_analysis %&gt;%
+  filter(year %in% 2001:2015) %&gt;%
+  ggpairs(columns = c(&quot;year&quot;,&quot;melanoma&quot;,&quot;edd_Spring&quot;,&quot;edd_Summer&quot;),
+          mapping = aes(group = state, color = state),
+          columnLabels = c(&quot;Year&quot;, &quot;Melanoma/100,000&quot;, &quot;Spring EDD (J/m^2)&quot;, &quot;Summer EDD (J/m^2)&quot;))</code></pre>
+<pre><code>## Warning in ggally_statistic(data = data, mapping = mapping, na.rm = na.rm, :
+## Removed 12 rows containing missing values
+
+## Warning in ggally_statistic(data = data, mapping = mapping, na.rm = na.rm, :
+## Removed 12 rows containing missing values
+
+## Warning in ggally_statistic(data = data, mapping = mapping, na.rm = na.rm, :
+## Removed 12 rows containing missing values
+
+## Warning in ggally_statistic(data = data, mapping = mapping, na.rm = na.rm, :
+## Removed 12 rows containing missing values</code></pre>
+<pre><code>## Warning: Removed 12 rows containing missing values (geom_point).
+
+## Warning: Removed 12 rows containing missing values (geom_point).</code></pre>
+<pre><code>## Warning: Removed 12 rows containing non-finite values (stat_density).</code></pre>
+<pre><code>## Warning in ggally_statistic(data = data, mapping = mapping, na.rm = na.rm, :
+## Removed 12 rows containing missing values</code></pre>
+<pre><code>## Warning: Removed 12 rows containing missing values (geom_point).
+
+## Warning: Removed 12 rows containing missing values (geom_point).
+
+## Warning: Removed 12 rows containing missing values (geom_point).</code></pre>
+<pre><code>## Warning: Removed 12 rows containing non-finite values (stat_density).</code></pre>
+<p><img src="regression_files/figure-html/unnamed-chunk-9-1.png" width="672" /></p>
+<p>That’s weird. There seem to be negative correlations between EDD and melanoma when we break down by state, but positive correlations overall—an instance of Simpson’s paradox.</p>
+</div>
+<div id="model-fit-1" class="section level3">
+<h3>Model Fit</h3>
+<p>What does our model say? Again, we’ll use backward selection BIC.</p>
+<pre class="r"><code>mel_fit &lt;- lm(melanoma ~ ., data = state_2001_2015)
+step_bic_mel &lt;- step(mel_fit, trace = 0, k = log(nobs(fit)), direction = &quot;backward&quot;)
+summary(step_bic_mel)</code></pre>
+<pre><code>## 
+## Call:
+## lm(formula = melanoma ~ state + year + `lung cancer` + pm25_med_pred_Winter + 
+##     o3_med_pred_Fall + edd_Fall + edd_Summer, data = state_2001_2015)
+## 
+## Residuals:
+##      Min       1Q   Median       3Q      Max 
+## -2.46999 -1.05881  0.00579  0.78135  1.80916 
+## 
+## Coefficients:
+##                        Estimate Std. Error t value Pr(&gt;|t|)   
+## (Intercept)          -1.724e+03  5.389e+02  -3.200  0.00384 **
+## stateOH               8.538e-01  3.125e+00   0.273  0.78698   
+## statePA               2.103e+00  1.370e+00   1.535  0.13796   
+## year                  8.590e-01  2.587e-01   3.321  0.00286 **
+## `lung cancer`         4.778e-01  2.883e-01   1.657  0.11046   
+## pm25_med_pred_Winter  6.294e-01  2.874e-01   2.190  0.03848 * 
+## o3_med_pred_Fall      7.399e-01  2.679e-01   2.762  0.01083 * 
+## edd_Fall             -9.624e-03  3.186e-03  -3.021  0.00591 **
+## edd_Summer           -8.247e-03  2.600e-03  -3.172  0.00411 **
+## ---
+## Signif. codes:  0 &#39;***&#39; 0.001 &#39;**&#39; 0.01 &#39;*&#39; 0.05 &#39;.&#39; 0.1 &#39; &#39; 1
+## 
+## Residual standard error: 1.281 on 24 degrees of freedom
+##   (12 observations deleted due to missingness)
+## Multiple R-squared:  0.8208, Adjusted R-squared:  0.7611 
+## F-statistic: 13.74 on 8 and 24 DF,  p-value: 2.896e-07</code></pre>
+<p>In some ways, this makes more sense than our first model. <code>edd_Fall</code> and <code>edd_Summer</code> are the most significant model terms aside from <code>year</code>. However, they also have the smallest effect size. Also, oddly enough, lung cancer is included as a predictor in this model (though it is not statistically significant, nor is state). Even more oddly, fall ozone and winter particulate matter are included, and are significant. How do the diagnostics look?</p>
+<pre class="r"><code>mel_df &lt;- state_2001_2015 %&gt;%
+  modelr::add_residuals(step_bic_mel) %&gt;%
+  modelr::add_predictions(step_bic_mel)
+
+mel_df %&gt;%
+  ggplot(aes(x = pred, y = resid)) + geom_point() + labs(x = &quot;Predicted value&quot;, y = &quot;Residual&quot;)</code></pre>
+<pre><code>## Warning: Removed 12 rows containing missing values (geom_point).</code></pre>
+<p><img src="regression_files/figure-html/unnamed-chunk-11-1.png" width="672" /></p>
+<p>It appears that once again we have curvature in the residuals. What is the source?</p>
+<pre class="r"><code>summer_resid &lt;- mel_df %&gt;%
+  ggplot(aes(x = edd_Summer, y = resid)) + geom_point() + labs(x = &quot;Summer Median EDD&quot;, y = &quot;Residual&quot;)
+
+fall_resid &lt;- mel_df %&gt;%
+  ggplot(aes(x = edd_Fall, y = resid)) + geom_point() + labs(x = &quot;Fall Median EDD&quot;, y = &quot;Residual&quot;)
+
+fall_ozone_resid &lt;- mel_df %&gt;%
+  ggplot(aes(x = o3_med_pred_Fall, y = resid)) + geom_point() + labs(x = &quot;Fall Median O3&quot;, y = &quot;Residual&quot;)
+
+state_resid &lt;- mel_df %&gt;%
+  ggplot(aes(x = state, y = resid)) + geom_violin() + labs(x = &quot;State&quot;, y = &quot;Residual&quot;)
+
+(summer_resid + fall_resid) / (fall_ozone_resid + state_resid)</code></pre>
+<pre><code>## Warning: Removed 12 rows containing missing values (geom_point).
+
+## Warning: Removed 12 rows containing missing values (geom_point).
+
+## Warning: Removed 12 rows containing missing values (geom_point).</code></pre>
+<pre><code>## Warning: Removed 12 rows containing non-finite values (stat_ydensity).</code></pre>
+<p><img src="regression_files/figure-html/unnamed-chunk-12-1.png" width="672" /></p>
+<p>Seems like ozone might be the issue. Try transforming.</p>
 </div>
 </div>
 
 
 
+</div>
+</div>
 
 </div>
 
@@ -543,7 +758,41 @@ $(document).ready(function () {
 </script>
 
 <!-- code folding -->
+<script>
+$(document).ready(function () {
+  window.initializeCodeFolding("hide" === "show");
+});
+</script>
 
+<script>
+$(document).ready(function ()  {
+
+    // temporarily add toc-ignore selector to headers for the consistency with Pandoc
+    $('.unlisted.unnumbered').addClass('toc-ignore')
+
+    // move toc-ignore selectors from section div to header
+    $('div.section.toc-ignore')
+        .removeClass('toc-ignore')
+        .children('h1,h2,h3,h4,h5').addClass('toc-ignore');
+
+    // establish options
+    var options = {
+      selectors: "h1,h2,h3",
+      theme: "bootstrap3",
+      context: '.toc-content',
+      hashGenerator: function (text) {
+        return text.replace(/[.\\/?&!#<>]/g, '').replace(/\s/g, '_');
+      },
+      ignoreSelector: ".toc-ignore",
+      scrollTo: 0
+    };
+    options.showAndHide = true;
+    options.smoothScroll = true;
+
+    // tocify
+    var toc = $("#TOC").tocify(options).data("toc-tocify");
+});
+</script>
 
 <!-- dynamically load mathjax for compatibility with self-contained -->
 <script>
