@@ -4,21 +4,230 @@ output:
   html_document:
     toc: true
     toc_float: true
+    code_folding: hide
 ---
 
+
+
+```{r setup, include=FALSE}
+library(tidyverse)
+library(tidyr)
+library(dplyr)
+library(here)
+```
+
+
 ## Motivation: 
-Provide an overview of the project goals and motivation.
+
+```{r, echo=FALSE, out.width="65%", fig.cap="Climate Change", fig.align = 'center'}
+knitr::include_graphics("./images/climate2.png")
+```
+
+If you've spent time on social media in the last few years, you may have noticed
+one particular topic trending often. Now, more than ever, discussions of climate 
+change and its impacts are mainstream. As students in the School of Public Health,
+our group was united by an interest in climate change and public health. We 
+wanted to quantify the relationship between climate measure variables like 
+particulate matter and ozone levels, and see how they may impact health outcomes 
+like asthma, lung cancer, and melanoma. 
 
 ### Related work: 
-Anything that inspired you, such as a paper, a web site, or something we discussed in class.
+
+Some articles that inspired our research are:
+
+- [Head waves and heat strokes](https://www.nature.com/articles/s41467-021-24823-0)
+
+- [Precipitation, daylight, and depression](https://www.sciencedirect.com/science/article/abs/pii/S0165178109003618?casa_token=3nyJE_3V5AIAAAAA:k29sL6VeAxFiFXV4N7jjJ7oUNI75QJAGu82LI7Ii5_gKq6I5zwqxkZLNzq1Cy8df0H4yN56LaMM)
+
+- [Climate impact on human health](https://toolkit.climate.gov/topics/human-health)
+
+- [Hurricane Sandy child and family health study](https://rucore.libraries.rutgers.edu/rutgers-lib/47317/PDF/1/play/)
+
+- [Hurricane Sandy flood exposure assessment](https://journals.plos.org/plosone/article?id=10.1371/journal.pone.0170965)
+
+
 
 ### Initial questions: 
-What questions are you trying to answer? How did these questions evolve over the course of the project? What new questions did you consider in the course of your analysis?
+
+In exploring our outcomes, we asked the following questions in getting to know
+our data sets:
+
+- What are the current incidence rates of lung cancer, melanoma, and asthma 
+emergency room visits? Do these trends differ significantly at the county and
+state levels?
+
+- How have these rates changed by state over time?
+
+
+In analyzing our exposures and how they impact our outcomes, we asked the
+following:
+
+- How do lung cancer age-adjusted incidence rates vary annually based on median 
+particulate matter levels? Does this change from state to state?
+
+- How do emergency department visit rates for asthma vary annually based on  
+median particulate matter levels? Does this change from state to state?
+
+- How do melanoma age-adjusted incidence rates vary annually based on median 
+ozone levels? Does this change from state to state?
+
+- Is annual median particulate matter level a good predictor of lung cancer 
+age-adjusted incidence rates? How does the regression change when state is added 
+to the model?
+
+- Is annual median ozone level a good predictor of melanoma age-adjusted incidence 
+rates? How does the regression change when state is added to the model?
+
+- Is annual median particulate matter level a good predictor of annual 
+asthma-related emergency room visit rates? How does the regression change when 
+state is added to the model?
+
 
 ## Data: 
-Source, scraping method, cleaning, etc.
+
+**Exposures**
+
+Our [ozone data](https://data.cdc.gov/Environmental-Health-Toxicology/Daily-County-Level-Ozone-Concentrations-2001-2016/kmf5-t9yc) and our [air pollution data](https://data.cdc.gov/Environmental-Health-Toxicology/Daily-PM2-5-Concentrations-All-County-2001-2016/7vdq-ztk9) were both sourced from the CDC's National Environmental Public Health
+Tracking website. 
+
+**Outcomes**
+
+For county level cancer outcomes, each state's data set was sourced from the [NIH State Cancer Profiles](https://statecancerprofiles.cancer.gov/).
+
+For state level outcomes, each data set was sourced directly from health 
+departments of each respective state.
+
+-  **Asthma ED**
+  ?????
+  
+-  **Melanoma**
+  
+  - [Ohio](https://publicapps.odh.ohio.gov/EDW/DataCatalog)
+  
+  - [New York](https://www.health.ny.gov/statistics/cancer/registry/table2/tb2melanomanys.htm)
+  
+  - [Pennsylvania](https://www.phaim1.health.pa.gov/EDD/)
+  
+-  **Lung Cancer**
+  
+ - [Ohio](https://publicapps.odh.ohio.gov/EDW/DataCatalog)
+  
+ - [New York](https://www.health.ny.gov/statistics/cancer/registry/table2/tb2lungnys.htm)
+  
+ - [Pennsylvania](https://www.phaim1.health.pa.gov/EDD/)
+
+
+
+A significant amount of cleaning was required, as can be seen in the code chunks below:
+
+**exposures data**
+**NEEDS CODE CHUNKS**
+```{r warning=FALSE, message=FALSE}
+
+
+```
+
+
+**county level outcomes data**
+**NEEDS CODE CHUNKS**
+```{r warning=FALSE, message=FALSE}
+
+
+```
+
+Then, we were able to merge both of our exposures into one data set, *apuv*,
+with the following variables:
+
+**NEEDS CODE CHUNKS**
+
+```{r warning=FALSE, message=FALSE}
+
+
+
+```
+
+
+  * `Year`. Year
+  
+  * `Countyfips`. County-level unique identifier
+  
+  * `County`. Name of county
+
+  * `State`. 2-character abbreviation of state name
+  
+  * `Season`. Period of year in which data was collected
+  
+  * `Pm25_max_pred`.
+  
+  * `Pm25_med_pred`.
+
+  * `Pm25_mean_pred`.
+  
+  * `Pm25_pop_pred`. 
+  
+  * `O3_max_pred`.
+  
+  * `O3_med_pred`.
+
+  * `O3_mean_pred`.
+  
+  * `O3_pop_pred`.
+  
+  * `Edd`.
+  
+  * `Edr`.
+  
+  * `I305`. 
+  
+  * `I310`.
+  
+  * `I324`.
+  
+  * `I380`.
+
+
+Next, we were able to merge all of our state level outcomes into one data set,  *lc_mel_asthma_state*:
+**NEEDS CODE CHUNK**
+
+```{r warning=FALSE, message=FALSE}
+
+
+
+```
+
+Then, we could do the same with our county-level outcomes to get our *lc_mel_asthma_county* data set
+**NEEDS CODE CHUNK**
+
+```{r warning=FALSE, message=FALSE}
+
+```
+
+
+**lc_mel_asthma_county**
+
+  * `state`. 2-letter abbreviation
+  
+  * `county`. name of county
+  
+  * `outcome`. type of outcome (lung cancer, melanoma, asthma ED visit)
+  
+  * `age_adjusted_incidence_rate`. per 100,000
+  
+  * `fips`. county-level unique identifier
+
+**lc_mel_asthma_state**
+
+  * `state`. 2-letter abbreviation
+  
+  * `year`. Year
+  
+  * `outcome`. type of outcome (lung cancer, melanoma, asthma ED visit)
+  
+  * `age_adjusted_incidence_rate`. per 100,000
+
 
 ## Exploratory analysis: 
+
 Visualizations, summaries, and exploratory statistical analyses. Justify the steps you took, and show any major changes to your ideas.
 
 ## Additional analysis: 
@@ -26,3 +235,7 @@ If you undertake formal statistical analyses, describe these in detail
 
 ## Discussion: 
 What were your findings? Are they what you expect? What insights into the data can you make?
+
+
+
+
