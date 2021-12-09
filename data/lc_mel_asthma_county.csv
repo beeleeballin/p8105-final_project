@@ -88,6 +88,7 @@ NY,Montgomery,melanoma,16.3,36057
 NY,Nassau,asthma,111.63,36059
 NY,Nassau,lung cancer,52.8,36059
 NY,Nassau,melanoma,22.5,36059
+NY,New York,asthma,184,36061
 NY,New York,lung cancer,45.6,36061
 NY,New York,melanoma,17.4,36061
 NY,Niagara,asthma,58.79,36063
@@ -144,6 +145,9 @@ NY,Schuyler,melanoma,30.2,36097
 NY,Seneca,asthma,29.47,36099
 NY,Seneca,lung cancer,75.5,36099
 NY,Seneca,melanoma,29.6,36099
+NY,St. Lawrence,asthma,57.03,36089
+NY,St. Lawrence,lung cancer,74.3,36089
+NY,St. Lawrence,melanoma,22.2,36089
 NY,Steuben,asthma,47.23,36101
 NY,Steuben,lung cancer,70.8,36101
 NY,Steuben,melanoma,24,36101
@@ -258,6 +262,7 @@ OH,Franklin,melanoma,20.2,39049
 OH,Fulton,asthma,33,39051
 OH,Fulton,lung cancer,62.6,39051
 OH,Fulton,melanoma,20.1,39051
+OH,Gallia,asthma,23,39053
 OH,Gallia,lung cancer,87.3,39053
 OH,Gallia,melanoma,23.4,39053
 OH,Geauga,asthma,36,39055

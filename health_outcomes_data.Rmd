@@ -144,6 +144,9 @@ fips = fips_codes %>%
     janitor::clean_names() %>%
     rename(c("county" = "name"))
 
+# fips df has 'St Lawrence' instead of 'St. Lawrence'
+fips$county[fips$county == "St Lawrence"] <- "St. Lawrence"
+
 lc_mel_county = merge(lc_mel_county, fips, by = c("state", "county"))
 ```
 
@@ -162,6 +165,10 @@ asthma_county <- read_csv(here::here("data", "asthma_county.csv")) %>%
   select(-year) %>%
   rename(age_adjusted_incidence_rate = rate) %>%
   mutate(age_adjusted_incidence_rate = as.double(age_adjusted_incidence_rate))
+
+# asthma_county has 'New York County' instead of 'New York' in fips df, and "GAllia" instead of "Gallia"
+asthma_county$county[asthma_county$county == "New York County"] <- "New York"
+asthma_county$county[asthma_county$county == "GAllia"] <- "Gallia"
 
 asthma_county <- merge(asthma_county, fips, by = c("state", "county"))
 ```
