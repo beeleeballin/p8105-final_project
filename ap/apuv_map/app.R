@@ -11,6 +11,8 @@ library(ggplot2)
 # setwd("/Users/beelee/Desktop/Columbia/Fall_2021/P8105-Data_Science/p8105-final_project/ap/apuv_map/")
 apuv_df = readRDS("apuv.RDS")
 ext_val = readRDS("ext_val.RDS")
+asth_df = readRDS("asth_rates_2016.RDS")
+lc_df = readRDS("lung_rates_2014-18.RDS")
 us_counties = tigris::counties(c("NY", "PA", "OH"))
 
 # Filter dataframes for the year desired and merge with the county sf objects
@@ -82,6 +84,19 @@ merged_2013_df = filter_merge(2013)
 merged_2014_df = filter_merge(2014)
 merged_2015_df = filter_merge(2015)
 
+merged_asth_df = 
+  asth_df  %>% 
+  geo_join(us_counties, ., "GEOID",  "countyfips") %>%
+  sf::st_transform('+proj=longlat +datum=WGS84')
+
+merged_lc_df = 
+  lc_df  %>% 
+  mutate(
+    countyfips = factor(fips)
+  ) %>% 
+  geo_join(us_counties, ., "GEOID",  "countyfips") %>%
+  sf::st_transform('+proj=longlat +datum=WGS84')
+
 # Shiny.app
 ui = fluidPage(
   
@@ -104,10 +119,20 @@ ui = fluidPage(
         ),
         tabPanel("UV Radiation Level", 
                  column(leafletOutput("edd"), width = 9),
-                 column(plotOutput("box3"), br(), width=3))
+                 column(plotOutput("box3"), br(), width=3)
+        ),
+        tabPanel("2016 Asthma Incidence", 
+                 column(leafletOutput("asth"), width = 9)
+        ),
+        tabPanel("2014-2018 Lung Cancer Incidence", 
+                 column(leafletOutput("lc"), width = 9)
+        ),
+        tabPanel("2014-2018 Melanoma Incidence", 
+                 column(leafletOutput("mel"), width = 9)
+        )
       )
     )
-  
+    
     # fluidRow(
     #   column(
     #     tabsetPanel(
@@ -119,7 +144,7 @@ ui = fluidPage(
     #   column(plotlyOutput("box"), br(),width=3,style="border:1px solid black")
     # )
   )
-    
+  
   # sidebarLayout(
   #   sidebarPanel(
   #     tags$a(href = "https://ephtracking.cdc.gov/download", "Go to Data Source", target = "_blank"),
@@ -145,7 +170,7 @@ ui = fluidPage(
 server = function(input, output) {
   
   pm_oz_uv = reactive({
-
+    
     pou = select_year_season(input$yr, input$ss)
     return(pou)
     
@@ -231,7 +256,7 @@ server = function(input, output) {
   
   output$box1 = renderPlot({
     pm_oz_uv() %>% 
-      ggplot(aes(x = factor(state, rev(levels(factor(state)))), y = pm25_med_pred, fill = state)) +
+      ggplot(aes(x = factor(state, rev(levels(factor(state)))), y = pm25_pop_pred, fill = state)) +
       geom_violin(color = "#5240f1", draw_quantiles = 0.5) +
       theme_minimal() +
       scale_fill_viridis_d(direction = -1) +
@@ -248,7 +273,7 @@ server = function(input, output) {
   
   output$box2 = renderPlot({
     pm_oz_uv() %>% 
-      ggplot(aes(x = factor(state, rev(levels(factor(state)))), y = o3_med_pred, fill = state)) +
+      ggplot(aes(x = factor(state, rev(levels(factor(state)))), y = o3_pop_pred, fill = state)) +
       geom_violin(color = "#f17b12", draw_quantiles = 0.5) +
       theme_minimal() +
       scale_fill_viridis_d(direction = -1, option = "magma") +
@@ -278,6 +303,54 @@ server = function(input, output) {
         axis.title.x = element_blank(),
         legend.position = "none"
       )
+  })
+  
+  output$asth = renderLeaflet({
+    pal = colorBin(palette = "YlGn", bins = 9, domain = c(min(asth_df$logRate, na.rm = T), max(asth_df$logRate, na.rm = T)))
+    labels = sprintf("<strong>%s, %s</strong><br/> %g per 10000", pm_oz_uv()$county, pm_oz_uv()$state, merged_asth_df$logRate) %>% lapply(htmltools::HTML)
+    leaflet(merged_asth_df) %>% 
+      addProviderTiles(provider = "Stamen.Toner") %>% 
+      setView(-78, 41.8, zoom = 5.5) %>% 
+      addPolygons(label = labels,
+                  stroke = FALSE,
+                  smoothFactor = 0.5,
+                  opacity = 1,
+                  fillOpacity = 0.8,
+                  fillColor = ~pal(merged_asth_df$logRate),
+                  highlightOptions = highlightOptions(weight = 5,
+                                                      fillOpacity = 1,
+                                                      color = "black",
+                                                      opacity = 1,
+                                                      bringToFront = TRUE)) %>%
+      addLegend("bottomright",
+                pal = pal,
+                values = ~logRate,
+                title = "Count per 10K",
+                opacity = 0.7)
+  })
+  
+  output$lc = renderLeaflet({
+    pal = colorBin(palette = "PuRd", bins = 9, domain = c(min(lc_df$age_adjusted_incidence_rate, na.rm = T), max(lc_df$age_adjusted_incidence_rate, na.rm = T)))
+    labels = sprintf("<strong>%s, %s</strong><br/> %g per 10000", pm_oz_uv()$county, pm_oz_uv()$state, merged_lc_df$age_adjusted_incidence_rate) %>% lapply(htmltools::HTML)
+    leaflet(merged_lc_df) %>% 
+      addProviderTiles(provider = "Stamen.Toner") %>% 
+      setView(-78, 41.8, zoom = 5.5) %>% 
+      addPolygons(label = labels,
+                  stroke = FALSE,
+                  smoothFactor = 0.5,
+                  opacity = 1,
+                  fillOpacity = 0.8,
+                  fillColor = ~pal(merged_lc_df$age_adjusted_incidence_rate),
+                  highlightOptions = highlightOptions(weight = 5,
+                                                      fillOpacity = 1,
+                                                      color = "black",
+                                                      opacity = 1,
+                                                      bringToFront = TRUE)) %>%
+      addLegend("bottomright",
+                pal = pal,
+                values = ~age_adjusted_incidence_rate,
+                title = "Count per 10K",
+                opacity = 0.7)
   })
   
 }
