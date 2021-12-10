@@ -6,7 +6,6 @@ library(htmlwidgets)
 library(tigris)
 library(leaflet)
 library(plotly)
-library(ggplot2)
 library(beeswarm)
 
 
@@ -123,76 +122,76 @@ merged_mel_df =
     age_adjusted_incidence_rate = replace(age_adjusted_incidence_rate, is.na(age_adjusted_incidence_rate), 0)
   )
 
-apuv_plot = 
-  apuv_df %>% 
-  filter(state!="ME") %>% 
-  unite(season_year, c("season", "year"), sep = "_") %>%
-  mutate(
-    season_year = factor(season_year),
-    season_year = fct_inorder(season_year),
-    county = factor(county)
-  ) %>% 
-  arrange(state, county) %>% 
-  unite(county_state, c("county", "state"), sep = ", ") %>% 
-  mutate(
-    county_state = factor(county_state),
-    county_state = fct_inorder(county_state)
-  ) %>% 
-  select(season_year, county_state, pm25_pop_pred, o3_pop_pred, edd) %>% 
-  pivot_longer(
-    pm25_pop_pred:edd,
-    names_to = "climate",
-    values_to = "level"
-  ) %>% 
-  mutate(
-    climate = factor(climate, levels = c("pm25_pop_pred", "o3_pop_pred", "edd"), 
-                     labels = c("PM2.5", "O3", "UV"))
-  ) %>% 
-  ggplot(aes(x=season_year, y=level, group=1, color=county_state)) +
-  geom_line() +
-  scale_x_discrete(breaks=c("Spring_2005", "Winter_2015"),
-                   labels=c("2005", "2015")) +
-  labs(
-    title = "Air Pollutant Concentrations and UV Intensities over the Years",
-    color = "County",
-    y = "Concentration/Intensity"
-  ) +
-  theme(
-    axis.title.x=element_blank()
-  ) + 
-  facet_grid(climate~., scales = "free_y")
-
-beeswarm_dis_df =
-  dis_df %>% 
-  arrange(state, county) %>% 
-  unite(county_state, c("county", "state"), sep = ", ") %>% 
-  mutate(
-    county_state = factor(county_state),
-    county_state = fct_inorder(county_state)
-  ) %>% 
-  select(-fips)
-
-beeswarm_dis_plot =
-  beeswarm(age_adjusted_incidence_rate ~ outcome, 
-           data = beeswarm_dis_df, 
-           method = 'swarm', 
-           pwcol = county_state,
-           corral = "wrap")
-
-dis_plot =
-  ggplot(beeswarm_dis_plot, aes(x, y)) +
-  theme_minimal() +
-  geom_violin(aes(x, y, group = x.orig), color = "grey", fill = "grey") + 
-  geom_point(aes(color = col)) +
-  scale_x_discrete(labels=c("Asthma", "Lung Cancer", "Melanoma")) +
-  labs(
-    title = "Health Outcome Rates in the Following Years",
-    color = "County",
-    y = "Rate (Count per 100K)"
-  ) +
-  theme(
-    axis.title.x=element_blank()
-  )
+# apuv_plot = 
+#   apuv_df %>% 
+#   filter(state!="ME") %>% 
+#   unite(season_year, c("season", "year"), sep = "_") %>%
+#   mutate(
+#     season_year = factor(season_year),
+#     season_year = fct_inorder(season_year),
+#     county = factor(county)
+#   ) %>% 
+#   arrange(state, county) %>% 
+#   unite(county_state, c("county", "state"), sep = ", ") %>% 
+#   mutate(
+#     county_state = factor(county_state),
+#     county_state = fct_inorder(county_state)
+#   ) %>% 
+#   select(season_year, county_state, pm25_pop_pred, o3_pop_pred, edd) %>% 
+#   pivot_longer(
+#     pm25_pop_pred:edd,
+#     names_to = "climate",
+#     values_to = "level"
+#   ) %>% 
+#   mutate(
+#     climate = factor(climate, levels = c("pm25_pop_pred", "o3_pop_pred", "edd"), 
+#                      labels = c("PM2.5", "O3", "UV"))
+#   ) %>% 
+#   ggplot(aes(x=season_year, y=level, group=1, color=county_state)) +
+#   geom_line() +
+#   scale_x_discrete(breaks=c("Spring_2005", "Winter_2015"),
+#                    labels=c("2005", "2015")) +
+#   labs(
+#     title = "Air Pollutant Concentrations and UV Intensities over the Years",
+#     color = "County",
+#     y = "Concentration/Intensity"
+#   ) +
+#   theme(
+#     axis.title.x=element_blank()
+#   ) + 
+#   facet_grid(climate~., scales = "free_y")
+# 
+# beeswarm_dis_df =
+#   dis_df %>% 
+#   arrange(state, county) %>% 
+#   unite(county_state, c("county", "state"), sep = ", ") %>% 
+#   mutate(
+#     county_state = factor(county_state),
+#     county_state = fct_inorder(county_state)
+#   ) %>% 
+#   select(-fips)
+# 
+# beeswarm_dis_plot =
+#   beeswarm(age_adjusted_incidence_rate ~ outcome, 
+#            data = beeswarm_dis_df, 
+#            method = 'swarm', 
+#            pwcol = county_state,
+#            corral = "wrap")
+# 
+# dis_plot =
+#   ggplot(beeswarm_dis_plot, aes(x, y)) +
+#   theme_minimal() +
+#   geom_violin(aes(x, y, group = x.orig), color = "grey", fill = "grey") + 
+#   geom_point(aes(color = col)) +
+#   scale_x_discrete(labels=c("Asthma", "Lung Cancer", "Melanoma")) +
+#   labs(
+#     title = "Health Outcome Rates in the Following Years",
+#     color = "County",
+#     y = "Rate (Count per 100K)"
+#   ) +
+#   theme(
+#     axis.title.x=element_blank()
+#   )
 
 # Shiny.app
 ui = fluidPage(
@@ -204,7 +203,7 @@ ui = fluidPage(
   fluidRow(
     column(width = 1, offset = 5, selectInput("yr", "Year", choices = unique(apuv_df$year))),
     column(width = 1, selectInput("ss", "Season", choices = unique(apuv_df$season))),
-    column(width = 2, offset = 3, tags$a(href = "https://ephtracking.cdc.gov/download", "Go to Data Source", target = "_blank"), br(), tags$a(href = "https://19january2017snapshot.epa.gov/air-research/downscaler-model-predicting-daily-air-pollution_.html", "Learn about the Downscaler Model", target = "_blank"), style="text-align:right; color:black")
+    column(width = 3, offset = 2, tags$a(href = "https://ephtracking.cdc.gov/download", "Go to Data Source", target = "_blank"), br(), tags$a(href = "https://19january2017snapshot.epa.gov/air-research/downscaler-model-predicting-daily-air-pollution_.html", "Learn about the Downscaler Model", target = "_blank"), style="text-align:right; color:black")
   ),
     
   fluidRow(
@@ -243,18 +242,16 @@ ui = fluidPage(
                column(plotOutput("box_mel"), width = 3)
       )
     )
-  ),
+  )
   
-  hr(),
-  
-  p("Play around these plots to see if you could find some association between climate and health outcomes.", style="text-align:justify;color:black;background-color:lavender;padding:15px;border-radius:10px"),
-  
-  column(width = 6, plotlyOutput('cli_plotly')),
-  column(width = 6, plotlyOutput('out_plotly'))
-  
+  # hr(),
+  # 
+  # p("Play around these plots to see if you could find some association between climate and health outcomes.", style="text-align:justify;color:black;background-color:lavender;padding:15px;border-radius:10px"),
+  # 
+  # column(width = 6, plotlyOutput('cli_plotly')),
+  # column(width = 6, plotlyOutput('out_plotly'))
   
 )
-
 
 server = function(input, output) {
   
@@ -267,7 +264,6 @@ server = function(input, output) {
   
   output$pm25 = renderLeaflet({
     pal = colorBin(palette = "viridis", bins = 9, domain = c(as.numeric(ext_val[4]), as.numeric(ext_val[1])), reverse = T)
-    # labels = sprintf("<strong>%s, %s</strong><br/>Mean: %g ug/m^3<br/>Max: %g ug/m^3", pm_oz_uv()$county, pm_oz_uv()$state, pm_oz_uv()$pm25_pop_pred, pm_oz_uv()$pm25_max_pred) %>% lapply(htmltools::HTML)
     labels = sprintf("<strong>%s, %s</strong><br/>%g \u00b5g/m\u00b3", pm_oz_uv()$county, pm_oz_uv()$state, pm_oz_uv()$pm25_pop_pred) %>% lapply(htmltools::HTML)
     pm_oz_uv() %>% 
       leaflet() %>% 
@@ -293,7 +289,6 @@ server = function(input, output) {
   
   output$o3 = renderLeaflet({
     pal = colorBin(palette = "inferno", bins = 9, domain = c(as.numeric(ext_val[5]),as.numeric(ext_val[2])), reverse = T)
-    # labels = sprintf("<strong>%s, %s</strong><br/>Mean: %g ppm<br/>Max: %g ppm", pm_oz_uv()$county, pm_oz_uv()$state, pm_oz_uv()$o3_pop_pred, pm_oz_uv()$o3_max_pred) %>% lapply(htmltools::HTML)
     labels = sprintf("<strong>%s, %s</strong><br/> %g ppm", pm_oz_uv()$county, pm_oz_uv()$state, pm_oz_uv()$o3_pop_pred) %>% lapply(htmltools::HTML)
     pm_oz_uv() %>% 
       leaflet() %>% 
@@ -319,7 +314,6 @@ server = function(input, output) {
   
   output$edd = renderLeaflet({
     pal = colorBin(palette = "BuPu", bins = 9, domain = c(as.numeric(ext_val[6]),as.numeric(ext_val[3])))
-    # labels = sprintf("<strong>%s, %s</strong><br/>edd: %g J/m^2 <br/>edr: %g J/m^2", pm_oz_uv()$county, pm_oz_uv()$state, pm_oz_uv()$edd, pm_oz_uv()$edr) %>% lapply(htmltools::HTML)
     labels = sprintf("<strong>%s, %s</strong><br/> %g J/m\u00b2", pm_oz_uv()$county, pm_oz_uv()$state, pm_oz_uv()$edd) %>% lapply(htmltools::HTML)
     pm_oz_uv() %>% 
       leaflet() %>% 
@@ -518,25 +512,13 @@ server = function(input, output) {
       )
   })
   
-  output$cli_plotly = renderPlotly({
-    ggplotly(apuv_plot)
-      # layout(legend = list(yanchor="top",
-      #                      y=1,
-      #                      xanchor="left",
-      #                      x=-0.4
-      #                 )
-      #       )
-  })
-  
-  output$out_plotly = renderPlotly({
-    ggplotly(dis_plot)
-      # layout(legend = list(yanchor="top",
-      #                      y=1,
-      #                      xanchor="left",
-      #                      x=-0.4
-      #                 )
-      # )
-  })
+  # output$cli_plotly = renderPlotly({
+  #   ggplotly(apuv_plot)
+  # })
+  # 
+  # output$out_plotly = renderPlotly({
+  #   ggplotly(dis_plot)
+  # })
 }
 
 shinyApp(ui = ui, server = server)
