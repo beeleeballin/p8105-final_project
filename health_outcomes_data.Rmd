@@ -22,7 +22,9 @@ library(rjson)
 
 For health outcomes data, we are interested in the incidence of asthma, skin 
 cancer and lung cancer across time and space. We obtained age-adjusted incidence 
-rates data for these three health outcomes for the U.S. states New York, Ohio 
+rates of asthma related hospitalizations, age-adjusted incidence rates of
+Melanoma of the skin and age-adjusted incidence rates of lung cancer. The rates 
+were per 100,000 people for the three U.S. states New York, Ohio 
 and Pennsylvania over multiple years. The following bullet points provide links 
 from where we obtained the data.
 
@@ -100,6 +102,23 @@ state-level data.
 lc_mel_asthma_state <- bind_rows(lc_mel_state, asthma_state) %>%
   arrange(state, year, outcome)
 ```
+
+The resulting data set has `r nrow(lc_mel_asthma_state)` rows and 
+`r ncol(lc_mel_asthma_state)` columns. There are 
+`r length(unique(pull(lc_mel_asthma_state, state)))` states: New York,
+Ohio and Pennsylvania. Years span from 
+`r min(pull(lc_mel_asthma_state, year))` to 
+`r max(pull(lc_mel_asthma_state, year))`. 
+There are 
+`r sum(!is.na(pull(lc_mel_asthma_state, age_adjusted_incidence_rate)))` 
+non-missing age-adjusted incidence rates. So, no missing data.
+
+The columns in this data set are:  
+`state`: The U.S. state.  
+`year`: The year.  
+`outcome`: The health outcome.  
+`age_adjusted_incidence_rate`: The age-adjusted incidence rate for the health
+outcome per 100,000.  
 
 Lastly, let's write out the combined data.
 ```{r}
