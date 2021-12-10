@@ -5,7 +5,25 @@ output:
     code_folding: hide
 ---
 
+## Data Sources
+
+For the climate data we were interested in metrics that were potential risk factors for asthma, lung cancer, and skin cancer, keeping in mind spatial parameters of obtaining data from different states at the county and state level while also looking at longitudinal data across multiple year. 
+
+We were able to use a national database maintained by the EPA to obtain daily concentrations of 2 specific air pollutants -- inhalable particles termed fine particulate matter (PM~2.5~), and ozone gas (O~3~) -- at the county level across the states from 2001 to 2016. The dataset has no missing values since the it is partially supported by a credible simulation model. 
+
+Similar to the air pollution data, we have daily UV measurements at the county level across the states from 2004 to 2015. However, there is occasional missing data and as a result, we ruled out the years populated with missing values for analysis. 
+
+For more information about the original data set and methods, see the relevant sites:
+
+* [EPA - Remote Sensing Information Gateway (RSIG) with related Air Quality Data](https://19january2017snapshot.epa.gov/hesc/rsig-related-downloadable-data-files_.html)
+* [CDC - Population-Weighted Ultraviolet (UV) irradiance data](https://19january2017snapshot.epa.gov/hesc/rsig-related-downloadable-data-files_.html)
+
+Once we imported each of these data sets into R, the data sets were merged across the three states for both longitudinal and cross-sectional data. The data import and cleaning of the original data for [UV irradiance](https://github.com/beeleeballin/p8105-final_project/blob/main/ap/ap_uv/edd.csv), [PM~2.5~](https://github.com/beeleeballin/p8105-final_project/blob/main/ap/ap_uv/pm25.csv), and  [ozone](https://github.com/beeleeballin/p8105-final_project/blob/main/ap/ap_uv/o3.csv) can be found in our [github repository](https://github.com/beeleeballin/p8105-final_project).
+
+## Data Prep
+
 Load packages.
+
 ```{r, message=F}
 library(tidyverse)
 library(rvest)
@@ -13,7 +31,7 @@ library(httr)
 ```
 
 Scrape FIPS data and put it in a dataframe. See [USDA County FIPS](https://www.nrcs.usda.gov/wps/portal/nrcs/detail/national/home/?cid=nrcs143_013697).
-```{r}
+```{r message=FALSE, warning=FALSE}
 usda_countyfips = read_html("https://www.nrcs.usda.gov/wps/portal/nrcs/detail/national/home/?cid=nrcs143_013697")
 
 countyfips_string =
@@ -38,8 +56,9 @@ countyfips_df =
   )
 ```
 
-Load and tidy air pollution data. We have daily concentrations of 2 specific pollutants -- inhalable particles termed Particulate Matter, and ozone gas -- at the county level across the states from 2001 to 2016. The dataset has no missing values since the it is partially supported by a credible simulation model. For more information about our dataset and methods, see the relevant [CDC](https://ephtracking.cdc.gov/download) and [EPA](https://19january2017snapshot.epa.gov/air-research/downscaler-model-predicting-daily-air-pollution_.html) sites. 
-```{r, message=F}
+Load and tidy air pollution data. 
+
+```{r eval = FALSE, message=FALSE, warning=FALSE}
 pm_df = 
   read_csv("../final_raw/Daily_PM2.5_Concentrations_All_County__2001-2016.csv") %>% 
   filter(statefips %in% c(36, 39, 23, 42)) %>% 
@@ -64,10 +83,11 @@ oz_df =
 
 ```
 
-Similar to the air pollution data, we have daily UV measurements at the county level across the states from 2004 to 2015 with occasional missing data. As a result, we ruled out the years populated with missing values for analysis. 
-```{r, message=F}
+Load and tidy UV irradiance data.
+
+```{r eval = FALSE, message=FALSE, warning=FALSE}
 uv_df = 
-  read_csv("../final_raw/Population-Weighted_Ultraviolet_Irradiance__2004-2015.csv") %>%
+  read_csv("./data/Population-Weighted_Ultraviolet_Irradiance__2004-2015.csv") %>%
   filter(statefips %in% c(36, 39, 23, 42)) %>% 
   mutate(
     day = factor(as.numeric(day)),
@@ -79,7 +99,8 @@ uv_df =
 ```
 
 Join the air pollution and UV data sensibly, and match the county names using the FIPS dataframe.
-```{r}
+
+```{r eval= FALSE, message=FALSE, warning=FALSE}
 ap_uv_df = 
   full_join(pm_df, oz_df, by = c("year", "countyfips", "month", "day")) %>% 
   full_join(., uv_df, by = c("year", "countyfips", "month", "day")) %>% 
@@ -102,7 +123,8 @@ ap_uv_df =
 ```
 
 Export the large tidied dataframe whole and its summaries for our project.
-```{r, message=F}
+
+```{r eval= FALSE, message=FALSE, warning=FALSE}
 tidy_df =
   ap_uv_df %>% 
   mutate(
@@ -136,10 +158,108 @@ extreme_value =
   )
 
 saveRDS(extreme_value,"ap/apuv_map/ext_val.RDS")
-
-knitr::kable(head(tidy_df, 7),
-             format = "simple", 
-             col.names = str_to_title(names(tidy_df))
-)
 ```
 
+An example of the resulting data set:
+
+```{r, message=F}
+library(kableExtra)
+
+knitr::opts_chunk$set(
+	fig.asp = 0.75,
+	fig.width = 6,
+	message = FALSE,
+	warning = FALSE,
+	out.width = "100%"
+)
+
+tidy_df <-
+  read_csv("./ap/ap_uv/apuv.csv") %>% 
+  janitor::clean_names() %>% 
+  filter(year == 2005, state == "NY")
+
+kbl(tidy_df[1:7,]) %>% 
+  kable_styling(bootstrap_options = c("striped", "hover"), full_width = T) %>% 
+  scroll_box(width = "100%", height = "200px")
+
+```
+
+## Visualizing Trends in Climate Data over Space and Time
+
+```{r message=FALSE, warning=FALSE}
+
+knitr::opts_chunk$set(
+	fig.asp = 0.75,
+	fig.width = 6,
+	message = FALSE,
+	warning = FALSE,
+	out.width = "100%"
+)
+
+library(patchwork)
+scale_colour_discrete = scale_color_viridis_d
+scale_fill_discrete = scale_fill_viridis_d
+theme_set(theme_bw() + theme(plot.caption = element_text(size = 6.5)))
+
+# Ozone
+o3_time <-
+  read_csv("./ap/ap_uv/o3.csv") %>% 
+  janitor::clean_names() %>% 
+  filter(state == "NY" | state == "OH" | state == "PA") %>% 
+  select(-hover) %>% 
+  janitor::clean_names() %>% 
+  mutate(county = tolower(county))
+
+o3_lreg <-
+  o3_time %>% 
+  ggplot(aes(x = year, y = o3, color = season)) +
+  geom_point(alpha = 0.1) +
+  geom_smooth(method = "loess", se = TRUE) +
+  labs(x = "Year", y = "Ozone (ppb)", color = "Season") +
+  theme(legend.position = "top") +
+  facet_grid(. ~ state) 
+
+# PM2.5 plot
+pmname = expression(PM~2.5~(µg/cm^2))
+
+pm_time <-
+  read_csv("./ap/ap_uv/pm25.csv") %>% 
+  janitor::clean_names() %>% 
+  filter(state == "NY" | state == "OH" | state == "PA") %>% 
+  select(-hover) %>% 
+  janitor::clean_names() %>% 
+  mutate(county = tolower(county))
+
+pm_lreg <-
+  pm_time %>% 
+  ggplot(aes(x = year, y = pm2_5, color = season)) +
+  geom_point(alpha = 0.1) +
+  geom_smooth(method = "loess", se = TRUE) +
+  labs(x = "Year", y = pmname) +
+  theme(legend.position = "none") +
+  facet_grid(. ~ state) 
+
+# UV plot
+
+name_uv = expression(UV~(J/m^2))
+
+uv_time <-
+  read_csv("./ap/ap_uv/edd.csv") %>% 
+  janitor::clean_names() %>% 
+  filter(state == "NY" | state == "OH" | state == "PA") %>% 
+  select(-hover) %>% 
+  mutate(county = tolower(county))
+
+uv_lreg <-
+  uv_time %>% 
+  ggplot(aes(x = year, y = uv, color = season)) +
+  geom_point(alpha = 0.1) +
+  geom_smooth(method = "loess", se = TRUE) +
+  labs(x = "Year", y = name_uv) +
+  theme(legend.position = "none") +
+  facet_grid(. ~ state) 
+
+o3_lreg 
+pm_lreg
+uv_lreg
+```
