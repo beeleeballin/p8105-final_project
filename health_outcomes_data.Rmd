@@ -54,7 +54,7 @@ Each of these data sets were exported and each imported into R. For each
 of the three health outcomes, the data sets were merged across the three states 
 for the longitudinal data and for the cross-sectional data. This effort resulted 
 in six data sets. The data import and cleaning of the original data for
-[asthma](), 
+[asthma](https://github.com/beeleeballin/p8105-final_project/blob/main/data/asthma_data.Rmd), 
 [melanoma of the skin](https://github.com/beeleeballin/p8105-final_project/blob/main/melanoma_data_import.Rmd)
 and [lung cancer](https://github.com/beeleeballin/p8105-final_project/blob/main/lung_cancer_data.Rmd) 
 can be found in our 
