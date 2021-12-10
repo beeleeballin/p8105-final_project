@@ -322,7 +322,7 @@ aair_by_year_by_outcome <- function(df, outcome_var, plot_title) {
                                             list(step = "all"))),
         rangeslider = list(type = "year"),
         title = "Year"),
-      yaxis = list(title = "Age-Adjusted Incidence Rate per 100,000")
+      yaxis = list(title = "Age-Adjusted Incidence Rate")
   )  
 }
 ```
@@ -332,11 +332,11 @@ outcome at the county-level followed by the longitudinal line graph of the
 age-adjusted incidence rate of the health outcome by year for all 
 three states.
 
-Asthma:
+**Asthma:**
 ```{r warning=FALSE}
 map_by_outcome(lc_mel_asthma_county, 
                "asthma", 
-               "Asthma Age-Adjusted Incidence Rates (2016)")
+               "Asthma Related Hospitalizations Age-Adjusted Incidence Rates (2016)")
 ```
 
 ```{r}
@@ -345,7 +345,14 @@ aair_by_year_by_outcome(lc_mel_asthma_state,
                         "Asthma Age-Adjusted Incidence Rates")
 ```
 
-Melanoma of the skin:
+The age-adjusted incidence rates of asthma related hospitalizations, at the
+county-level, appears relatively higher in major cities in each of the three 
+states, like New York City, Philadelphia and Cleveland, in 2016.
+
+Over time, age-adjusted incidence rates of asthma related 
+hospitalizations have fallen for all three states.
+
+**Melanoma of the Skin:**
 ```{r}
 map_by_outcome(lc_mel_asthma_county, 
                "melanoma", 
@@ -358,7 +365,15 @@ aair_by_year_by_outcome(lc_mel_asthma_state,
                         "Melanoma of the Skin Age-Adjusted Incidence Rates")
 ```
 
-Lung Cancer:
+The average age-adjusted incidence rates of Melanoma of the Skin from 2014 to 
+2018, at the county-level, appears randomly varied across the three states with 
+all states having counties with relatively lower and higher average age-adjusted 
+incidence rates of Melanoma of the Skin.
+
+Over time, average age-adjusted incidence rates of Melanoma of the Skin have 
+increased for all three states.
+
+**Lung Cancer:**
 ```{r}
 map_by_outcome(lc_mel_asthma_county, 
                "lung cancer", 
@@ -371,8 +386,10 @@ aair_by_year_by_outcome(lc_mel_asthma_state,
                         "Lung Cancer Age-Adjusted Incidence Rates")
 ```
 
-Clearly, according to the map below, lung cancer is a relevant issue in 
-our three states of interest (NY, PA, and OH). They also provide a good
-range of examples, as we can see multiple counties with high age-adjusted 
-incidence rates in Ohio, a few in New York, and virtually none in Pennsylvania.
+Relatively high average age-adjusted incidence rates of Lung Cancer from 2014 to 
+2018, at the county-level, occur most frequently in Ohio, followed by New York,
+followed by Pennsylvania.
+
+Average age-adjusted incidence rates of Lung Cancer roughly increased for all 
+three states until 1998 and have fallen since.
 
