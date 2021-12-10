@@ -11,8 +11,9 @@ library(ggplot2)
 # setwd("/Users/beelee/Desktop/Columbia/Fall_2021/P8105-Data_Science/p8105-final_project/ap/apuv_map/")
 apuv_df = readRDS("apuv.RDS")
 ext_val = readRDS("ext_val.RDS")
-asth_df = readRDS("asth_rates_2016.RDS")
-lc_df = readRDS("lung_rates_2014-18.RDS")
+# asth_df = readRDS("asth_rates_2016.RDS")
+# lc_df = readRDS("lung_rates_2014-18.RDS")
+dis_df = readRDS("dis_rates.RDS")
 us_counties = tigris::counties(c("NY", "PA", "OH"))
 
 # Filter dataframes for the year desired and merge with the county sf objects
@@ -85,17 +86,41 @@ merged_2014_df = filter_merge(2014)
 merged_2015_df = filter_merge(2015)
 
 merged_asth_df = 
-  asth_df  %>% 
-  geo_join(us_counties, ., "GEOID",  "countyfips") %>%
-  sf::st_transform('+proj=longlat +datum=WGS84')
+  dis_df  %>% 
+  filter(outcome == "asthma") %>% 
+  mutate(
+    fips = factor(fips)
+  ) %>% 
+  geo_join(us_counties, ., "GEOID",  "fips") %>%
+  sf::st_transform('+proj=longlat +datum=WGS84') %>% 
+  mutate(
+    logRate = log(age_adjusted_incidence_rate),
+    logRate = replace(logRate, (is.na(logRate) | logRate == -Inf), 0)
+  )
 
 merged_lc_df = 
-  lc_df  %>% 
+  dis_df  %>% 
+  filter(outcome == "lung cancer") %>% 
   mutate(
-    countyfips = factor(fips)
+    fips = factor(fips)
   ) %>% 
-  geo_join(us_counties, ., "GEOID",  "countyfips") %>%
-  sf::st_transform('+proj=longlat +datum=WGS84')
+  geo_join(us_counties, ., "GEOID",  "fips") %>%
+  sf::st_transform('+proj=longlat +datum=WGS84') %>% 
+  mutate(
+    age_adjusted_incidence_rate = replace(age_adjusted_incidence_rate, is.na(age_adjusted_incidence_rate), 0)
+  )
+  
+merged_mel_df = 
+  dis_df  %>% 
+  filter(outcome == "melanoma") %>% 
+  mutate(
+    fips = factor(fips)
+  ) %>% 
+  geo_join(us_counties, ., "GEOID",  "fips") %>%
+  sf::st_transform('+proj=longlat +datum=WGS84') %>% 
+  mutate(
+    age_adjusted_incidence_rate = replace(age_adjusted_incidence_rate, is.na(age_adjusted_incidence_rate), 0)
+  )
 
 # Shiny.app
 ui = fluidPage(
@@ -306,8 +331,8 @@ server = function(input, output) {
   })
   
   output$asth = renderLeaflet({
-    pal = colorBin(palette = "YlGn", bins = 9, domain = c(min(asth_df$logRate, na.rm = T), max(asth_df$logRate, na.rm = T)))
-    labels = sprintf("<strong>%s, %s</strong><br/> %g per 10000", pm_oz_uv()$county, pm_oz_uv()$state, merged_asth_df$logRate) %>% lapply(htmltools::HTML)
+    pal = colorBin(palette = "YlGn", bins = 9, domain = c(min(merged_asth_df$logRate, na.rm = T), max(merged_asth_df$logRate, na.rm = T)))
+    labels = sprintf("<strong>%s, %s</strong><br/> %g per 100K", pm_oz_uv()$county, pm_oz_uv()$state, merged_asth_df$logRate) %>% lapply(htmltools::HTML)
     leaflet(merged_asth_df) %>% 
       addProviderTiles(provider = "Stamen.Toner") %>% 
       setView(-78, 41.8, zoom = 5.5) %>% 
@@ -324,14 +349,14 @@ server = function(input, output) {
                                                       bringToFront = TRUE)) %>%
       addLegend("bottomright",
                 pal = pal,
-                values = ~logRate,
+                values = ~merged_asth_df$logRate,
                 title = "Count per 10K",
                 opacity = 0.7)
   })
   
   output$lc = renderLeaflet({
-    pal = colorBin(palette = "PuRd", bins = 9, domain = c(min(lc_df$age_adjusted_incidence_rate, na.rm = T), max(lc_df$age_adjusted_incidence_rate, na.rm = T)))
-    labels = sprintf("<strong>%s, %s</strong><br/> %g per 10000", pm_oz_uv()$county, pm_oz_uv()$state, merged_lc_df$age_adjusted_incidence_rate) %>% lapply(htmltools::HTML)
+    pal = colorBin(palette = "PuRd", bins = 9, domain = c(min(merged_lc_df$age_adjusted_incidence_rate, na.rm = T), max(merged_lc_df$age_adjusted_incidence_rate, na.rm = T)))
+    labels = sprintf("<strong>%s, %s</strong><br/> %g per 100K", pm_oz_uv()$county, pm_oz_uv()$state, merged_lc_df$age_adjusted_incidence_rate) %>% lapply(htmltools::HTML)
     leaflet(merged_lc_df) %>% 
       addProviderTiles(provider = "Stamen.Toner") %>% 
       setView(-78, 41.8, zoom = 5.5) %>% 
@@ -341,6 +366,30 @@ server = function(input, output) {
                   opacity = 1,
                   fillOpacity = 0.8,
                   fillColor = ~pal(merged_lc_df$age_adjusted_incidence_rate),
+                  highlightOptions = highlightOptions(weight = 5,
+                                                      fillOpacity = 1,
+                                                      color = "black",
+                                                      opacity = 1,
+                                                      bringToFront = TRUE)) %>%
+      addLegend("bottomright",
+                pal = pal,
+                values = ~age_adjusted_incidence_rate,
+                title = "Count per 10K",
+                opacity = 0.7)
+  })
+  
+  output$mel = renderLeaflet({
+    pal = colorBin(palette = "YlOrBr", bins = 9, domain = c(min(merged_mel_df$age_adjusted_incidence_rate, na.rm = T), max(merged_mel_df$age_adjusted_incidence_rate, na.rm = T)))
+    labels = sprintf("<strong>%s, %s</strong><br/> %g per 100K", pm_oz_uv()$county, pm_oz_uv()$state, merged_mel_df$age_adjusted_incidence_rate) %>% lapply(htmltools::HTML)
+    leaflet(merged_mel_df) %>% 
+      addProviderTiles(provider = "Stamen.Toner") %>% 
+      setView(-78, 41.8, zoom = 5.5) %>% 
+      addPolygons(label = labels,
+                  stroke = FALSE,
+                  smoothFactor = 0.5,
+                  opacity = 1,
+                  fillOpacity = 0.8,
+                  fillColor = ~pal(merged_mel_df$age_adjusted_incidence_rate),
                   highlightOptions = highlightOptions(weight = 5,
                                                       fillOpacity = 1,
                                                       color = "black",
