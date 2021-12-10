@@ -11,8 +11,6 @@ output:
 
 ```{r setup, include=FALSE}
 library(tidyverse)
-library(tidyr)
-library(dplyr)
 library(here)
 library(plotly)
 ```
@@ -581,6 +579,121 @@ Visualizations, summaries, and exploratory statistical analyses. Justify the ste
 #### Asthma
 
 Initial assessment of asthma data explored the two metric for measuring prevalence in the population, namely emergency department visits and hospitalizations due to asthma. **STILL WORKING ON THIS**
+
+### Exposures and Outcome
+
+```{r}
+apuv_df = readRDS("./ap/apuv_map/apuv.RDS")
+
+apuv_plot = 
+  apuv_df %>% 
+  filter(state!="ME") %>% 
+  unite(season_year, c("season", "year"), sep = "_") %>%
+  mutate(
+    season_year = factor(season_year),
+    season_year = fct_inorder(season_year),
+    county = factor(county)
+  ) %>% 
+  arrange(state, county) %>% 
+  unite(county_state, c("county", "state"), sep = ", ") %>% 
+  mutate(
+    county_state = factor(county_state),
+    county_state = fct_inorder(county_state)
+  ) %>% 
+  select(season_year, county_state, pm25_pop_pred, o3_pop_pred, edd) %>% 
+  pivot_longer(
+    pm25_pop_pred:edd,
+    names_to = "climate",
+    values_to = "level"
+  ) %>% 
+  mutate(
+    climate = factor(climate, levels = c("pm25_pop_pred", "o3_pop_pred", "edd"), 
+                     labels = c("PM2.5", "O3", "UV"))
+  ) %>% 
+  ggplot(aes(x=season_year, y=level, group=1, color=county_state)) +
+  geom_line() +
+  scale_x_discrete(breaks=c("Spring_2005", "Winter_2015"),
+                   labels=c("2005", "2015")) +
+  labs(
+    title = "Air Pollutant Concentrations and UV Intensities over the Years",
+    color = "County",
+    y = "Concentration/Intensity"
+  ) +
+  theme(
+    axis.title.x=element_blank()
+  ) + 
+  facet_grid(climate~., scales = "free_y")
+
+ggplotly(apuv_plot)
+```
+
+
+```{r, eval = F}
+library(beeswarm)
+dis_df = readRDS("./ap/apuv_map/dis_rates.RDS")
+
+beeswarm_dis_df =
+  dis_df %>% 
+  arrange(state, county) %>% 
+  unite(county_state, c("county", "state"), sep = ", ") %>% 
+  mutate(
+    county_state = factor(county_state),
+    county_state = fct_inorder(county_state)
+  ) %>% 
+  select(-fips)
+
+beeswarm_dis_plot =
+  beeswarm(age_adjusted_incidence_rate ~ outcome, 
+           data = beeswarm_dis_df, 
+           method = 'swarm', 
+           pwcol = county_state,
+           corral = "wrap",
+  )
+```
+
+```{r, include = F}
+library(beeswarm)
+dis_df = readRDS("./ap/apuv_map/dis_rates.RDS")
+
+beeswarm_dis_df =
+  dis_df %>% 
+  arrange(state, county) %>% 
+  unite(county_state, c("county", "state"), sep = ", ") %>% 
+  mutate(
+    county_state = factor(county_state),
+    county_state = fct_inorder(county_state)
+  ) %>% 
+  select(-fips)
+
+beeswarm_dis_plot =
+  beeswarm(age_adjusted_incidence_rate ~ outcome, 
+           data = beeswarm_dis_df, 
+           method = 'swarm', 
+           pwcol = county_state,
+           corral = "wrap",
+  )
+```
+
+
+```{r}
+dis_plot =
+  ggplot(beeswarm_dis_plot, aes(x, y)) +
+  theme_minimal() +
+  geom_violin(aes(x, y, group = x.orig), color = "grey", fill = "grey") + 
+  geom_point(aes(color = col)) +
+  scale_x_discrete(labels=c("Asthma", "Lung Cancer", "Melanoma")) +
+  labs(
+    title = "Health Outcome Rates in the Following Years",
+    color = "County",
+    y = "Rate (Count per 100K)"
+  ) +
+  theme(
+    axis.title.x=element_blank()
+  )
+
+ggplotly(dis_plot)
+
+```
 
 ### Spatial visualizations of exposures and outcomes
 

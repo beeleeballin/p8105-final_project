@@ -174,7 +174,7 @@ beeswarm_dis_df =
 
 beeswarm_dis_plot =
   beeswarm(age_adjusted_incidence_rate ~ outcome, 
-           data = alt_dis_df, 
+           data = beeswarm_dis_df, 
            method = 'swarm', 
            pwcol = county_state,
            corral = "wrap")
