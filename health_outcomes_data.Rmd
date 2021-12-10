@@ -199,6 +199,35 @@ lc_mel_asthma_county <- bind_rows(lc_mel_county, asthma_county) %>%
   arrange(state, county, outcome)
 ```
 
+The resulting data set has `r nrow(lc_mel_asthma_county)` rows and 
+`r ncol(lc_mel_asthma_county)` columns. There are 
+`r length(unique(pull(lc_mel_asthma_county, state)))` states: New York,
+Ohio and Pennsylvania.  
+There are 
+`r sum(!is.na(pull(lc_mel_asthma_county, age_adjusted_incidence_rate)))` 
+non-missing age-adjusted incidence rates.
+
+The following table displays the number of counties for which we have 
+non-missing age-adjusted incidence rates in each state and the total number of 
+counties in each state
+```{r}
+lc_mel_asthma_county %>%
+  group_by(state) %>%
+  summarize(
+    non_missing_county = sum(!is.na(age_adjusted_incidence_rate)),
+    total_counties = n()
+  ) %>%
+  knitr::kable()
+```
+
+The columns in this data set are:  
+`state`: The U.S. state.  
+`county`: The county in the state.  
+`outcome`: The health outcome.  
+`age_adjusted_incidence_rate`: The age-adjusted incidence rate for the health
+outcome per 100,000.   
+`fips`: The state-county FIPS code.
+
 Lastly, let's write out the combined data.
 ```{r}
 write_csv(lc_mel_asthma_county, here::here("data", "lc_mel_asthma_county.csv"))
