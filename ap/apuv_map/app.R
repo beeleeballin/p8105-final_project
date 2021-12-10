@@ -11,8 +11,6 @@ library(ggplot2)
 # setwd("/Users/beelee/Desktop/Columbia/Fall_2021/P8105-Data_Science/p8105-final_project/ap/apuv_map/")
 apuv_df = readRDS("apuv.RDS")
 ext_val = readRDS("ext_val.RDS")
-# asth_df = readRDS("asth_rates_2016.RDS")
-# lc_df = readRDS("lung_rates_2014-18.RDS")
 dis_df = readRDS("dis_rates.RDS")
 us_counties = tigris::counties(c("NY", "PA", "OH"))
 
@@ -125,72 +123,59 @@ merged_mel_df =
 # Shiny.app
 ui = fluidPage(
   
-  titlePanel("Air Pollution and UV Radiation Exposure Map"),
+  titlePanel("Mapping Climate Exposures and Health Outcomes"),
   
   fluidRow(
-    column(p("Some climate conditions and particular chronic disease risks are known to be correlated. Let's explore the Particulate Matter, Ozone, and UV radiation levels over the years in counties in New York, Pennsylvania, and Ohio.", strong("ON THE RIGHT"), ", select year and season to these climate exposures in every county!",style="text-align:justify;color:black;background-color:lavender;padding:15px;border-radius:10px"), tags$a(href = "https://ephtracking.cdc.gov/download", "Go to Data Source", target = "_blank"), tags$a(href = "https://19january2017snapshot.epa.gov/air-research/downscaler-model-predicting-daily-air-pollution_.html", "Learn about the Downscaler Model", target = "_blank"), style="text-align:center;color:black", width=8),
-    column(selectInput("yr", "Select a year", choices = unique(apuv_df$year)), selectInput("ss", "Select a season", choices = unique(apuv_df$season)), width=4),
+    column(width = 12, p("Climate conditions and particular chronic disease risks are known to be correlated.", br(), " Let's explore the Particulate Matter, Ozone, and UV radiation levels over the years across counties in New York, Pennsylvania, and Ohio.", strong("Select a desired year and season"), "to view these climate exposures on a county level!", style="text-align:justify;color:black;background-color:lavender;padding:15px;border-radius:10px"))
+  ),
+  
+  fluidRow(
+    column(width = 1, offset = 5, selectInput("yr", "Year", choices = unique(apuv_df$year))),
+    column(width = 1, selectInput("ss", "Season", choices = unique(apuv_df$season))),
+    column(width = 2, offset = 3, tags$a(href = "https://ephtracking.cdc.gov/download", "Go to Data Source", target = "_blank"), br(), tags$a(href = "https://19january2017snapshot.epa.gov/air-research/downscaler-model-predicting-daily-air-pollution_.html", "Learn about the Downscaler Model", target = "_blank"), style="text-align:right; color:black")
+  ),
     
-    fluidRow(
-      
-      tabsetPanel(
-        tabPanel("Particulate Matter (2.5) Level", 
-                 column(leafletOutput("pm25"), width = 9),
-                 column(plotOutput("box1"), br(), width=3)
-        ),
-        tabPanel("Ozone Level", 
-                 column(leafletOutput("o3"), width = 9),
-                 column(plotOutput("box2"), br(), width=3)
-        ),
-        tabPanel("UV Radiation Level", 
-                 column(leafletOutput("edd"), width = 9),
-                 column(plotOutput("box3"), br(), width=3)
-        ),
-        tabPanel("2016 Asthma Incidence", 
-                 column(leafletOutput("asth"), width = 9)
-        ),
-        tabPanel("2014-2018 Lung Cancer Incidence", 
-                 column(leafletOutput("lc"), width = 9)
-        ),
-        tabPanel("2014-2018 Melanoma Incidence", 
-                 column(leafletOutput("mel"), width = 9)
-        )
+  fluidRow(
+    tabsetPanel(
+      tabPanel("Particulate Matter (2.5) Level", 
+               column(leafletOutput("pm25"), width = 9), 
+               column(plotOutput("box_pm"), width = 3)
+      ),
+      tabPanel("Ozone Level", 
+               column(leafletOutput("o3"), width = 9),
+               column(plotOutput("box_oz"), width=3)
+      ),
+      tabPanel("UV Radiation Level", 
+               column(leafletOutput("edd"), width = 9),
+               column(plotOutput("box_uv"), width=3)
       )
     )
-    
-    # fluidRow(
-    #   column(
-    #     tabsetPanel(
-    #       tabPanel("Particulate Matter (2.5) Level", leafletOutput("pm25")),
-    #       tabPanel("Ozone Level", leafletOutput("o3")),
-    #       tabPanel("UV Radiation Level", leafletOutput("edd"))
-    #     ), width = 9
-    #   ),
-    #   column(plotlyOutput("box"), br(),width=3,style="border:1px solid black")
-    # )
-  )
+  ),
   
-  # sidebarLayout(
-  #   sidebarPanel(
-  #     tags$a(href = "https://ephtracking.cdc.gov/download", "Go to Data Source", target = "_blank"),
-  #     tags$a(href = "https://19january2017snapshot.epa.gov/air-research/downscaler-model-predicting-daily-air-pollution_.html", "Learn about the Downscaler Model", target = "_blank"),
-  #     # tags$script(type = "text/x-mathjax-config", 'MathJax.Hub.Config({"HTML-CSS": { linebreaks: {automatic: true}},SVG: {linebreaks: {automatic: true}}});'),
-  #     h5("Some climate conditions and particular chronic disease risks are known to be correlated. Let's explore the Particulate Matter, Ozone, and UV radiation levels over the years in counties in New York, Pennsylvania, and Ohio."),
-  #     selectInput("yr", "Select a year", choices = unique(apuv_df$year)),
-  #     selectInput("ss", "Select a season", choices = unique(apuv_df$season))
-  #     # selectInput("out", "Select a outcome", choices = c("lung", "melanoma", "asthma"))
-  #   ),
-  # 
-  #   mainPanel(
-  #     tabsetPanel(
-  #       tabPanel("Particulate Matter (2.5) Level", leafletOutput("pm25")),
-  #       tabPanel("Ozone Level", leafletOutput("o3")),
-  #       tabPanel("UV Radiation Level", leafletOutput("edd"))
-  #       # tabPanel("Outcome", leafletOutput("edd"))
-  #     )
-  #   )
-  # )
+  hr(),
+  
+  fluidRow(
+    column(width = 12, p("We think that the prevalence of some health conditions would differ from county to county as a result of the climate, so we plotted asthma, lung cancer and melanoma incidence rates in the years that followed.", style="text-align:justify;color:black;background-color:lavender;padding:15px;border-radius:10px"))
+  ),
+
+  fluidRow(
+    tabsetPanel(
+      tabPanel("2016 Asthma Incidence",
+               column(leafletOutput("asth"), width = 9),
+               column(plotOutput("box_asth"), width = 3)
+      ),
+      tabPanel("2014-2018 Lung Cancer Incidence",
+               column(leafletOutput("lc"), width = 9),
+               column(plotOutput("box_lc"), width = 3)
+      ),
+      tabPanel("2014-2018 Melanoma Incidence",
+               column(leafletOutput("mel"), width = 9),
+               column(plotOutput("box_mel"), width = 3)
+      )
+    )
+  )
 )
+
 
 server = function(input, output) {
   
@@ -279,14 +264,14 @@ server = function(input, output) {
                 opacity = 0.7)
   })
   
-  output$box1 = renderPlot({
+  output$box_pm = renderPlot({
     pm_oz_uv() %>% 
       ggplot(aes(x = factor(state, rev(levels(factor(state)))), y = pm25_pop_pred, fill = state)) +
       geom_violin(color = "#5240f1", draw_quantiles = 0.5) +
       theme_minimal() +
       scale_fill_viridis_d(direction = -1) +
       labs(
-        title = "County PM Level Distribution by State",
+        title = "PM2.5 Concentrations by State This Season",
         y = bquote(PM[.(2.5)] * " (" * mu * "g/" * m^3 * ")")
       ) +
       theme(
@@ -296,14 +281,14 @@ server = function(input, output) {
       )
   })
   
-  output$box2 = renderPlot({
+  output$box_oz = renderPlot({
     pm_oz_uv() %>% 
       ggplot(aes(x = factor(state, rev(levels(factor(state)))), y = o3_pop_pred, fill = state)) +
       geom_violin(color = "#f17b12", draw_quantiles = 0.5) +
       theme_minimal() +
       scale_fill_viridis_d(direction = -1, option = "magma") +
       labs(
-        title = "County Ozone Level Distribution by State",
+        title = "Ozone Concentrations by State This Season",
         y = bquote(O[.(3)] * " (ppm)")
       ) +
       theme(
@@ -313,14 +298,14 @@ server = function(input, output) {
       )
   })
   
-  output$box3 = renderPlot({
+  output$box_uv = renderPlot({
     pm_oz_uv() %>% 
       ggplot(aes(x = factor(state, rev(levels(factor(state)))), y = edd, fill = state))+
       geom_violin(color = "#3d0071", draw_quantiles = 0.5) +
       theme_minimal() +
       scale_fill_brewer(palette="BuPu") +
       labs(
-        title = "County UV Level Distribution by State",
+        title = "UV Intensities by State This Season",
         y = bquote("UV (J/" * m^2 *")")
       ) +
       theme(
@@ -331,8 +316,8 @@ server = function(input, output) {
   })
   
   output$asth = renderLeaflet({
-    pal = colorBin(palette = "YlGn", bins = 9, domain = c(min(merged_asth_df$logRate, na.rm = T), max(merged_asth_df$logRate, na.rm = T)))
-    labels = sprintf("<strong>%s, %s</strong><br/> %g per 100K", pm_oz_uv()$county, pm_oz_uv()$state, merged_asth_df$logRate) %>% lapply(htmltools::HTML)
+    pal = colorBin(palette = "YlGn", bins = 6, domain = c(min(merged_asth_df$logRate, na.rm = T), max(merged_asth_df$logRate, na.rm = T)))
+    labels = sprintf("<strong>%s, %s</strong><br/> %g", merged_asth_df$county, merged_asth_df$state, merged_asth_df$logRate) %>% lapply(htmltools::HTML)
     leaflet(merged_asth_df) %>% 
       addProviderTiles(provider = "Stamen.Toner") %>% 
       setView(-78, 41.8, zoom = 5.5) %>% 
@@ -350,13 +335,13 @@ server = function(input, output) {
       addLegend("bottomright",
                 pal = pal,
                 values = ~merged_asth_df$logRate,
-                title = "Count per 10K",
+                title = "log(Count per 100K)",
                 opacity = 0.7)
   })
   
   output$lc = renderLeaflet({
-    pal = colorBin(palette = "PuRd", bins = 9, domain = c(min(merged_lc_df$age_adjusted_incidence_rate, na.rm = T), max(merged_lc_df$age_adjusted_incidence_rate, na.rm = T)))
-    labels = sprintf("<strong>%s, %s</strong><br/> %g per 100K", pm_oz_uv()$county, pm_oz_uv()$state, merged_lc_df$age_adjusted_incidence_rate) %>% lapply(htmltools::HTML)
+    pal = colorBin(palette = "PuRd", bins = 6, domain = c(min(merged_lc_df$age_adjusted_incidence_rate, na.rm = T), max(merged_lc_df$age_adjusted_incidence_rate, na.rm = T)))
+    labels = sprintf("<strong>%s, %s</strong><br/> %g per 100K", merged_lc_df$county, merged_lc_df$state, merged_lc_df$age_adjusted_incidence_rate) %>% lapply(htmltools::HTML)
     leaflet(merged_lc_df) %>% 
       addProviderTiles(provider = "Stamen.Toner") %>% 
       setView(-78, 41.8, zoom = 5.5) %>% 
@@ -374,13 +359,13 @@ server = function(input, output) {
       addLegend("bottomright",
                 pal = pal,
                 values = ~age_adjusted_incidence_rate,
-                title = "Count per 10K",
+                title = "Count per 100K",
                 opacity = 0.7)
   })
   
   output$mel = renderLeaflet({
-    pal = colorBin(palette = "YlOrBr", bins = 9, domain = c(min(merged_mel_df$age_adjusted_incidence_rate, na.rm = T), max(merged_mel_df$age_adjusted_incidence_rate, na.rm = T)))
-    labels = sprintf("<strong>%s, %s</strong><br/> %g per 100K", pm_oz_uv()$county, pm_oz_uv()$state, merged_mel_df$age_adjusted_incidence_rate) %>% lapply(htmltools::HTML)
+    pal = colorBin(palette = "YlOrBr", bins = 4, domain = c(min(merged_mel_df$age_adjusted_incidence_rate, na.rm = T), max(merged_mel_df$age_adjusted_incidence_rate, na.rm = T)))
+    labels = sprintf("<strong>%s, %s</strong><br/> %g per 100K", merged_asth_df$county, merged_asth_df$state, merged_mel_df$age_adjusted_incidence_rate) %>% lapply(htmltools::HTML)
     leaflet(merged_mel_df) %>% 
       addProviderTiles(provider = "Stamen.Toner") %>% 
       setView(-78, 41.8, zoom = 5.5) %>% 
@@ -398,8 +383,60 @@ server = function(input, output) {
       addLegend("bottomright",
                 pal = pal,
                 values = ~age_adjusted_incidence_rate,
-                title = "Count per 10K",
+                title = "Count per 100K",
                 opacity = 0.7)
+  })
+  
+  output$box_asth = renderPlot({
+    merged_asth_df %>% 
+      ggplot(aes(x = factor(state, rev(levels(factor(state)))), y = logRate, fill = state))+
+      geom_violin(color = "#1f4e0a", draw_quantiles = 0.5) +
+      theme_minimal() +
+      scale_fill_brewer(palette="YlGn") +
+      labs(
+        title = "Asthma Incidence Rate in 2016",
+        y = bquote("log(Count per 100K)")
+      ) +
+      theme(
+        plot.title = element_text(hjust = 0.5),
+        axis.title.x = element_blank(),
+        legend.position = "none"
+      )
+  })
+  
+  output$box_lc = renderPlot({
+    merged_lc_df %>% 
+      ggplot(aes(x = factor(state, rev(levels(factor(state)))), y = age_adjusted_incidence_rate, fill = state))+
+      geom_violin(color = "#3d0071", draw_quantiles = 0.5) +
+      theme_minimal() +
+      scale_fill_brewer(palette="PuRd") +
+      labs(
+        title = "Lung Cancer Incidence Rate in 2014-2018",
+        y = bquote("Count per 100K")
+      ) +
+      theme(
+        plot.title = element_text(hjust = 0.5),
+        axis.title.x = element_blank(),
+        legend.position = "none"
+      )
+  })
+  
+  output$box_mel = renderPlot({
+    merged_mel_df %>% 
+      filter(!is.na(state)) %>% 
+      ggplot(aes(x = factor(state, rev(levels(factor(state)))), y = age_adjusted_incidence_rate, fill = state))+
+      geom_violin(color = "#660000", draw_quantiles = 0.5) +
+      theme_minimal() +
+      scale_fill_brewer(palette="YlOrBr") +
+      labs(
+        title = "Melanoma Incidence Rate in 2014-2018",
+        y = bquote("Count per 100K")
+      ) +
+      theme(
+        plot.title = element_text(hjust = 0.5),
+        axis.title.x = element_blank(),
+        legend.position = "none"
+      )
   })
   
 }
