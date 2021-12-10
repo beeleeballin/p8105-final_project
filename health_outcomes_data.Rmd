@@ -178,6 +178,9 @@ Next, let's combine the cross-sectional asthma and cancer county data.
 # Bind rows of cancer and asthma by county and arrange accordingly
 lc_mel_asthma_county <- bind_rows(lc_mel_county, asthma_county) %>%
   arrange(state, county, outcome)
+
+# lc_mel_asthma_county has 'St. Lawrence' instead of 'St Lawrence' the counties list will need to map
+lc_mel_asthma_county$county[lc_mel_asthma_county$county == "St. Lawrence"] <- "St Lawrence"
 ```
 
 Lastly, let's write out the combined data.
