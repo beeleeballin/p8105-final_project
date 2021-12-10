@@ -1,11 +1,13 @@
 # Load packages
-library(shiny)
 library(tidyverse)
-library(leaflet)
+library(shiny)
+library(rsconnect)
 library(htmlwidgets)
 library(tigris)
-library(rsconnect)
+library(leaflet)
+library(plotly)
 library(ggplot2)
+
 
 # Load data
 # setwd("/Users/beelee/Desktop/Columbia/Fall_2021/P8105-Data_Science/p8105-final_project/ap/apuv_map/")
@@ -14,7 +16,7 @@ ext_val = readRDS("ext_val.RDS")
 dis_df = readRDS("dis_rates.RDS")
 us_counties = tigris::counties(c("NY", "PA", "OH"))
 
-# Filter dataframes for the year desired and merge with the county sf objects
+# Filter apuv df for a year desired and merge it with county sf objects
 filter_merge = function(y){
   apuv_df %>% 
     filter(year == y) %>%
@@ -27,7 +29,7 @@ filter_merge = function(y){
     sf::st_transform('+proj=longlat +datum=WGS84')
 }
 
-# Return the filtered and merged object
+# Filter apuv df for a season of the selected year
 select_year_season = function(y, s){
   
   if(y == 2005){res = merged_2005_df}
@@ -70,7 +72,7 @@ select_year_season = function(y, s){
   return(res)
 }
 
-# Preprocess some dataframes before loading Shiny.app
+# Preprocess some dfs to prepare for the Shiny.app
 merged_2005_df = filter_merge(2005)
 merged_2006_df = filter_merge(2006)
 merged_2007_df = filter_merge(2007)
@@ -120,14 +122,49 @@ merged_mel_df =
     age_adjusted_incidence_rate = replace(age_adjusted_incidence_rate, is.na(age_adjusted_incidence_rate), 0)
   )
 
+apuv_plot = 
+  apuv_df %>% 
+  filter(state!="ME") %>% 
+  unite(season_year, c("season", "year"), sep = "_") %>%
+  mutate(
+    season_year = factor(season_year),
+    season_year = fct_inorder(season_year),
+    county = factor(county)
+  ) %>% 
+  arrange(state, county) %>% 
+  unite(county_state, c("county", "state"), sep = ", ") %>% 
+  mutate(
+    county_state = factor(county_state),
+    county_state = fct_inorder(county_state)
+  ) %>% 
+  select(season_year, county_state, pm25_pop_pred, o3_pop_pred, edd) %>% 
+  pivot_longer(
+    pm25_pop_pred:edd,
+    names_to = "climate",
+    values_to = "level"
+  ) %>% 
+  mutate(
+    climate = factor(climate, levels = c("pm25_pop_pred", "o3_pop_pred", "edd"), 
+                     labels = c("PM2.5", "O3", "UV"))
+  ) %>% 
+  ggplot(aes(x=season_year, y=level, group=1, color=county_state)) +
+  geom_line() +
+  scale_x_discrete(breaks=c("Spring_2005", "Winter_2015"),
+                   labels=c("2005", "2015")) +
+  labs(
+    title = "Air Pollutant Concentrations and UV Intensities over Years",
+    color = "County",
+    x = "Year",
+    y = "Concentration/Intensity"
+  ) +
+  facet_grid(climate~., scales = "free_y")
+
 # Shiny.app
 ui = fluidPage(
   
   titlePanel("Mapping Climate Exposures and Health Outcomes"),
   
-  fluidRow(
-    column(width = 12, p("Climate conditions and particular chronic disease risks are known to be correlated.", br(), " Let's explore the Particulate Matter, Ozone, and UV radiation levels over the years across counties in New York, Pennsylvania, and Ohio.", strong("Select a desired year and season"), "to view these climate exposures on a county level!", style="text-align:justify;color:black;background-color:lavender;padding:15px;border-radius:10px"))
-  ),
+  p("Climate conditions and particular chronic disease risks are known to be correlated.", br(), " Let's explore the Particulate Matter, Ozone, and UV radiation levels over the years across counties in New York, Pennsylvania, and Ohio.", strong("Select a desired year and season"), "to view these climate exposures on a county level!", style="text-align:justify;color:black;background-color:lavender;padding:15px;border-radius:10px"),
   
   fluidRow(
     column(width = 1, offset = 5, selectInput("yr", "Year", choices = unique(apuv_df$year))),
@@ -154,9 +191,7 @@ ui = fluidPage(
   
   hr(),
   
-  fluidRow(
-    column(width = 12, p("We think that the prevalence of some health conditions would differ from county to county as a result of the climate, so we plotted asthma, lung cancer and melanoma incidence rates in the years that followed.", style="text-align:justify;color:black;background-color:lavender;padding:15px;border-radius:10px"))
-  ),
+  p("We think that the prevalence of some health conditions would differ from county to county as a result of the climate, so we plotted asthma, lung cancer and melanoma incidence rates in the years that followed.", style="text-align:justify;color:black;background-color:lavender;padding:15px;border-radius:10px"),
 
   fluidRow(
     tabsetPanel(
@@ -173,7 +208,13 @@ ui = fluidPage(
                column(plotOutput("box_mel"), width = 3)
       )
     )
-  )
+  ),
+  
+  hr(),
+  
+  p("Play around this plot to see if you could find some association", style="text-align:justify;color:black;background-color:lavender;padding:15px;border-radius:10px"),
+  
+  plotlyOutput('cli_out_plotly')
 )
 
 
@@ -439,6 +480,15 @@ server = function(input, output) {
       )
   })
   
+  output$cli_out_plotly = renderPlotly({
+    ggplotly(apuv_plot) %>% 
+      layout(legend = list(yanchor="top",
+                           y=1,
+                           xanchor="left",
+                           x=-0.2
+                      )
+            )
+  })
 }
 
 shinyApp(ui = ui, server = server)
