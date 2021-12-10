@@ -178,9 +178,6 @@ Next, let's combine the cross-sectional asthma and cancer county data.
 # Bind rows of cancer and asthma by county and arrange accordingly
 lc_mel_asthma_county <- bind_rows(lc_mel_county, asthma_county) %>%
   arrange(state, county, outcome)
-
-# lc_mel_asthma_county has 'St. Lawrence' instead of 'St Lawrence' the counties list will need to map
-lc_mel_asthma_county$county[lc_mel_asthma_county$county == "St. Lawrence"] <- "St Lawrence"
 ```
 
 Lastly, let's write out the combined data.
@@ -201,6 +198,10 @@ outcome at the county-level.
 #            outcome_var: a character, the health outcome of interest.
 #            plot_title: a character, the plot title.
 # Returns: The plotly map.
+
+# lc_mel_asthma_county has 'St. Lawrence' instead of 'St Lawrence' the counties list will need to map
+lc_mel_asthma_county$county[lc_mel_asthma_county$county == "St. Lawrence"] <- "St Lawrence"
+
 map_by_outcome <- function(df, outcome_var, plot_title) {
   url <- 'https://raw.githubusercontent.com/plotly/datasets/master/geojson-counties-fips.json'
   counties <- rjson::fromJSON(file = url)
