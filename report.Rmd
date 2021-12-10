@@ -582,9 +582,12 @@ Initial assessment of asthma data explored the two metric for measuring prevalen
 
 ### Exposures and Outcome
 
+To better understand the potential association between the climate conditions and disease risks, we may first look at the conditions at the county level for these 3 states from 2005 to 2015. 
 ```{r}
+## Read in tidied air pollution and radiation data. See the Climate page for how we organized it. 
 apuv_df = readRDS("./ap/apuv_map/apuv.RDS")
 
+## Wrangle and plot a year versus exposure time series line groph. We used the average seasonal data for each of the years. 
 apuv_plot = 
   apuv_df %>% 
   filter(state!="ME") %>% 
@@ -627,8 +630,9 @@ apuv_plot =
 ggplotly(apuv_plot)
 ```
 
-
+We next do a violin plot for the health outcomes at the county level, using asthma incidence rate from 2016, and lung cancer and melanoma incidence rates from 2014-2018. 
 ```{r, eval = F}
+## Read in tidied county level health outcome data. See the Health page for how we organized it. 
 library(beeswarm)
 dis_df = readRDS("./ap/apuv_map/dis_rates.RDS")
 
@@ -652,6 +656,7 @@ beeswarm_dis_plot =
 ```
 
 ```{r, include = F}
+## This duplicate code is the chunk that's evaluated by Rstudio when knitted, because it unwantingly generates a beeswarm plot when we don't want it displayed on our website. Anyway, just keep both these code chunks. 
 library(beeswarm)
 dis_df = readRDS("./ap/apuv_map/dis_rates.RDS")
 
@@ -694,6 +699,8 @@ dis_plot =
 ggplotly(dis_plot)
 
 ```
+
+Let's play around these two plots and see we may find counties with standout rates in health outcomes have abnormal climate conditions. 
 
 ### Spatial visualizations of exposures and outcomes
 
