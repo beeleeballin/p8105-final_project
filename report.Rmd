@@ -135,9 +135,235 @@ A significant amount of cleaning was required, as can be seen in the code chunks
 ```
 
 
-**county level outcomes data**
-**NEEDS CODE CHUNKS**
+**state level outcomes data**
+**NEEDS ASTHMA SET UP DATA**
 ```{r warning=FALSE, message=FALSE}
+
+#state-level lung cancer PA data https://www.phaim1.health.pa.gov/EDD/
+
+pa_cancer = read.csv('./data/lung/pa_state_lung.csv', sep = ";", header = T, skip = 3) %>%
+  janitor::clean_names() %>%
+  select(year, rate_ratio_result) %>%
+  map_df(str_replace, pattern = ",", replacement = ".") %>%
+    map_df(as.numeric) %>%
+    rename(c("age_adjusted_incidence_rate" = "rate_ratio_result")) %>%
+  add_column(state = "PA")
+
+#state-level lung cancer OH data https://publicapps.odh.ohio.gov/EDW/DataBrowser/Browse/StateLayoutLockdownCancers
+
+oh_cancer = read.csv('./data/lung/oh_state_lung.csv', sep = ";") %>%
+  janitor::clean_names() %>%
+  rename(year = cancer_year_year) %>%
+  select(year, age_adjusted_rate) %>%
+    map_df(str_replace, pattern = ",", replacement = ".") %>%
+    map_df(as.numeric) %>%
+    rename(c("age_adjusted_incidence_rate" = "age_adjusted_rate")) %>%
+  add_column(state = "OH") %>%
+  distinct() %>%
+  filter(complete.cases(.))
+
+
+#state-level lung cancer NY data https://www.health.ny.gov/statistics/cancer/registry/table2/tb2lungnys.htm
+
+ny_cancer = read.csv("./data/lung/ny_state_lung.csv", skip = 2)[ ,1:3] %>%
+  janitor::clean_names() %>%
+  rename(year = x) %>%
+  select(year, rate_per_100_000_population) %>%
+  rename(c("age_adjusted_incidence_rate" = "rate_per_100_000_population")) %>%
+  add_column(state = "NY")
+
+# Read in the data and set the column names
+# Add a state column and make all rows = "NY"
+# Make the year column of type integer
+# Add a cancer type column and make all rows = "melanoma"
+# Select the state, year, cancer_type and mf_case_rate columns
+# Rename mf_case_rate column "age_adjusted_incidence_rate"
+nys_melanoma_age_adjusted <- read_csv(here("data",
+                                           "incidence_melanoma_data",
+                                           "nys_melanoma_incidence_mortality_year.csv"),
+                                      skip = 3,
+                                      col_names = c("year",
+                                                    "mf_cases",
+                                                    "mf_case_rate",
+                                                    "mf_case_rate_ci",
+                                                    "m_cases",
+                                                    "m_case_rate",
+                                                    "m_case_rate_ci",
+                                                    "f_cases",
+                                                    "f_case_rate",
+                                                    "f_case_rate_ci",
+                                                    "mf_deaths",
+                                                    "mf_death_rate",
+                                                    "mf_death_rate_ci",
+                                                    "m_deaths",
+                                                    "m_death_rate",
+                                                    "m_death_rate_ci",
+                                                    "f_deaths",
+                                                    "f_death_rate",
+                                                    "f_death_rate_ci"
+                                                    )) %>%
+  mutate(state = "NY",
+         year = as.integer(year),
+         cancer_type = "melanoma") %>%
+  select(state, year, cancer_type, mf_case_rate) %>%
+  rename(age_adjusted_incidence_rate = mf_case_rate)
+
+
+# Read in data set
+ohio_cancer_incidence <- readxl::read_xls(here("data",
+                                               "incidence_melanoma_data",
+                                               "ohio_cancer_incidence_year.xls"),
+                                          skip = 1)
+###############################################################################
+# Melanoma cases
+
+# Get cases for each year
+ohio_cancer_cases <- ohio_cancer_incidence %>%
+  select("Site/Type", starts_with("Case"))
+
+# Update column names for the Ohio cancer cases data frame
+colnames(ohio_cancer_cases) <- c("type", 1996:2018, "total")
+
+# Get melanoma of the skin cancer cases for Ohio
+# Pivot longer year
+# Select year and cases variables
+ohio_melanoma_cases <- ohio_cancer_cases %>%
+  filter(type == "Melanoma of Skin") %>%
+  pivot_longer("1996":total,
+               names_to = "year",
+               values_to = "cases") %>%
+  select(year, cases)
+
+###############################################################################
+# Melanoma age-adjusted
+
+# Get age-adjusted for each year
+ohio_cancer_age_adjusted <- ohio_cancer_incidence %>%
+  select("Site/Type", starts_with("Age"))
+
+# Update column names for Ohio cancer age-adjusted data frame
+colnames(ohio_cancer_age_adjusted) <- c("type", 1996:2018, "total")
+
+# Get melanoma of the skin cancer age-adjusted for Ohio
+# Pivot longer year
+# Select year and age_adjusted variables
+# Remove total row
+# Add a state column and set all rows = "OH"
+# Convert type of year column to be integer
+# Add a cancer type column and set all rows = "melanoma"
+# Convert type of age_adjusted_incidence_rate column to be double
+# Reorder columns: state, year, cancer_type, age_adjusted_incidence_rate
+ohio_melanoma_age_adjusted <- ohio_cancer_age_adjusted %>%
+  filter(type == "Melanoma of Skin") %>%
+  pivot_longer("1996":total,
+               names_to = "year",
+               values_to = "age_adjusted_incidence_rate") %>%
+  select(year, age_adjusted_incidence_rate) %>%
+  filter(year != "total") %>%
+  mutate(state = "OH", 
+         year = as.integer(year),
+         cancer_type = "melanoma",
+         age_adjusted_incidence_rate = as.double(age_adjusted_incidence_rate)) %>%
+  select(state, year, cancer_type, age_adjusted_incidence_rate)
+
+# Final data frames: ohio_melanoma_cases and ohio_melanoma_age_adjusted
+
+
+# Read in data, skip first three lines
+# Clean variable names
+# Select relevant variables
+# Add a state column and set all rows = "PA"
+# Convert type of year column to be integer
+# Add a cancer_type column and set all rows = "melanoma"
+# Rename rate_ratio_result column to "age_adjusted_incidence_rate"
+# Reorder columns: state, year, cancer_type, age_adjusted_incidence_rate
+# Sort data frame by ascending year
+pa_melanoma_age_adjusted <- read_csv(here("data",
+                                          "incidence_melanoma_data",
+                                          "pa_melanoma_incidence_year.csv"),
+                                     skip = 3) %>%
+                            janitor::clean_names() %>%
+  select(year, rate_ratio_result) %>%
+  mutate(state = "PA",
+         year = as.integer(year),
+         cancer_type = "melanoma") %>%
+  rename(age_adjusted_incidence_rate = rate_ratio_result) %>%
+  select(state, year, cancer_type, age_adjusted_incidence_rate) %>%
+  arrange(year)
+
+
+
+```
+
+
+**county level outcomes data**
+**NEEDS ASTHMA SET UP DATA **
+```{r warning=FALSE, message=FALSE}
+
+read_and_clean_county_data <- function(file_path_name, state, outcome) {
+  read_csv(file_path_name,
+           skip = 8) %>%
+  janitor::clean_names() %>%
+  select(county, age_adjusted_incidence_rate_rate_note_cases_per_100_000) %>%
+  mutate(county = stringr::str_remove(county, "\\(.\\)$"),
+          state = state,
+         outcome = outcome,
+         age_adjusted_incidence_rate =
+           as.numeric(age_adjusted_incidence_rate_rate_note_cases_per_100_000)) %>%
+  select(state, county, outcome, age_adjusted_incidence_rate)
+}
+
+#county-level lung cancer PA data https://statecancerprofiles.cancer.gov/
+
+pa_county_lc = read_and_clean_county_data('./data/lung/pa_lung_data_county.csv', 
+                                          state = "PA",
+                                          outcome = "lung cancer") %>%
+                                          filter(complete.cases(.)) %>%
+                                          slice(-c(1, 2))
+
+#county-level lung cancer OH data https://statecancerprofiles.cancer.gov/
+
+oh_county_lc = read_and_clean_county_data('./data/lung/oh_lung_data_county.csv', 
+                                          state = "OH", 
+                                          outcome = "lung cancer") %>%
+                                          filter(complete.cases(.)) %>%
+                                          slice(-c(1, 2))
+
+#county-level lung cancer NY data https://statecancerprofiles.cancer.gov/
+
+ny_county_lc = read_and_clean_county_data('./data/lung/ny_lung_data_county.csv', 
+                                          state = "NY", 
+                                          outcome = "lung cancer") %>%
+                                          filter(complete.cases(.)) %>%
+                                          slice(-c(1, 2))
+
+
+# Read in New York melanoma incidence county-level data averaged from 2014 to 
+# 2018
+nys_county_melanoma_incidence_2014_2018 <- 
+read_and_clean_county_data(here("data",
+                                "incidence_melanoma_data",
+                                "nys_county_melanoma_incidence_2014_2018.csv"),
+                           "NY",
+                           "melanoma")
+
+# Read in Ohio melanoma incidence county-level data averaged from 2014 to 2018
+ohio_county_melanoma_incidence_2014_2018 <- 
+read_and_clean_county_data(here("data",
+                                "incidence_melanoma_data",
+                                "ohio_county_melanoma_incidence_2014_2018.csv"),
+                           "OH",
+                           "melanoma")
+
+# Read in Pennsylvania melanoma incidence county-level data averaged from 
+# 2014 to 2018
+pa_county_melanoma_incidence_2014_2018 <- 
+read_and_clean_county_data(here("data",
+                                "incidence_melanoma_data",
+                                "pa_county_melanoma_incidence_2014_2018.csv"),
+                           "PA",
+                           "melanoma")
+
 
 
 ```
@@ -194,18 +420,131 @@ with the following variables:
 
 
 Next, we were able to merge all of our state level outcomes into one data set,  *lc_mel_asthma_state*:
-**NEEDS CODE CHUNK**
 
 ```{r warning=FALSE, message=FALSE}
 
+# merging state level data for lung cancer
+
+state_lc <- rbind(pa_cancer, oh_cancer, ny_cancer)
+
+state_lc_wide = state_lc %>%
+  pivot_wider(
+    names_from = state,
+    values_from = age_adjusted_incidence_rate) %>%
+  rename(c("PA_AAIR" = "PA", "NY_AAIR" = "NY", "OH_AAIR" = "OH"))
+
+write_csv(state_lc_wide, "./data/state_lc_wide.csv")
+
+
+# Merge state-level data frames with bind_rows
+state_melanoma_age_adjusted <- 
+  bind_rows(nys_melanoma_age_adjusted,
+            ohio_melanoma_age_adjusted,
+            pa_melanoma_age_adjusted)
+
+# read in longitudinal state data for lung and skin cancer
+
+# longitudinal state level lung cancer data
+state_lc_data = read_csv("./data/lung/state_lc_data.csv")
+
+# longitudinal state level melanoma data
+state_mel_data = read_csv("./data/incidence_melanoma_data/state_melanoma_age_adjusted.csv") %>%
+  rename(c("outcome" = "cancer_type"))
+
+# combine cancer outcome data
+lc_mel_state = bind_rows(state_lc_data, state_mel_data) %>%
+  select(state, year, outcome, age_adjusted_incidence_rate)
+
+# Read in longitudinal state-level asthma data
+# Rename and select columns
+asthma_state <- read_csv(here::here("data", "asthma_state.csv")) %>%
+  rename(age_adjusted_incidence_rate = rate) %>%
+  select(state, year, outcome, age_adjusted_incidence_rate)
+
+# Bind rows of longitudinal asthma and longitudinal cancer by state and arrange 
+# accordingly
+lc_mel_asthma_state <- bind_rows(lc_mel_state, asthma_state) %>%
+  arrange(state, year, outcome)
 
 
 ```
 
 Then, we could do the same with our county-level outcomes to get our *lc_mel_asthma_county* data set
-**NEEDS CODE CHUNK**
 
 ```{r warning=FALSE, message=FALSE}
+
+fips_codes = read.csv('./data/fips_codes.csv') %>%
+  janitor::clean_names() %>%
+  filter(state %in% c("NY", "PA", "OH")) %>%
+  rename(c("county" = "name"))
+
+fips_codes$county[fips_codes$county == "St Lawrence"] <- "St. Lawrence"
+
+county_lc <- rbind(pa_county_lc, oh_county_lc, ny_county_lc) %>%
+   mutate(county = (gsub('.{7}$', '', county)))
+
+lc_fips <- merge(county_lc, fips_codes, by = c("state", "county"))
+
+# Merge county-level data frames with bind_rows
+state_county_melanoma_incidence_2014_2018 <- 
+  bind_rows(nys_county_melanoma_incidence_2014_2018,
+            ohio_county_melanoma_incidence_2014_2018,
+            pa_county_melanoma_incidence_2014_2018)
+
+county_lc = read_csv("./data/lung/county_lc.csv")
+county_mel = read_csv("./data/incidence_melanoma_data/state_county_melanoma_incidence_2014_2018.csv")
+
+# cleaning to make the data sets compatible
+
+county_mel = county_mel %>%
+  rename(c("outcome" = "cancer_type")) %>%
+  drop_na() 
+
+county_mel <- county_mel[!(county_mel$county == "Ohio" | county_mel$county == "Pennsylvania" | 
+     county_mel$county == "New York"), ] %>%
+  filter(!grepl('SEER', county))
+
+county_mel$county <- gsub(" County","", county_mel$county)
+
+county_mel$county[county_mel$county == "St Lawrence"] <- "St. Lawrence"
+
+county_lc$county <- gsub(" County","", county_lc$county)
+
+
+# binding rows
+
+lc_mel_county = bind_rows(county_lc, county_mel) %>%
+  filter(complete.cases(.)) 
+
+# Add FIPS column to the data
+fips = fips_codes %>%
+    janitor::clean_names()
+
+# fips df has 'St Lawrence' instead of 'St. Lawrence'
+fips$county[fips$county == "St Lawrence"] <- "St. Lawrence"
+
+lc_mel_county = merge(lc_mel_county, fips, by = c("state", "county"))
+
+# Read in cross-sectional asthma data
+# Only get county data for the year 2016 since we need county data at
+# a fixed time point (i.e. not longitudinal)
+# Adjust column names and types in prep for merge
+asthma_county <- read_csv(here::here("data", "asthma_county.csv")) %>%
+  filter(year == 2016) %>%
+  select(-year) %>%
+  rename(age_adjusted_incidence_rate = rate) %>%
+  mutate(age_adjusted_incidence_rate = as.double(age_adjusted_incidence_rate))
+
+# asthma_county has 'New York County' instead of 'New York' in fips df, and "GAllia" instead of "Gallia"
+asthma_county$county[asthma_county$county == "New York County"] <- "New York"
+asthma_county$county[asthma_county$county == "GAllia"] <- "Gallia"
+
+asthma_county <- merge(asthma_county, fips, by = c("state", "county"))
+
+# Bind rows of cancer and asthma by county and arrange accordingly
+lc_mel_asthma_county <- bind_rows(lc_mel_county, asthma_county) %>%
+  arrange(state, county, outcome)
+
 
 ```
 
