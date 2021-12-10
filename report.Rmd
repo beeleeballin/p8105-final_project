@@ -236,13 +236,14 @@ Then, we could do the same with our county-level outcomes to get our *lc_mel_ast
 ## Exploratory analysis: 
 
 Visualizations, summaries, and exploratory statistical analyses. Justify the steps you took, and show any major changes to your ideas.
-### Asthma
 
-Initial assessment of asthma data explored the two metric for measuring prevalence in the population, namely emergency department visits and hospitalizations due to asthma. 
+### Preliminary visualizations of data
 
-### Temporal Visualization of Data
+#### Asthma
 
-### Spatial Visualizations of Exposures and Outcomes
+Initial assessment of asthma data explored the two metric for measuring prevalence in the population, namely emergency department visits and hospitalizations due to asthma. **STILL WORKING ON THIS**
+
+### Spatial visualizations of exposures and outcomes
 
 Once all the data was gathered for both exposures and outcomes of interest, we sought to visualize the data in a cross-sectional manner with incidence rates of outcomes plotted onto maps indicating the extent of exposures for a given year. In this case, we used data from 2016 (with the exception of UV dat which was not available and the 2015 data was used in its place). This was accomplished by first plotting maps with a gradient fill to indicate relative levels of the exposure (i.e UV radiation, particulate matter, or low-atomspheric ozone) at the county level. Bubble markers were then overlain with each bubble's size and shading indicating the relative incidence of outcomes (i.e. hospitalization due to asthma, melanoma incidence, and lung cancer incidence). These layers were then put into plot_ly via ggplotly for interactivity with each marker giving all available data for a given county.
 
@@ -531,29 +532,25 @@ p_o3_lc
 ```{r p_o3_as, message=FALSE, warning=FALSE}
 p_o3_as
 ```
-**Summer 2016 mean PM 2.5 (in µg/m^3) plotted on the map with markers for lung cancer incidence rates in 2016 (age-adjusted per 100,000 people)**
+**Summer 2016 mean PM 2.5 (in µg/m^3^) plotted on the map with markers for lung cancer incidence rates in 2016 (age-adjusted per 100,000 people)**
 ```{r p_pm_lc, message=FALSE, warning=FALSE}
 p_pm_lc
 ```
-**Summer 2016 mean PM 2.5 (in µg/m^3) plotted on the map with markers for asthma hospitalization rates in 2016 (age-adjusted per 100,000 people)**
+**Summer 2016 mean PM 2.5 (in µg/m^3^) plotted on the map with markers for asthma hospitalization rates in 2016 (age-adjusted per 100,000 people)**
 ```{r p_pm_as, message=FALSE, warning=FALSE}
 p_pm_as
 ```
-**Summer 2015 mean UV (in J/m^2, erthemally weighted daily dose) plotted on the map with markers for melanoma incidence rates in 2016 (age-adjusted per 100,000 people)**
+**Summer 2015 mean UV (in J/m^2^, erthemally weighted daily dose) plotted on the map with markers for melanoma incidence rates in 2016 (age-adjusted per 100,000 people)**
 ```{r p_uv_mel, message=FALSE, warning=FALSE}
 p_uv_mel
 ```
 
-There are striking trends in the data but it is noted that som of the highest hospitalization rates due to asthma are located in the NYC metropolitan area where PM2.5 and ozone concentrations were relatively high during the summer of 2016. However, lung cancer rates were greated in Southern Ohio and Norther New York where there are low to moderate levels of ozone and PM2.5. Melanoma incidence rates for 2016 were overall higher in Ohio where there were also moderate to high levels of UV radiation the year prior in 2015. 
+There are no striking trends in the data but it is noted that some of the highest hospitalization rates due to asthma are located in the NYC metropolitan area where PM2.5 and ozone concentrations were relatively high during the summer of 2016. However, lung cancer rates were grestest in Southern Ohio and Northern New York where there are low to moderate levels of ozone and PM2.5. Melanoma incidence rates for 2016 were overall higher in Ohio where there were also moderate to high levels of UV radiation the year prior in 2015. 
 
-These initial cross-sectional visualizations hint at possible correlations but further analyses are warranted to see the extent of the assocation if there is one.
+These initial cross-sectional visualizations hint at possible correlations but further analyses are warranted to see the extent of associations between our exposures and outcomes of interest if they exist.
 
 ## Additional analysis: 
 If you undertake formal statistical analyses, describe these in detail
 
 ## Discussion: 
 What were your findings? Are they what you expect? What insights into the data can you make?
-
-
-
-
