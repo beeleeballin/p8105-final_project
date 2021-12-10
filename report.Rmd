@@ -14,6 +14,7 @@ library(tidyverse)
 library(tidyr)
 library(dplyr)
 library(here)
+library(plotly)
 ```
 
 
@@ -65,7 +66,7 @@ following:
 - How do lung cancer age-adjusted incidence rates vary annually based on median 
 particulate matter levels? Does this change from state to state?
 
-- How do emergency department visit rates for asthma vary annually based on  
+- How do emergency department visits and/or hospitalization rates for asthma vary annually based on  
 median particulate matter levels? Does this change from state to state?
 
 - How do melanoma age-adjusted incidence rates vary annually based on uv or ozone
@@ -80,7 +81,7 @@ age-adjusted incidence rates? How does the regression change when state is added
 to the model?
 
 - Is annual median particulate matter level a good predictor of annual 
-asthma-related emergency room visit rates? How does the regression change when 
+asthma-related emergency room visits or hospitalizations rates? How does the regression change when 
 state is added to the model?
 
 
@@ -98,8 +99,13 @@ For county level cancer outcomes, each state's data set was sourced from the [NI
 For state level outcomes, each data set was sourced directly from health 
 departments of each respective state.
 
--  **Asthma ED**
-  ?????
+-  **Asthma**
+
+  - [Ohio](https://odh.ohio.gov/wps/portal/gov/odh/know-our-programs/asthma-program)
+  
+  - [New York](https://www.health.ny.gov/statistics/environmental/public_health_tracking/about_pages/asthma/export)
+  
+  - [Pennsylvania](https://www.phaim1.health.pa.gov/EDD/WebForms/HospitalDischargeCntyStChrt.aspx)  
   
 -  **Melanoma**
   
@@ -230,6 +236,317 @@ Then, we could do the same with our county-level outcomes to get our *lc_mel_ast
 ## Exploratory analysis: 
 
 Visualizations, summaries, and exploratory statistical analyses. Justify the steps you took, and show any major changes to your ideas.
+### Asthma
+
+Initial assessment of asthma data explored the two metric for measuring prevalence in the population, namely emergency department visits and hospitalizations due to asthma. 
+
+### Temporal Visualization of Data
+
+### Spatial Visualizations of Exposures and Outcomes
+
+Once all the data was gathered for both exposures and outcomes of interest, we sought to visualize the data in a cross-sectional manner with incidence rates of outcomes plotted onto maps indicating the extent of exposures for a given year. In this case, we used data from 2016 (with the exception of UV dat which was not available and the 2015 data was used in its place). This was accomplished by first plotting maps with a gradient fill to indicate relative levels of the exposure (i.e UV radiation, particulate matter, or low-atomspheric ozone) at the county level. Bubble markers were then overlain with each bubble's size and shading indicating the relative incidence of outcomes (i.e. hospitalization due to asthma, melanoma incidence, and lung cancer incidence). These layers were then put into plot_ly via ggplotly for interactivity with each marker giving all available data for a given county.
+
+The follow code chunk prepares the data frames for both the map and the data. 
+
+```{r map_prep, message=FALSE, warning=FALSE}
+# Load relavant libraries and setup
+library(viridis)
+library(mapproj)
+library(maps)
+library(housingData)
+
+options(
+  ggplot2.continuous.colour = "viridis",
+  ggplot2.continuous.fill = "viridis",
+  knitr.kable.NA = ""
+)
+
+scale_colour_discrete = scale_color_viridis_d
+scale_fill_discrete = scale_fill_viridis_d
+
+# Prepare map data 
+state_df <- 
+  map_data("state") %>% 
+  filter(region == "ohio"| 
+           region == "new york" | 
+           region == "pennsylvania" )
+
+county_df <- 
+  map_data("county") %>% 
+  filter(region == "new york" | 
+           region == "pennsylvania" |
+           region == "ohio")
+
+# obtain list of unique counties with a lat-long measurement associated to it
+
+counties_unique <-
+  county_df %>% 
+  filter(region == "ohio"| 
+           region == "new york" | 
+           region == "pennsylvania" ) %>% 
+  as.tibble() %>% 
+  distinct(subregion, region, .keep_all = TRUE) %>% 
+  select(subregion, region, everything()) %>% 
+  unite("subreg_reg", subregion:region, remove = FALSE)
+
+
+# Prepare exposure data
+
+o3 <- read_csv("./ap/ap_uv/o3.csv") %>% 
+  janitor::clean_names() %>% 
+  filter(state == "NY" | state == "OH" | state == "PA",
+         season == "Summer",
+         year == 2016) %>% 
+  select(-hover, -season) %>% 
+  mutate(county = tolower(county))
+
+pm25 <- read_csv("./ap/ap_uv/pm25.csv") %>% 
+  janitor::clean_names() %>% 
+  filter(state == "NY" | state == "OH" | state == "PA",
+         season == "Summer",
+         year == 2016) %>% 
+  select(-hover, -season) %>% 
+  mutate(county = tolower(county))
+
+# There is no UV data for 2016 so values from 2015 will be used
+
+uv <- read_csv("./ap/ap_uv/edd.csv") %>% 
+  janitor::clean_names() %>% 
+  filter(state == "NY" | state == "OH" | state == "PA",
+         season == "Summer",
+         year == 2015) %>% 
+  select(countyfips, uv)
+
+# joing the dataframes for all exposures
+exposures <-
+  o3 %>% 
+  select(countyfips, o3) %>% 
+  left_join(pm25, by = "countyfips") %>% 
+  left_join(uv, by = "countyfips") %>% 
+  rename(region = state,
+         subregion = county) %>% 
+  mutate(region = str_replace(region, "NY", "new york"),
+         region = str_replace(region, "PA", "pennsylvania"),
+         region = str_replace(region, "OH", "ohio")) %>% 
+  select(-year)
+
+# preparing outcomes dataframe (all taken from county level data availabl for 2016)
+
+outcomes <- 
+  read_csv("./data/lc_mel_asthma_county.csv") %>% 
+  rename(rate = age_adjusted_incidence_rate) %>% 
+  pivot_wider(names_from = outcome, values_from = rate) %>% 
+  janitor::clean_names()  %>% 
+  rename(region = state,
+         subregion = county) %>% 
+  mutate(subregion = tolower(subregion),
+         region = str_replace(region, "NY", "new york"),
+         region = str_replace(region, "PA", "pennsylvania"),
+         region = str_replace(region, "OH", "ohio"))
+
+# combine outcomes and expousre into one datafram based on counties
+
+county_df <-
+  exposures %>% 
+  left_join(outcomes, by = c("subregion", "region")) %>% 
+  select(-fips) %>% 
+  mutate(countyfips = as.character(countyfips)) %>% 
+  select(subregion, region, everything()) %>% 
+  unite("subreg_reg", subregion:region, remove = TRUE)
+
+# combine county datafram with exposure and outcome data to unqiue lat-long (will be used for data points)
+
+centers <-
+  geoCounty %>% 
+  filter(state == "NY" | state == "PA" | state == "OH") %>% 
+  select(-county, -state) %>% 
+  rename(countyfips = fips, 
+         region = rMapState, 
+         subregion = rMapCounty) %>% 
+  as.tibble
+
+text_df <- 
+  county_df %>% 
+  left_join(centers, by = "countyfips") %>%
+  janitor::clean_names() %>% 
+  mutate(mytext = paste(
+    "Location: ", subregion, ", ",region, "\n", 
+    "Melanoma Incidence: ", melanoma, "\n",
+    "Lung Cancer Incidence: ", lung_cancer, "\n",
+    "Asthma Hospitalization Incidence: ", asthma, "\n",
+    "Summer UV (2015): ", uv, "\n",
+    "Summer PM2.5: ", pm2_5, "\n",
+    "Summer ozone: ", o3,sep=""))
+
+# prepare combined dataframe for combination to map database with borders for counties (will be used for plotting county-polygons and associated gradient fill)
+
+map_df <- 
+  text_df %>% 
+  select(-lat,-lon, -mytext)
+
+county_map <- map_data("county") %>% 
+  filter(region == "ohio"| 
+           region == "new york" | 
+           region == "pennsylvania" ) %>% 
+  select(subregion, region, everything()) %>% 
+  unite("subreg_reg", subregion:region, remove = TRUE) %>% 
+  left_join(map_df, by = "subreg_reg")
+```
+
+This next code chunk sets up each plot. 
+
+```{r map_plots, message=FALSE, warning=FALSE}
+# Start plotting
+# PM2.5 on the map and datapoints for lung cancer ####
+p_pm_lc <- 
+  ggplot(county_map) +
+  geom_polygon(aes(x = long, y = lat, group = group, 
+                   fill = pm2_5),
+               alpha = 0.6,
+               color = "black") + 
+  scale_fill_gradient(low = "white", high = "black", name = "PM2.5 (µg/m^3)") +
+  geom_point(data = text_df, 
+             aes(x = lon, y = lat, 
+                 size = lung_cancer, 
+                 color = lung_cancer, 
+                 text = mytext),
+             alpha = 0.6
+             ) +
+  scale_color_viridis(name = "Lung Cancer Incidence\n(per 100 000)") + 
+  scale_alpha_continuous() +
+  theme_minimal() + coord_map() + 
+  scale_x_continuous("") +
+  scale_y_continuous("")
+
+p_pm_lc <- ggplotly(p_pm_lc, tooltip = "mytext")
+
+# PM2.5 on the map and datapoints for asthma ####
+p_pm_as <- 
+  ggplot(county_map) +
+  geom_polygon(aes(x = long, y = lat, group = group, 
+                   fill = pm2_5),
+               alpha = 0.6,
+               color = "black") + 
+  scale_fill_gradient(low = "white", high = "black", name = "PM2.5 (ug/m^3)") +
+  geom_point(data = text_df, 
+             aes(x = lon, y = lat, 
+                 size = asthma, 
+                 color = asthma, 
+                 text = mytext),
+             alpha = 0.6
+             ) +
+  scale_color_viridis(name = "Asthma Hospitalization\nIncidence\n(per 100 000)") + 
+  scale_alpha_continuous() +
+  theme_minimal() + coord_map() + 
+  scale_x_continuous("") +
+  scale_y_continuous("")
+
+p_pm_as <- ggplotly(p_pm_as, tooltip = "mytext")
+
+# O3 on the map and datapoints for lung cancer ####
+
+p_o3_lc <- 
+  ggplot(county_map) +
+  geom_polygon(aes(x = long, y = lat, group = group, 
+                   fill = o3),
+               alpha = 0.6,
+               color = "black") +
+  scale_fill_gradient(low = "white", high = "black", name = "Ozone (ppb)") +
+  geom_point(data = text_df, 
+             aes(x = lon, y = lat, 
+                 size = lung_cancer, 
+                 color = lung_cancer, 
+                 text = mytext), 
+             alpha = 0.7
+             ) +
+  scale_color_viridis(name = "Lung Cancer Incidence\n(per 100 000)") + 
+  scale_alpha_continuous() +
+  theme_minimal() + coord_map() + 
+  scale_x_continuous("") +
+  scale_y_continuous("")
+
+p_o3_lc <- ggplotly(p_o3_lc, tooltip = "mytext")
+
+
+# O3 on the map and datapoints for asthma ####
+
+p_o3_as <- 
+  ggplot(county_map) +
+  geom_polygon(aes(x = long, y = lat, group = group, 
+                   fill = o3),
+               alpha = 0.6,
+               color = "black") +
+  scale_fill_gradient(low = "white", high = "black", name = "Ozone (ppb)" ) +
+  geom_point(data = text_df, 
+             aes(x = lon, y = lat, 
+                 size = asthma, 
+                 color = asthma, 
+                 text = mytext), 
+             alpha = 0.7
+             ) +
+  scale_color_viridis(name = "Asthma Hospitalization\nIncidence\n(per 100 000)") + 
+  scale_alpha_continuous() +
+  theme_minimal() + coord_map() + 
+  scale_x_continuous("") +
+  scale_y_continuous("")
+
+p_o3_as <- ggplotly(p_o3_as, tooltip = "mytext")
+
+
+# UV on the map and datapoints for melanoma ####
+
+p_uv_mel <- 
+  ggplot(county_map) +
+  geom_polygon(aes(x = long, y = lat, group = group, 
+                   fill = uv),
+               alpha = 0.6,
+               color = "black") +
+  scale_fill_gradient(low = "white", high = "black", 
+                      name = "UV (J/m^2)\n(erthemally weighted daily dose,\nSummer 2015)" ) +
+  geom_point(data = text_df, 
+             aes(x = lon, y = lat, 
+                 size = melanoma, 
+                 color = melanoma, 
+                 text = mytext), 
+             alpha = 0.7
+             ) +
+  scale_color_viridis(name = "Melanoma Incidence\n(per 100 000, 2016)") + 
+  scale_alpha_continuous() +
+  theme_minimal() + coord_map() + 
+  scale_x_continuous("") +
+  scale_y_continuous("")
+
+p_uv_mel <- ggplotly(p_uv_mel, tooltip = "mytext")
+
+```
+
+The plots are as follows:
+
+**Summer 2016 mean atmospheric ozone concentration (in ppb) plotted on the map with markers for lung cancer incidence rates in 2016 (age-adjusted per 100,000 people)**
+```{r p_o3_lc, message=FALSE, warning=FALSE}
+p_o3_lc
+```
+**Summer 2016 mean atmospheric ozone concentration (in ppb) plotted on the map with markers for asthma hospitalization rates in 2016 (age-adjusted per 100,000 people)**
+
+```{r p_o3_as, message=FALSE, warning=FALSE}
+p_o3_as
+```
+**Summer 2016 mean PM 2.5 (in µg/m^3) plotted on the map with markers for lung cancer incidence rates in 2016 (age-adjusted per 100,000 people)**
+```{r p_pm_lc, message=FALSE, warning=FALSE}
+p_pm_lc
+```
+**Summer 2016 mean PM 2.5 (in µg/m^3) plotted on the map with markers for asthma hospitalization rates in 2016 (age-adjusted per 100,000 people)**
+```{r p_pm_as, message=FALSE, warning=FALSE}
+p_pm_as
+```
+**Summer 2015 mean UV (in J/m^2, erthemally weighted daily dose) plotted on the map with markers for melanoma incidence rates in 2016 (age-adjusted per 100,000 people)**
+```{r p_uv_mel, message=FALSE, warning=FALSE}
+p_uv_mel
+```
+
+There are striking trends in the data but it is noted that som of the highest hospitalization rates due to asthma are located in the NYC metropolitan area where PM2.5 and ozone concentrations were relatively high during the summer of 2016. However, lung cancer rates were greated in Southern Ohio and Norther New York where there are low to moderate levels of ozone and PM2.5. Melanoma incidence rates for 2016 were overall higher in Ohio where there were also moderate to high levels of UV radiation the year prior in 2015. 
+
+These initial cross-sectional visualizations hint at possible correlations but further analyses are warranted to see the extent of the assocation if there is one.
 
 ## Additional analysis: 
 If you undertake formal statistical analyses, describe these in detail
