@@ -205,7 +205,15 @@ The resulting data set has `r nrow(lc_mel_asthma_county)` rows and
 Ohio and Pennsylvania.  
 There are 
 `r sum(!is.na(pull(lc_mel_asthma_county, age_adjusted_incidence_rate)))` 
-non-missing age-adjusted incidence rates.
+non-missing age-adjusted incidence rates.  
+
+The columns in this data set are:  
+`state`: The U.S. state.  
+`county`: The county in the state.  
+`outcome`: The health outcome.  
+`age_adjusted_incidence_rate`: The age-adjusted incidence rate for the health
+outcome per 100,000.   
+`fips`: The state-county FIPS code.
 
 The following table displays the number of counties for which we have 
 non-missing age-adjusted incidence rates in each state and the total number of 
@@ -217,16 +225,12 @@ lc_mel_asthma_county %>%
     non_missing_county = sum(!is.na(age_adjusted_incidence_rate)),
     total_counties = n()
   ) %>%
-  knitr::kable()
+  knitr::kable(col.names = c("State", "Non-Missing County", "Total County"))
 ```
 
-The columns in this data set are:  
-`state`: The U.S. state.  
-`county`: The county in the state.  
-`outcome`: The health outcome.  
-`age_adjusted_incidence_rate`: The age-adjusted incidence rate for the health
-outcome per 100,000.   
-`fips`: The state-county FIPS code.
+From this table, we see that we are missing 23 age-adjusted incidence rates
+from Pennsylvania. We have all age-adjusted incidence rates for New York and
+Ohio.
 
 Lastly, let's write out the combined data.
 ```{r}
