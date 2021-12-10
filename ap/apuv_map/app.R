@@ -7,6 +7,7 @@ library(tigris)
 library(leaflet)
 library(plotly)
 library(ggplot2)
+library(beeswarm)
 
 
 # Load data
@@ -152,12 +153,46 @@ apuv_plot =
   scale_x_discrete(breaks=c("Spring_2005", "Winter_2015"),
                    labels=c("2005", "2015")) +
   labs(
-    title = "Air Pollutant Concentrations and UV Intensities over Years",
+    title = "Air Pollutant Concentrations and UV Intensities over the Years",
     color = "County",
-    x = "Year",
     y = "Concentration/Intensity"
   ) +
+  theme(
+    axis.title.x=element_blank()
+  ) + 
   facet_grid(climate~., scales = "free_y")
+
+beeswarm_dis_df =
+  dis_df %>% 
+  arrange(state, county) %>% 
+  unite(county_state, c("county", "state"), sep = ", ") %>% 
+  mutate(
+    county_state = factor(county_state),
+    county_state = fct_inorder(county_state)
+  ) %>% 
+  select(-fips)
+
+beeswarm_dis_plot =
+  beeswarm(age_adjusted_incidence_rate ~ outcome, 
+           data = alt_dis_df, 
+           method = 'swarm', 
+           pwcol = county_state,
+           corral = "wrap")
+
+dis_plot =
+  ggplot(beeswarm_dis_plot, aes(x, y)) +
+  theme_minimal() +
+  geom_violin(aes(x, y, group = x.orig), color = "grey", fill = "grey") + 
+  geom_point(aes(color = col)) +
+  scale_x_discrete(labels=c("Asthma", "Lung Cancer", "Melanoma")) +
+  labs(
+    title = "Health Outcome Rates in the Following Years",
+    color = "County",
+    y = "Rate (Count per 100K)"
+  ) +
+  theme(
+    axis.title.x=element_blank()
+  )
 
 # Shiny.app
 ui = fluidPage(
@@ -212,9 +247,12 @@ ui = fluidPage(
   
   hr(),
   
-  p("Play around this plot to see if you could find some association", style="text-align:justify;color:black;background-color:lavender;padding:15px;border-radius:10px"),
+  p("Play around these plots to see if you could find some association between climate and health outcomes.", style="text-align:justify;color:black;background-color:lavender;padding:15px;border-radius:10px"),
   
-  plotlyOutput('cli_out_plotly')
+  column(width = 6, plotlyOutput('cli_plotly')),
+  column(width = 6, plotlyOutput('out_plotly'))
+  
+  
 )
 
 
@@ -480,14 +518,24 @@ server = function(input, output) {
       )
   })
   
-  output$cli_out_plotly = renderPlotly({
-    ggplotly(apuv_plot) %>% 
-      layout(legend = list(yanchor="top",
-                           y=1,
-                           xanchor="left",
-                           x=-0.2
-                      )
-            )
+  output$cli_plotly = renderPlotly({
+    ggplotly(apuv_plot)
+      # layout(legend = list(yanchor="top",
+      #                      y=1,
+      #                      xanchor="left",
+      #                      x=-0.4
+      #                 )
+      #       )
+  })
+  
+  output$out_plotly = renderPlotly({
+    ggplotly(dis_plot)
+      # layout(legend = list(yanchor="top",
+      #                      y=1,
+      #                      xanchor="left",
+      #                      x=-0.4
+      #                 )
+      # )
   })
 }
 
