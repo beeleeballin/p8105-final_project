@@ -503,7 +503,7 @@ following variables:
 
 ```
 
-##### apuv
+##### Air Pollution and UV data
 
 
   * `Year`. Year
@@ -516,33 +516,33 @@ following variables:
   
   * `Season`. Period of year in which data was collected
   
-  * `Pm25_max_pred`.
+  * `Pm25_max_pred`. Daily county-level maximum $PM_{2.5}$ $\mu g/m^3$ recorded/simulated
   
-  * `Pm25_med_pred`.
+  * `Pm25_med_pred`. Daily county-level median $PM_{2.5}$ $\mu g/m^3$ recorded/simulated
 
-  * `Pm25_mean_pred`.
+  * `Pm25_mean_pred`. Daily county-level mean $PM_{2.5}$ $\mu g/m^3$ recorded/simulated
   
-  * `Pm25_pop_pred`. 
+  * `Pm25_pop_pred`. Daily county-level population-weighted mean $PM_{2.5}$ $\mu g/m^3$ recorded/simulated
   
-  * `O3_max_pred`.
+  * `O3_max_pred`. Daily county-level maximum $O_{3}$ ppm recorded/simulated
   
-  * `O3_med_pred`.
+  * `O3_med_pred`. Daily county-level median $O_{3}$ ppm recorded/simulated
 
-  * `O3_mean_pred`.
+  * `O3_mean_pred`. Daily county-level mean $O_{3}$ ppm recorded/simulated
   
-  * `O3_pop_pred`.
+  * `O3_pop_pred`. Daily county-level population-weighted mean $O_{3}$ ppm recorded/simulated
   
-  * `Edd`.
+  * `Edd`. Daily county-level population weighted erythemally weighted daily dose, $J/m^2$
   
-  * `Edr`.
+  * `Edr`. Daily county-level population weighted erythemally weighted irradiance at local solar noon time, with the unit of $mW/m^2$
   
-  * `I305`. 
+  * `I305`. Daily county-level population weighted spectral irradiance at local solar noon time at 305 nm, $mW/m^2/nm$
   
-  * `I310`.
+  * `I310`. Daily county-level population weighted spectral irradiance at local solar noon time at 310 nm, $mW/m^2/nm$
   
-  * `I324`.
+  * `I324`. Daily county-level population weighted spectral irradiance at local solar noon time at 324 nm, with the unit of $mW/m^2/nm$
   
-  * `I380`.
+  * `I380`. Daily county-level population weighted spectral irradiance at local solar noon time at 380 nm, with the unit of $mW/m^2/nm$
 
 
 Next, we were able to merge all of our state level outcomes into one data set
