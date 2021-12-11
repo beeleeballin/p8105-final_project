@@ -1152,3 +1152,26 @@ If you undertake formal statistical analyses, describe these in detail
 ## Discussion: 
 What were your findings? Are they what you expect? What insights into the data can you make?
 
+### Limitations to analyses
+
+Although we focused our attention to three neighboring states, availability of surveillance data for 
+chronic health conditions   varies greatly across these three states. 
+These vairations in data collection make it difficult for comparison across states, 
+as the scales may not be comparable or the metric for measuring prevalence 
+in the population may differ between states. For instance, asthma incidence 
+can be reported with respect to acute cases as shown with emergency department visits 
+or more specifically with rates of hospitalization due exclusively to asthma. 
+Consequently, when comparing exposures as potential risk factors for asthma across the states and counties, 
+we were limited to only looking at hospitalizations because publically available 
+Pennsylvania data only reported on hospitalizations and not emergency department visits. 
+Similarly, surveillance data may not collect demographic data that have been shown to 
+be moderators of the health outcomes. 
+For instance, gender, race, and ethnicity have been reported in  academic literature 
+as important factors influencing differences observed in incidence rates of lung cancer globally. 
+These important moderators have been discussed not only in academic literature
+(e.g., [Schabeth et al. 2016](https://doi.org/10.1177/107327481602300405),), [Meza et al. (2015)](https://doi.org/10.1371/journal.pone.0121323), and [O'Keeffe et al. (2018)](http://dx.doi.org/10.1136/bmjopen-2018-021611)
+)
+but also in [reports by health organizations like the American Cancer Society](https://www.cancer.org/research/cancer-facts-statistics/global.html)) 
+and in [data visualizations by the World Health Organization](https://gco.iarc.fr/overtime/en).
+However, not all counties or states may report these relevant data as routinely if at all 
+to provide a complete picture of the disease incidence. 
