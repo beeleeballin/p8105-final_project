@@ -21,13 +21,13 @@ library(patchwork)
 
 ## Data Sources
 
-For health outcomes data, we are interested in the incidence of asthma, skin 
-cancer and lung cancer across time and space. We obtained age-adjusted incidence 
-rates of asthma related hospitalizations, age-adjusted incidence rates of
-Melanoma of the skin and age-adjusted incidence rates of lung cancer. The rates 
-were per 100,000 people for the three U.S. states New York, Ohio 
-and Pennsylvania over multiple years. The following bullet points provide links 
-from where we obtained the data.
+For health outcomes data, we are interested in the incidence of asthma, melanoma
+of the skin (skin cancer) and lung cancer across time and space. We obtained 
+age-adjusted incidence rates of asthma related hospitalizations, age-adjusted 
+incidence rates of melanoma of the skin and age-adjusted incidence rates of 
+lung cancer. The rates were per 100,000 people for the three U.S. states 
+New York, Ohio and Pennsylvania over multiple years. The following bullet points 
+provide links from where we obtained the data.
 
 *   Asthma
     * [Ohio](https://odh.ohio.gov/wps/portal/gov/odh/know-our-programs/asthma-program/Data-and-Statistics)
@@ -399,6 +399,12 @@ followed by Pennsylvania.
 
 Average age-adjusted incidence rates of Lung Cancer roughly increased for all 
 three states until 1998 and have fallen since.
+
+Looking at the three longitudinal line graphs of the age-adjusted incidence
+rates for the health outcomes by year, while there are some differences in the 
+age-adjusted incidence rates, all three states generally follow the same trend
+for each health outcome. Perhaps, this consistency in trend can be explained by 
+federal government policy relating to these health outcomes.
 
 ### Outcome case study of age, race, and gender
 
