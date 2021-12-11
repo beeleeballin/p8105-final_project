@@ -13,6 +13,8 @@ We are a team, and we care about **climates** and **diseases**.
 <img src="https://i.gifer.com/7gzj.gif" alt="drawing" height="200"/>
 <img src="https://c.tenor.com/Eq6lwKqkJ6sAAAAC/american-psycho-christian-bale.gif" height="200"/>
 
+And we think the air and the sun might be doing us no good.
+
 # About the project
 
 As a team of biostatistians and epidemiologists in training, we care about the impact of climate on diseases 
