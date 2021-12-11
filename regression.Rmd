@@ -537,10 +537,39 @@ county_df2 %>%
 
 ### Model fit - lung cancer and air quality: Cross-sectional data
 
+Time for another model. Once more we try to predict lung cancer as a function of air quality variables.
 
+```{r message=FALSE, warnin=FALSE}
+aq_lung_df2 <- county_df2 %>%
+  select(-c(melanoma, asthma, starts_with("edd"), county, fips))
 
+fit_aq_cty <- lm(`lung cancer` ~ .^2, data = aq_lung_df2)
 
+step_bic_aq_cty <- step(fit_aq_cty, trace = 0, k = log(nobs(fit_aq)), direction = "backward")
+summary(step_bic_aq_cty)
+```
 
+That's a much more reasonable $R^2$. Interestingly this model doesn't have any particulate matter terms. How do the diagnostics look?
 
+```{r warning=FALSE, message=FALSE}
+lung_fit_cty <- aq_lung_df2 %>%
+  modelr::add_residuals(step_bic_aq_cty) %>%
+  modelr::add_predictions(step_bic_aq_cty)
 
+lung_fit_cty %>%
+  ggplot(aes(x = pred, y = resid)) + geom_point() + labs(x = "Predicted value", y = "Residual")
+```
 
+We have heteroscedasticity, but otherwise beautiful residuals. How about normality?
+
+```{r message=FALSE, warning=FALSE}
+plot(step_bic_aq_cty, which = 2)
+```
+
+Not perfect, but a lot better than the state-level model. High-leverage points?
+
+```{r message=FALSE, warning=FALSE}
+plot(step_bic_aq_cty, which = 5)
+```
+
+No high-leverage points.
