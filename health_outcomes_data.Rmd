@@ -16,6 +16,7 @@ library(maps)
 library(mapdata)
 library(plotly)
 library(rjson)
+library(patchwork)
 ```
 
 ## Data Sources
@@ -29,7 +30,9 @@ and Pennsylvania over multiple years. The following bullet points provide links
 from where we obtained the data.
 
 *   Asthma
-    *   Provide source
+    * [Ohio](https://odh.ohio.gov/wps/portal/gov/odh/know-our-programs/asthma-program/Data-and-Statistics)
+    * [New York](https://www.health.ny.gov/statistics/environmental/public_health_tracking/about_pages/asthma/export)
+    * [Pennsylvania](https://www.phaim1.health.pa.gov/EDD/WebForms/HospitalDischargeCntyStChrt.aspx)  
 *   Melanoma of the skin (skin cancer)
     *   [New York](https://www.health.ny.gov/statistics/cancer/registry/table2/tb2melanomanys.htm)
     *   [Ohio](https://publicapps.odh.ohio.gov/EDW/DataBrowser/Browse/StateLayoutLockdownCancers)
@@ -46,7 +49,9 @@ where we obtained the data. The asthma data is provided for the year 2016 and
 the skin cancer and lung cancer data is averaged over the years 2014-2018.
 
 *   Asthma
-    *   Provide source
+    * [Ohio](https://odh.ohio.gov/wps/portal/gov/odh/know-our-programs/asthma-program/Data-and-Statistics)
+    * [New York](https://www.health.ny.gov/statistics/environmental/public_health_tracking/about_pages/asthma/export)
+    * [Pennsylvania](https://www.phaim1.health.pa.gov/EDD/WebForms/HospitalDischargeCntyStChrt.aspx)  
 *   Melanoma of the skin (skin cancer) and lung cancer
     *   [All 50 states](https://statecancerprofiles.cancer.gov/quick-profiles/index.php?tabSelected=2&statename=newyork)
 
@@ -395,3 +400,75 @@ followed by Pennsylvania.
 Average age-adjusted incidence rates of Lung Cancer roughly increased for all 
 three states until 1998 and have fallen since.
 
+### Outcome case study of age, race, and gender
+
+Given the limitations of obtaining publicly available data on health outcomes across states 
+and the inconsistencies among the type of data available, 
+it was not possible to assess important contributing factors to the health outcomes explored here. 
+However, for the asthma data available for Pennsylvania it was possible to visualize trends over time when stratifying for demographic variables like age, gender, and race. This was explored below for hospitalizations due to asthma from 2000 until 2019.
+
+```{r}
+pa_asthma <-
+  read_csv("./data/asthma_data/pa_asthma_all.csv", col_names = TRUE) %>%
+  janitor::clean_names()
+
+pa_asthma_plot <-
+  pa_asthma %>% 
+  filter(race == "All Races", 
+         age == "All Ages",
+         sex == "Total",
+         geography == "Pennsylvania") %>%
+  mutate(rate = as.numeric(rate),
+         lb = as.numeric(lb),
+         year = as.numeric(year),
+         ub = as.numeric(ub)) %>% 
+  ggplot(aes(x = year, y = rate)) + 
+  geom_point() +
+  geom_smooth(method = "loess", se = ) +
+  geom_errorbar(aes(ymin = lb, ymax = ub)) +
+  labs(title = "Hospitalizations due to asthma in PA, 2000-2019", 
+       x ="Year", 
+       y = "Rate\n(age-adjusted per 100,000)")
+
+
+race_asthma <-
+  pa_asthma %>% 
+  filter(geography_code == "0",
+         sex != "Total",
+         age == "All Ages") %>%
+  mutate(rate = as.numeric(rate),
+         lb = as.numeric(lb),
+         year = as.numeric(year),
+         ub = as.numeric(ub)) %>%
+  ggplot(aes(x = year, y = rate, color = race)) +
+  geom_point() +
+  geom_smooth(method = "loess", se = ) +
+  geom_errorbar(aes(ymin = lb, ymax = ub)) +
+  facet_grid(sex ~ .) + 
+  theme(legend.position="bottom") + 
+  labs(title = "Stratified by gender and race", 
+       x ="Year", y = "Rate \n(age-adjusted per 100,000)") +
+  scale_color_viridis_d(name = "Race")
+
+
+age_asthma <-
+  pa_asthma %>% 
+  filter(geography_code == "0",
+         sex != "Total",
+         race == "All Races") %>%
+  mutate(rate = as.numeric(rate),
+         year = as.numeric(year),
+         lb = as.numeric(lb),
+         ub = as.numeric(ub)) %>% 
+  ggplot(aes(x = year, y = rate, color = age)) +
+  geom_point() +
+  geom_smooth(method = "loess", se = ) +
+  geom_errorbar(aes(ymin = lb, ymax = ub)) +
+  facet_grid(sex ~ .) + 
+  theme(legend.position="bottom") +
+  labs(title = "Stratified by gender and age group", 
+       x ="Year", y = "Rate \n(not age-adjusted per 100,000)") +
+  scale_color_viridis_d(name = "Age Group")
+
+pa_asthma_plot / (race_asthma + age_asthma )
+```
