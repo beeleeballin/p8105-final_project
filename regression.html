@@ -383,47 +383,18 @@ div.tocify {
 </div>
 
 
-<p>#Part 1: State Level Trends, 2001-2015</p>
+<div id="part-1-state-level-trends-2001-2015" class="section level1">
+<h1>Part 1: State Level Trends, 2001-2015</h1>
 <div id="data" class="section level2">
 <h2>Data</h2>
 <p>We begin by reading in the combined health outcomes data and the combined air pollution and UV radiation data to produce an analysis at the state level. We quickly noticed that some of our variables in the air pollution and UV data were strongly correlated with each other, so we omitted several for the purposes of our regression analysis (collinearity violates our assumptions); the final correlation matrix is given below.</p>
-<pre class="r"><code>library(tidyverse)</code></pre>
-<pre><code>## ── Attaching packages ─────────────────────────────────────── tidyverse 1.3.1 ──</code></pre>
-<pre><code>## ✓ ggplot2 3.3.5     ✓ purrr   0.3.4
-## ✓ tibble  3.1.5     ✓ dplyr   1.0.7
-## ✓ tidyr   1.1.4     ✓ stringr 1.4.0
-## ✓ readr   2.0.1     ✓ forcats 0.5.1</code></pre>
-<pre><code>## ── Conflicts ────────────────────────────────────────── tidyverse_conflicts() ──
-## x dplyr::filter() masks stats::filter()
-## x dplyr::lag()    masks stats::lag()</code></pre>
-<pre class="r"><code>outcomes_state &lt;- read_csv(&quot;data/lc_mel_asthma_state.csv&quot;)</code></pre>
-<pre><code>## Rows: 234 Columns: 4</code></pre>
-<pre><code>## ── Column specification ────────────────────────────────────────────────────────
-## Delimiter: &quot;,&quot;
-## chr (2): state, outcome
-## dbl (2): year, age_adjusted_incidence_rate</code></pre>
-<pre><code>## 
-## ℹ Use `spec()` to retrieve the full column specification for this data.
-## ℹ Specify the column types or set `show_col_types = FALSE` to quiet this message.</code></pre>
-<pre class="r"><code>outcomes_county &lt;- read_csv(&quot;data/lc_mel_asthma_county.csv&quot;)</code></pre>
-<pre><code>## Rows: 642 Columns: 5</code></pre>
-<pre><code>## ── Column specification ────────────────────────────────────────────────────────
-## Delimiter: &quot;,&quot;
-## chr (3): state, county, outcome
-## dbl (2): age_adjusted_incidence_rate, fips</code></pre>
-<pre><code>## 
-## ℹ Use `spec()` to retrieve the full column specification for this data.
-## ℹ Specify the column types or set `show_col_types = FALSE` to quiet this message.</code></pre>
-<pre class="r"><code>ap_uv &lt;- read_csv(&quot;ap/ap_uv/apuv.csv&quot;)</code></pre>
-<pre><code>## Rows: 14912 Columns: 19</code></pre>
-<pre><code>## ── Column specification ────────────────────────────────────────────────────────
-## Delimiter: &quot;,&quot;
-## chr  (3): county, state, season
-## dbl (16): year, countyfips, pm25_max_pred, pm25_med_pred, pm25_mean_pred, pm...</code></pre>
-<pre><code>## 
-## ℹ Use `spec()` to retrieve the full column specification for this data.
-## ℹ Specify the column types or set `show_col_types = FALSE` to quiet this message.</code></pre>
-<pre class="r"><code>#State-level analysis - fewer predictors
+<pre class="r"><code>library(tidyverse)
+
+outcomes_state &lt;- read_csv(&quot;data/lc_mel_asthma_state.csv&quot;)
+outcomes_county &lt;- read_csv(&quot;data/lc_mel_asthma_county.csv&quot;)
+ap_uv &lt;- read_csv(&quot;ap/ap_uv/apuv.csv&quot;)
+
+#State-level analysis - fewer predictors
 ap_uv_state_slim &lt;- ap_uv %&gt;%
   select(-c(countyfips, county,
             pm25_max_pred, pm25_mean_pred, pm25_pop_pred,
@@ -432,37 +403,348 @@ ap_uv_state_slim &lt;- ap_uv %&gt;%
   group_by(state, year, season) %&gt;%
   #Take medians across county for each season
   summarize(across(pm25_med_pred:edd, median)) %&gt;%
-  pivot_wider(names_from = season, values_from = pm25_med_pred:edd)</code></pre>
-<pre><code>## `summarise()` has grouped output by &#39;state&#39;, &#39;year&#39;. You can override using the `.groups` argument.</code></pre>
-<pre class="r"><code>#State-level analysis - more predictors
+  pivot_wider(names_from = season, values_from = pm25_med_pred:edd)
+
+#State-level analysis - more predictors
 ap_uv_state &lt;- ap_uv %&gt;%
   select(-c(countyfips, county)) %&gt;%
   group_by(state, year, season) %&gt;%
   #Take medians across county for each season
   summarize(across(pm25_max_pred:i380, median)) %&gt;%
-  pivot_wider(names_from = season, values_from = pm25_max_pred:i380)</code></pre>
-<pre><code>## `summarise()` has grouped output by &#39;state&#39;, &#39;year&#39;. You can override using the `.groups` argument.</code></pre>
-<pre class="r"><code>outcomes_wider_state &lt;- outcomes_state %&gt;%
+  pivot_wider(names_from = season, values_from = pm25_max_pred:i380)
+
+outcomes_wider_state &lt;- outcomes_state %&gt;%
   pivot_wider(names_from = outcome, values_from = age_adjusted_incidence_rate)
   
-state_analysis &lt;- left_join(outcomes_wider_state, ap_uv_state_slim)</code></pre>
-<pre><code>## Joining, by = c(&quot;state&quot;, &quot;year&quot;)</code></pre>
-<pre class="r"><code>#Check for correlations
+state_analysis &lt;- left_join(outcomes_wider_state, ap_uv_state_slim)
+
+#Check for correlations
 state_analysis_corr &lt;- state_analysis %&gt;% 
   select(`lung cancer`:edd_Winter) %&gt;% 
   do(as.data.frame(cor(., method=&quot;pearson&quot;, use=&quot;pairwise.complete.obs&quot;))) %&gt;%
-  knitr::kable()</code></pre>
+  knitr::kable()
+state_analysis_corr</code></pre>
+<table style="width:100%;">
+<colgroup>
+<col width="8%" />
+<col width="4%" />
+<col width="4%" />
+<col width="4%" />
+<col width="7%" />
+<col width="8%" />
+<col width="8%" />
+<col width="8%" />
+<col width="6%" />
+<col width="7%" />
+<col width="7%" />
+<col width="7%" />
+<col width="4%" />
+<col width="4%" />
+<col width="4%" />
+<col width="4%" />
+</colgroup>
+<thead>
+<tr class="header">
+<th align="left"></th>
+<th align="right">lung cancer</th>
+<th align="right">melanoma</th>
+<th align="right">asthma</th>
+<th align="right">pm25_med_pred_Fall</th>
+<th align="right">pm25_med_pred_Spring</th>
+<th align="right">pm25_med_pred_Summer</th>
+<th align="right">pm25_med_pred_Winter</th>
+<th align="right">o3_med_pred_Fall</th>
+<th align="right">o3_med_pred_Spring</th>
+<th align="right">o3_med_pred_Summer</th>
+<th align="right">o3_med_pred_Winter</th>
+<th align="right">edd_Fall</th>
+<th align="right">edd_Spring</th>
+<th align="right">edd_Summer</th>
+<th align="right">edd_Winter</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td align="left">lung cancer</td>
+<td align="right">1.0000000</td>
+<td align="right">0.2082952</td>
+<td align="right">0.3107250</td>
+<td align="right">0.8986288</td>
+<td align="right">0.8198802</td>
+<td align="right">0.7882240</td>
+<td align="right">0.7974809</td>
+<td align="right">0.1919442</td>
+<td align="right">0.3188281</td>
+<td align="right">0.7231695</td>
+<td align="right">-0.7575209</td>
+<td align="right">0.4423832</td>
+<td align="right">0.3596362</td>
+<td align="right">0.7183017</td>
+<td align="right">0.1543232</td>
+</tr>
+<tr class="even">
+<td align="left">melanoma</td>
+<td align="right">0.2082952</td>
+<td align="right">1.0000000</td>
+<td align="right">-0.7112906</td>
+<td align="right">-0.1634813</td>
+<td align="right">-0.1539077</td>
+<td align="right">-0.3414310</td>
+<td align="right">0.1111093</td>
+<td align="right">0.2199124</td>
+<td align="right">-0.0692780</td>
+<td align="right">-0.2151543</td>
+<td align="right">0.1610076</td>
+<td align="right">0.5326605</td>
+<td align="right">0.3733857</td>
+<td align="right">0.1302414</td>
+<td align="right">0.3810257</td>
+</tr>
+<tr class="odd">
+<td align="left">asthma</td>
+<td align="right">0.3107250</td>
+<td align="right">-0.7112906</td>
+<td align="right">1.0000000</td>
+<td align="right">0.1324778</td>
+<td align="right">0.1347419</td>
+<td align="right">0.3681750</td>
+<td align="right">-0.1162262</td>
+<td align="right">-0.4738109</td>
+<td align="right">0.2878737</td>
+<td align="right">0.0941785</td>
+<td align="right">-0.0887587</td>
+<td align="right">-0.6790830</td>
+<td align="right">-0.5864353</td>
+<td align="right">-0.3469688</td>
+<td align="right">-0.4382772</td>
+</tr>
+<tr class="even">
+<td align="left">pm25_med_pred_Fall</td>
+<td align="right">0.8986288</td>
+<td align="right">-0.1634813</td>
+<td align="right">0.1324778</td>
+<td align="right">1.0000000</td>
+<td align="right">0.8990588</td>
+<td align="right">0.8582926</td>
+<td align="right">0.7793254</td>
+<td align="right">0.2840132</td>
+<td align="right">0.1924560</td>
+<td align="right">0.7889453</td>
+<td align="right">-0.8460845</td>
+<td align="right">0.3921520</td>
+<td align="right">0.3250380</td>
+<td align="right">0.7189860</td>
+<td align="right">0.1022595</td>
+</tr>
+<tr class="odd">
+<td align="left">pm25_med_pred_Spring</td>
+<td align="right">0.8198802</td>
+<td align="right">-0.1539077</td>
+<td align="right">0.1347419</td>
+<td align="right">0.8990588</td>
+<td align="right">1.0000000</td>
+<td align="right">0.8303884</td>
+<td align="right">0.7592112</td>
+<td align="right">0.2658257</td>
+<td align="right">0.2314727</td>
+<td align="right">0.7210006</td>
+<td align="right">-0.8427712</td>
+<td align="right">0.2484149</td>
+<td align="right">0.4710869</td>
+<td align="right">0.7013698</td>
+<td align="right">0.0388916</td>
+</tr>
+<tr class="even">
+<td align="left">pm25_med_pred_Summer</td>
+<td align="right">0.7882240</td>
+<td align="right">-0.3414310</td>
+<td align="right">0.3681750</td>
+<td align="right">0.8582926</td>
+<td align="right">0.8303884</td>
+<td align="right">1.0000000</td>
+<td align="right">0.6984350</td>
+<td align="right">0.1996813</td>
+<td align="right">0.2962791</td>
+<td align="right">0.8374731</td>
+<td align="right">-0.7890281</td>
+<td align="right">0.1961149</td>
+<td align="right">0.1081415</td>
+<td align="right">0.6464591</td>
+<td align="right">0.0891841</td>
+</tr>
+<tr class="odd">
+<td align="left">pm25_med_pred_Winter</td>
+<td align="right">0.7974809</td>
+<td align="right">0.1111093</td>
+<td align="right">-0.1162262</td>
+<td align="right">0.7793254</td>
+<td align="right">0.7592112</td>
+<td align="right">0.6984350</td>
+<td align="right">1.0000000</td>
+<td align="right">0.4312721</td>
+<td align="right">0.1888207</td>
+<td align="right">0.6572143</td>
+<td align="right">-0.7372041</td>
+<td align="right">0.6325734</td>
+<td align="right">0.2466810</td>
+<td align="right">0.7032967</td>
+<td align="right">0.1150974</td>
+</tr>
+<tr class="even">
+<td align="left">o3_med_pred_Fall</td>
+<td align="right">0.1919442</td>
+<td align="right">0.2199124</td>
+<td align="right">-0.4738109</td>
+<td align="right">0.2840132</td>
+<td align="right">0.2658257</td>
+<td align="right">0.1996813</td>
+<td align="right">0.4312721</td>
+<td align="right">1.0000000</td>
+<td align="right">0.0645681</td>
+<td align="right">0.3550059</td>
+<td align="right">-0.3152226</td>
+<td align="right">0.7209518</td>
+<td align="right">0.1174262</td>
+<td align="right">0.5393190</td>
+<td align="right">-0.0883089</td>
+</tr>
+<tr class="odd">
+<td align="left">o3_med_pred_Spring</td>
+<td align="right">0.3188281</td>
+<td align="right">-0.0692780</td>
+<td align="right">0.2878737</td>
+<td align="right">0.1924560</td>
+<td align="right">0.2314727</td>
+<td align="right">0.2962791</td>
+<td align="right">0.1888207</td>
+<td align="right">0.0645681</td>
+<td align="right">1.0000000</td>
+<td align="right">0.2788961</td>
+<td align="right">-0.2219670</td>
+<td align="right">0.1439151</td>
+<td align="right">0.4159598</td>
+<td align="right">0.2821319</td>
+<td align="right">0.1649401</td>
+</tr>
+<tr class="even">
+<td align="left">o3_med_pred_Summer</td>
+<td align="right">0.7231695</td>
+<td align="right">-0.2151543</td>
+<td align="right">0.0941785</td>
+<td align="right">0.7889453</td>
+<td align="right">0.7210006</td>
+<td align="right">0.8374731</td>
+<td align="right">0.6572143</td>
+<td align="right">0.3550059</td>
+<td align="right">0.2788961</td>
+<td align="right">1.0000000</td>
+<td align="right">-0.7726044</td>
+<td align="right">0.3388034</td>
+<td align="right">0.3831358</td>
+<td align="right">0.8360440</td>
+<td align="right">0.3144834</td>
+</tr>
+<tr class="odd">
+<td align="left">o3_med_pred_Winter</td>
+<td align="right">-0.7575209</td>
+<td align="right">0.1610076</td>
+<td align="right">-0.0887587</td>
+<td align="right">-0.8460845</td>
+<td align="right">-0.8427712</td>
+<td align="right">-0.7890281</td>
+<td align="right">-0.7372041</td>
+<td align="right">-0.3152226</td>
+<td align="right">-0.2219670</td>
+<td align="right">-0.7726044</td>
+<td align="right">1.0000000</td>
+<td align="right">-0.2692265</td>
+<td align="right">-0.3273758</td>
+<td align="right">-0.6197914</td>
+<td align="right">-0.1665205</td>
+</tr>
+<tr class="even">
+<td align="left">edd_Fall</td>
+<td align="right">0.4423832</td>
+<td align="right">0.5326605</td>
+<td align="right">-0.6790830</td>
+<td align="right">0.3921520</td>
+<td align="right">0.2484149</td>
+<td align="right">0.1961149</td>
+<td align="right">0.6325734</td>
+<td align="right">0.7209518</td>
+<td align="right">0.1439151</td>
+<td align="right">0.3388034</td>
+<td align="right">-0.2692265</td>
+<td align="right">1.0000000</td>
+<td align="right">0.2757208</td>
+<td align="right">0.4563821</td>
+<td align="right">0.1890074</td>
+</tr>
+<tr class="odd">
+<td align="left">edd_Spring</td>
+<td align="right">0.3596362</td>
+<td align="right">0.3733857</td>
+<td align="right">-0.5864353</td>
+<td align="right">0.3250380</td>
+<td align="right">0.4710869</td>
+<td align="right">0.1081415</td>
+<td align="right">0.2466810</td>
+<td align="right">0.1174262</td>
+<td align="right">0.4159598</td>
+<td align="right">0.3831358</td>
+<td align="right">-0.3273758</td>
+<td align="right">0.2757208</td>
+<td align="right">1.0000000</td>
+<td align="right">0.3841069</td>
+<td align="right">0.4020161</td>
+</tr>
+<tr class="even">
+<td align="left">edd_Summer</td>
+<td align="right">0.7183017</td>
+<td align="right">0.1302414</td>
+<td align="right">-0.3469688</td>
+<td align="right">0.7189860</td>
+<td align="right">0.7013698</td>
+<td align="right">0.6464591</td>
+<td align="right">0.7032967</td>
+<td align="right">0.5393190</td>
+<td align="right">0.2821319</td>
+<td align="right">0.8360440</td>
+<td align="right">-0.6197914</td>
+<td align="right">0.4563821</td>
+<td align="right">0.3841069</td>
+<td align="right">1.0000000</td>
+<td align="right">0.0915974</td>
+</tr>
+<tr class="odd">
+<td align="left">edd_Winter</td>
+<td align="right">0.1543232</td>
+<td align="right">0.3810257</td>
+<td align="right">-0.4382772</td>
+<td align="right">0.1022595</td>
+<td align="right">0.0388916</td>
+<td align="right">0.0891841</td>
+<td align="right">0.1150974</td>
+<td align="right">-0.0883089</td>
+<td align="right">0.1649401</td>
+<td align="right">0.3144834</td>
+<td align="right">-0.1665205</td>
+<td align="right">0.1890074</td>
+<td align="right">0.4020161</td>
+<td align="right">0.0915974</td>
+<td align="right">1.0000000</td>
+</tr>
+</tbody>
+</table>
 </div>
 <div id="lung-cancer" class="section level2">
 <h2>Lung Cancer</h2>
 <div id="exploration" class="section level3">
 <h3>Exploration</h3>
 <p>Before performing our analysis, we may want to look at some bivariate plots with trends over time to see if there are general trends from 2001 to 2015.</p>
-<pre class="r"><code>library(GGally)</code></pre>
-<pre><code>## Registered S3 method overwritten by &#39;GGally&#39;:
-##   method from   
-##   +.gg   ggplot2</code></pre>
-<pre class="r"><code>state_analysis %&gt;%
+<pre class="r"><code>library(GGally)
+
+state_analysis %&gt;%
   filter(year %in% 2001:2015) %&gt;%
   ggpairs(columns = c(&quot;year&quot;,&quot;lung cancer&quot;, &quot;o3_med_pred_Summer&quot;, &quot;pm25_med_pred_Summer&quot;),
           mapping = aes(group = state, color = state),
@@ -486,98 +768,83 @@ fall_plot &lt;- state_analysis %&gt;%
 
 library(patchwork)
 (state_plot + spring_plot) / (summer_plot + fall_plot)</code></pre>
-<pre><code>## Warning: Removed 2 row(s) containing missing values (geom_path).</code></pre>
-<pre><code>## Warning: Removed 49 rows containing missing values (geom_point).
-
-## Warning: Removed 49 rows containing missing values (geom_point).
-
-## Warning: Removed 49 rows containing missing values (geom_point).</code></pre>
 <p><img src="regression_files/figure-html/unnamed-chunk-2-2.png" width="672" /></p>
 </div>
-<div id="model-fit" class="section level3">
-<h3>Model Fit</h3>
-<p>We proceed using backwards selection BIC from 2001 to 2015</p>
+<div id="model-fit---air-quality-and-lung-cancer" class="section level3">
+<h3>Model Fit - Air quality and lung cancer</h3>
+<p>We construct a model using the air quality variables (ozone, particulate matter), state, and powers and interactions thereof, then pare down with BIC, limiting our focus to the years 2001-2015.</p>
 <pre class="r"><code>state_2001_2015 &lt;- state_analysis %&gt;%
   filter(year %in% 2001:2015) %&gt;%
   #exclude asthma, lots of missingness
   select(-asthma)
 
-fit &lt;- lm(`lung cancer` ~ ., data = state_2001_2015)
-step_bic &lt;- step(fit, trace = 0, k = log(nobs(fit)), direction = &quot;backward&quot;)
-summary(step_bic)</code></pre>
+aq_lung_df &lt;- state_2001_2015 %&gt;%
+  select(-c(melanoma, starts_with(&quot;edd&quot;)))
+#fit_aq &lt;- lm(`lung cancer` ~ .^2, data = aq_lung_df) - this broke in R
+fit_aq &lt;- lm(`lung cancer` ~ . +
+               year*(o3_med_pred_Spring +
+                     o3_med_pred_Summer +
+                     o3_med_pred_Fall) +
+               year*(pm25_med_pred_Spring +
+                     pm25_med_pred_Summer +
+                     pm25_med_pred_Fall) +
+               state*year, data = aq_lung_df)
+
+step_bic_aq &lt;- step(fit_aq, trace = 0, k = log(nobs(fit_aq)), direction = &quot;backward&quot;)
+summary(step_bic_aq)</code></pre>
 <pre><code>## 
 ## Call:
-## lm(formula = `lung cancer` ~ state + year + o3_med_pred_Fall + 
-##     o3_med_pred_Spring + o3_med_pred_Summer + edd_Fall + edd_Spring + 
-##     edd_Summer, data = state_2001_2015)
+## lm(formula = `lung cancer` ~ state + year + pm25_med_pred_Fall + 
+##     pm25_med_pred_Spring + o3_med_pred_Summer + year:pm25_med_pred_Fall + 
+##     state:year, data = aq_lung_df)
 ## 
 ## Residuals:
 ##      Min       1Q   Median       3Q      Max 
-## -1.86021 -0.31495  0.07269  0.50707  0.95704 
+## -1.75773 -0.51795 -0.00639  0.51870  1.64145 
 ## 
 ## Coefficients:
-##                      Estimate Std. Error t value Pr(&gt;|t|)    
-## (Intercept)         2.189e+03  1.691e+02  12.940 4.84e-12 ***
-## stateOH             9.401e+00  9.229e-01  10.187 5.38e-10 ***
-## statePA             4.342e+00  5.918e-01   7.337 1.83e-07 ***
-## year               -1.055e+00  8.429e-02 -12.515 9.51e-12 ***
-## o3_med_pred_Fall   -3.092e-01  1.464e-01  -2.111   0.0458 *  
-## o3_med_pred_Spring -2.527e-01  1.196e-01  -2.114   0.0456 *  
-## o3_med_pred_Summer -2.127e-01  9.596e-02  -2.217   0.0368 *  
-## edd_Fall            4.640e-03  1.720e-03   2.699   0.0128 *  
-## edd_Spring          2.132e-03  9.207e-04   2.315   0.0299 *  
-## edd_Summer          3.625e-03  2.160e-03   1.678   0.1068    
+##                           Estimate Std. Error t value Pr(&gt;|t|)    
+## (Intercept)             3402.03891  485.87390   7.002 3.80e-08 ***
+## stateOH                 1209.53035  266.45723   4.539 6.40e-05 ***
+## statePA                  543.09187  196.19321   2.768  0.00895 ** 
+## year                      -1.65961    0.24187  -6.862 5.77e-08 ***
+## pm25_med_pred_Fall      -299.22919   67.68656  -4.421 9.10e-05 ***
+## pm25_med_pred_Spring      -0.65867    0.19252  -3.421  0.00160 ** 
+## o3_med_pred_Summer        -0.10565    0.04746  -2.226  0.03254 *  
+## year:pm25_med_pred_Fall    0.14930    0.03371   4.430 8.86e-05 ***
+## stateOH:year              -0.59658    0.13271  -4.495 7.29e-05 ***
+## statePA:year              -0.26793    0.09771  -2.742  0.00956 ** 
 ## ---
 ## Signif. codes:  0 &#39;***&#39; 0.001 &#39;**&#39; 0.01 &#39;*&#39; 0.05 &#39;.&#39; 0.1 &#39; &#39; 1
 ## 
-## Residual standard error: 0.766 on 23 degrees of freedom
-##   (12 observations deleted due to missingness)
-## Multiple R-squared:  0.9842, Adjusted R-squared:  0.978 
-## F-statistic: 158.9 on 9 and 23 DF,  p-value: &lt; 2.2e-16</code></pre>
-<p>Am I reading that right? <span class="math inline">\(R^2\)</span> of 0.98! That sounds too good to be true. Let’s look at some diagnostic plots.</p>
-<pre class="r"><code>lung_fit &lt;- state_2001_2015 %&gt;%
-  modelr::add_residuals(step_bic) %&gt;%
-  modelr::add_predictions(step_bic)
+## Residual standard error: 0.9403 on 35 degrees of freedom
+## Multiple R-squared:  0.9738, Adjusted R-squared:  0.9671 
+## F-statistic: 144.6 on 9 and 35 DF,  p-value: &lt; 2.2e-16</code></pre>
+<p>Am I reading that right? <span class="math inline">\(R^2\)</span> of 0.97! That sounds too good to be true. Let’s look at some diagnostic plots.</p>
+<pre class="r"><code>lung_fit &lt;- aq_lung_df %&gt;%
+  modelr::add_residuals(step_bic_aq) %&gt;%
+  modelr::add_predictions(step_bic_aq)
 
 lung_fit %&gt;%
   ggplot(aes(x = pred, y = resid)) + geom_point() + labs(x = &quot;Predicted value&quot;, y = &quot;Residual&quot;)</code></pre>
-<pre><code>## Warning: Removed 12 rows containing missing values (geom_point).</code></pre>
 <p><img src="regression_files/figure-html/unnamed-chunk-4-1.png" width="672" /></p>
-<p>Residuals appear to have a slight upward curvature overall. What variables are driving this?</p>
-<pre class="r"><code>spring_resid &lt;- lung_fit %&gt;%
-  ggplot(aes(x = o3_med_pred_Spring, y = resid)) + geom_point() + labs(x = &quot;Spring Median O3&quot;,
-                                                          y = &quot;Residual&quot;)
-summer_resid &lt;- lung_fit %&gt;%
-  ggplot(aes(x = o3_med_pred_Summer, y = resid)) + geom_point() + labs(x = &quot;Summer Median O3&quot;, y = &quot;Residual&quot;)
-
-fall_resid &lt;- lung_fit %&gt;%
-  ggplot(aes(x = o3_med_pred_Fall, y = resid)) + geom_point() + labs(x = &quot;Fall Median O3&quot;, y = &quot;Residual&quot;)
-
-state_resid &lt;- lung_fit %&gt;%
-  ggplot(aes(x = state, y = resid)) + geom_violin() + labs(x = &quot;State&quot;, y = &quot;Residual&quot;)
-
-(spring_resid + summer_resid) / (fall_resid + state_resid)</code></pre>
-<pre><code>## Warning: Removed 12 rows containing missing values (geom_point).
-
-## Warning: Removed 12 rows containing missing values (geom_point).
-
-## Warning: Removed 12 rows containing missing values (geom_point).</code></pre>
-<pre><code>## Warning: Removed 12 rows containing non-finite values (stat_ydensity).</code></pre>
+<p>These residuals look great! Centered around 0 in a relatively even band. How about normality?</p>
+<pre class="r"><code>plot(step_bic_aq, which = 2)</code></pre>
 <p><img src="regression_files/figure-html/unnamed-chunk-5-1.png" width="672" /></p>
-<p>Hm…</p>
-<pre class="r"><code>plot(step_bic, which = 2)</code></pre>
+<p>That’s not ideal. I don’t love Box-Cox, but I wonder if it might give us some insight.</p>
+<pre class="r"><code>MASS::boxcox(step_bic_aq)</code></pre>
 <p><img src="regression_files/figure-html/unnamed-chunk-6-1.png" width="672" /></p>
-<p>Normality assumption doesn’t look so great.</p>
-<pre class="r"><code>plot(step_bic, which = 5)</code></pre>
+<p>Really doesn’t help us; the best power of our response variable is about 1. Are there any influential points/high-leverage points?</p>
+<pre class="r"><code>plot(step_bic_aq, which = 5)</code></pre>
 <p><img src="regression_files/figure-html/unnamed-chunk-7-1.png" width="672" /></p>
-<p>Datapoint number 28 is a borderline outlier.</p>
+<p>No datapoint with a Cook’s distance greater than 0.5, that’s good. Are we overfit?</p>
 </div>
 <div id="cross-validation" class="section level3">
 <h3>Cross validation</h3>
-<p>What happens if we cross-validate against simpler models? I suspect we are overfit. We will use leave-one-out cross-validation.</p>
+<p>What happens if we cross-validate against simpler models? We will use leave-one-out and Monte Carlo cross-validation.</p>
 <pre class="r"><code>library(modelr)
 set.seed(15)
-cv_df &lt;- crossv_loo(state_2001_2015)
+cv_df &lt;- crossv_loo(aq_lung_df)
     
 cv_df &lt;- cv_df %&gt;% 
   mutate(
@@ -594,9 +861,7 @@ cv_df &lt;- cv_df %&gt;%
                                                               year*state, data = .x)),
     
     #BIC model
-    bic_fit = map(train, ~lm(`lung cancer` ~ state + year + o3_med_pred_Fall +
-                               o3_med_pred_Spring + o3_med_pred_Summer + edd_Fall + edd_Spring +
-                               edd_Summer, data = .x))) %&gt;% 
+    bic_fit = map(train, ~step_bic_aq, data = .x)) %&gt;% 
   mutate(
     rmse_ozone = map2_dbl(ozone, test, ~rmse(model = .x, data = .y)),
     rmse_ozone_state_year = map2_dbl(ozone_state_year, test, ~rmse(model = .x, data = .y)),
@@ -611,10 +876,56 @@ cv_df %&gt;%
     values_to = &quot;rmse&quot;,
     names_prefix = &quot;rmse_&quot;) %&gt;% 
   mutate(model = fct_inorder(model)) %&gt;% 
-  ggplot(aes(x = model, y = rmse)) + geom_violin() + labs(x = &quot;Model&quot;, y = &quot;RMSE&quot;)</code></pre>
-<pre><code>## Warning: Removed 12 rows containing non-finite values (stat_ydensity).</code></pre>
+  ggplot(aes(x = model, y = rmse, fill = model)) + geom_violin() + labs(x = &quot;Model&quot;, y = &quot;RMSE&quot;)</code></pre>
 <p><img src="regression_files/figure-html/unnamed-chunk-8-1.png" width="672" /></p>
-<p>In retrospect, this model really isn’t appropriate for these data - this is a time series. We should probably include time interaction effects, and maybe use generalized least squares. Also cross-validation with a rolling window may be better. But still, somehow including EDD—a UV radiation variable—makes the model for lung cancer better for some reason?? I wonder if we get weird results for the other outcomes…</p>
+<p>Nice! Our BIC fit does the best on leave-one-out. What about Monte Carlo?</p>
+<pre class="r"><code>set.seed(15)
+cv_df &lt;- crossv_mc(aq_lung_df, n = 100)
+    
+cv_df &lt;- cv_df %&gt;% 
+  mutate(
+    #Ozone only
+    ozone  = map(train, ~lm(`lung cancer` ~ o3_med_pred_Spring + o3_med_pred_Summer +
+                              o3_med_pred_Fall, data = .x)),
+    #Ozone with year and state
+    ozone_state_year  = map(train, ~lm(`lung cancer` ~ o3_med_pred_Spring + o3_med_pred_Summer +
+                                         o3_med_pred_Fall + year + state, data = .x)),
+    #Ozone with year and state with time interactions
+    ozone_state_year2  = map(train, ~lm(`lung cancer` ~ year*(o3_med_pred_Spring +
+                                                              o3_med_pred_Summer +
+                                                              o3_med_pred_Fall) + year + state +
+                                                              year*state, data = .x)),
+    
+    #BIC model
+    bic_fit = map(train, ~step_bic_aq, data = .x)) %&gt;% 
+  mutate(
+    rmse_ozone = map2_dbl(ozone, test, ~rmse(model = .x, data = .y)),
+    rmse_ozone_state_year = map2_dbl(ozone_state_year, test, ~rmse(model = .x, data = .y)),
+    rmse_ozone_state_year2 = map2_dbl(ozone_state_year2, test, ~rmse(model = .x, data = .y)),
+    rmse_bic_fit = map2_dbl(bic_fit, test, ~rmse(model = .x, data = .y)))
+
+cv_df %&gt;% 
+  select(starts_with(&quot;rmse&quot;)) %&gt;% 
+  pivot_longer(
+    everything(),
+    names_to = &quot;model&quot;, 
+    values_to = &quot;rmse&quot;,
+    names_prefix = &quot;rmse_&quot;) %&gt;% 
+  mutate(model = fct_inorder(model)) %&gt;% 
+  ggplot(aes(x = model, y = rmse, fill = model)) + geom_violin() + labs(x = &quot;Model&quot;, y = &quot;RMSE&quot;)</code></pre>
+<p><img src="regression_files/figure-html/unnamed-chunk-9-1.png" width="672" /></p>
+<p>Not surprisingly our BIC fit wins again. But there’s still something fishy. First, this model has 10 terms and just 45 datapoints - it should almost certainly be overfit, but it still cross-validates well. Second, the <span class="math inline">\(R^2\)</span> for this model is 0.97 - how can that be when it doesn’t include smoking, which is probably <em>the</em> main determinant of lung cancer? Which variables in this model are the most important?</p>
+<pre class="r"><code>broom::tidy(step_bic_aq) %&gt;%
+  mutate(
+    abs_t = abs(statistic),
+    term = as.factor(term),
+    term = fct_reorder(term, abs_t)
+    ) %&gt;%
+  ggplot(aes(x = abs_t, y = term)) +
+  geom_col() +
+  labs(title = &quot;Relative Importance of Model Terms&quot;,
+       y = &quot;Model Term&quot;, x = &quot;|t| statistic&quot;)</code></pre>
+<p><img src="regression_files/figure-html/unnamed-chunk-10-1.png" width="672" /></p>
 </div>
 </div>
 <div id="melanoma-of-the-skin" class="section level2">
@@ -650,73 +961,256 @@ cv_df %&gt;%
 
 ## Warning: Removed 12 rows containing missing values (geom_point).</code></pre>
 <pre><code>## Warning: Removed 12 rows containing non-finite values (stat_density).</code></pre>
-<p><img src="regression_files/figure-html/unnamed-chunk-9-1.png" width="672" /></p>
+<p><img src="regression_files/figure-html/unnamed-chunk-11-1.png" width="672" /></p>
 <p>That’s weird. There seem to be negative correlations between EDD and melanoma when we break down by state, but positive correlations overall—an instance of Simpson’s paradox.</p>
 </div>
-<div id="model-fit-1" class="section level3">
-<h3>Model Fit</h3>
-<p>What does our model say? Again, we’ll use backward selection BIC.</p>
-<pre class="r"><code>mel_fit &lt;- lm(melanoma ~ ., data = state_2001_2015)
-step_bic_mel &lt;- step(mel_fit, trace = 0, k = log(nobs(fit)), direction = &quot;backward&quot;)
+<div id="model-fit---melanoma-and-uv-radiation" class="section level3">
+<h3>Model Fit - Melanoma and UV radiation</h3>
+<p>How well does UV radiation predict melanoma? Let’s find out. This time we limit our analysis to 2005-2015.</p>
+<pre class="r"><code>uv_df &lt;- state_2001_2015 %&gt;%
+  filter(year &gt;= 2005) %&gt;%
+  select(-c(starts_with(&quot;pm25&quot;), starts_with(&quot;o3&quot;), `lung cancer`))
+  
+mel_fit &lt;- lm(melanoma ~ .^2, data = uv_df)
+step_bic_mel &lt;- step(mel_fit, trace = 0, k = log(nobs(mel_fit)), direction = &quot;backward&quot;)
 summary(step_bic_mel)</code></pre>
 <pre><code>## 
 ## Call:
-## lm(formula = melanoma ~ state + year + `lung cancer` + pm25_med_pred_Winter + 
-##     o3_med_pred_Fall + edd_Fall + edd_Summer, data = state_2001_2015)
+## lm(formula = melanoma ~ state + year + edd_Fall + edd_Spring + 
+##     edd_Summer + edd_Winter + state:year + state:edd_Fall + state:edd_Spring + 
+##     state:edd_Summer + year:edd_Fall + year:edd_Spring + year:edd_Winter + 
+##     edd_Fall:edd_Spring + edd_Fall:edd_Summer + edd_Fall:edd_Winter + 
+##     edd_Spring:edd_Summer, data = uv_df)
 ## 
 ## Residuals:
 ##      Min       1Q   Median       3Q      Max 
-## -2.46999 -1.05881  0.00579  0.78135  1.80916 
+## -1.00663 -0.22621 -0.07181  0.16824  1.02878 
 ## 
 ## Coefficients:
-##                        Estimate Std. Error t value Pr(&gt;|t|)   
-## (Intercept)          -1.724e+03  5.389e+02  -3.200  0.00384 **
-## stateOH               8.538e-01  3.125e+00   0.273  0.78698   
-## statePA               2.103e+00  1.370e+00   1.535  0.13796   
-## year                  8.590e-01  2.587e-01   3.321  0.00286 **
-## `lung cancer`         4.778e-01  2.883e-01   1.657  0.11046   
-## pm25_med_pred_Winter  6.294e-01  2.874e-01   2.190  0.03848 * 
-## o3_med_pred_Fall      7.399e-01  2.679e-01   2.762  0.01083 * 
-## edd_Fall             -9.624e-03  3.186e-03  -3.021  0.00591 **
-## edd_Summer           -8.247e-03  2.600e-03  -3.172  0.00411 **
+##                         Estimate Std. Error t value Pr(&gt;|t|)   
+## (Intercept)           -3.906e+03  3.716e+03  -1.051  0.31794   
+## stateOH                6.941e+01  6.487e+02   0.107  0.91690   
+## statePA               -1.975e+03  5.958e+02  -3.314  0.00783 **
+## year                   1.675e+00  1.774e+00   0.944  0.36745   
+## edd_Fall               4.838e+00  2.199e+00   2.200  0.05244 . 
+## edd_Spring            -3.220e+00  1.205e+00  -2.673  0.02338 * 
+## edd_Summer             1.609e-01  6.231e-02   2.582  0.02731 * 
+## edd_Winter             1.139e+01  5.538e+00   2.056  0.06683 . 
+## stateOH:year          -1.484e-01  3.204e-01  -0.463  0.65316   
+## statePA:year           9.299e-01  2.881e-01   3.228  0.00905 **
+## stateOH:edd_Fall       3.296e-02  1.307e-02   2.522  0.03029 * 
+## statePA:edd_Fall       1.259e-02  5.626e-03   2.238  0.04917 * 
+## stateOH:edd_Spring     1.704e-02  9.479e-03   1.797  0.10250   
+## statePA:edd_Spring     2.490e-03  4.707e-03   0.529  0.60834   
+## stateOH:edd_Summer     3.830e-02  1.258e-02   3.045  0.01235 * 
+## statePA:edd_Summer     2.369e-02  8.521e-03   2.780  0.01945 * 
+## year:edd_Fall         -2.257e-03  1.051e-03  -2.148  0.05722 . 
+## year:edd_Spring        1.645e-03  5.939e-04   2.769  0.01981 * 
+## year:edd_Winter       -5.636e-03  2.758e-03  -2.044  0.06825 . 
+## edd_Fall:edd_Spring    2.190e-05  1.333e-05   1.643  0.13139   
+## edd_Fall:edd_Summer   -8.768e-05  3.309e-05  -2.650  0.02433 * 
+## edd_Fall:edd_Winter   -5.589e-05  3.489e-05  -1.602  0.14020   
+## edd_Spring:edd_Summer -3.116e-05  1.509e-05  -2.065  0.06583 . 
 ## ---
 ## Signif. codes:  0 &#39;***&#39; 0.001 &#39;**&#39; 0.01 &#39;*&#39; 0.05 &#39;.&#39; 0.1 &#39; &#39; 1
 ## 
-## Residual standard error: 1.281 on 24 degrees of freedom
-##   (12 observations deleted due to missingness)
-## Multiple R-squared:  0.8208, Adjusted R-squared:  0.7611 
-## F-statistic: 13.74 on 8 and 24 DF,  p-value: 2.896e-07</code></pre>
-<p>In some ways, this makes more sense than our first model. <code>edd_Fall</code> and <code>edd_Summer</code> are the most significant model terms aside from <code>year</code>. However, they also have the smallest effect size. Also, oddly enough, lung cancer is included as a predictor in this model (though it is not statistically significant, nor is state). Even more oddly, fall ozone and winter particulate matter are included, and are significant. How do the diagnostics look?</p>
-<pre class="r"><code>mel_df &lt;- state_2001_2015 %&gt;%
+## Residual standard error: 0.886 on 10 degrees of freedom
+## Multiple R-squared:  0.9643, Adjusted R-squared:  0.8858 
+## F-statistic: 12.28 on 22 and 10 DF,  p-value: 0.0001287</code></pre>
+<p>This model is huge, it’s almost certainly overfit. I’m sure the diagnostics will be terrible.</p>
+<pre class="r"><code>mel_df &lt;- uv_df %&gt;%
   modelr::add_residuals(step_bic_mel) %&gt;%
   modelr::add_predictions(step_bic_mel)
 
 mel_df %&gt;%
   ggplot(aes(x = pred, y = resid)) + geom_point() + labs(x = &quot;Predicted value&quot;, y = &quot;Residual&quot;)</code></pre>
-<pre><code>## Warning: Removed 12 rows containing missing values (geom_point).</code></pre>
-<p><img src="regression_files/figure-html/unnamed-chunk-11-1.png" width="672" /></p>
-<p>It appears that once again we have curvature in the residuals. What is the source?</p>
-<pre class="r"><code>summer_resid &lt;- mel_df %&gt;%
+<p><img src="regression_files/figure-html/unnamed-chunk-13-1.png" width="672" /></p>
+<p>Residuals suggest a bit of heteroscedasticity and curvature but not as bad as I imagined. How about normality?</p>
+<pre class="r"><code>plot(step_bic_mel, which = 2)</code></pre>
+<p><img src="regression_files/figure-html/unnamed-chunk-14-1.png" width="672" /></p>
+<p>Definitely not normal. High leverage points?</p>
+<pre class="r"><code>plot(step_bic_mel, which = 5)</code></pre>
+<p><img src="regression_files/figure-html/unnamed-chunk-15-1.png" width="672" /></p>
+<p>Several high leverage points. I think we want a different model. Lets’ try a simple one without interactions.</p>
+<pre class="r"><code>mel_fit2 &lt;- lm(melanoma ~ ., data = uv_df)
+summary(mel_fit2)</code></pre>
+<pre><code>## 
+## Call:
+## lm(formula = melanoma ~ ., data = uv_df)
+## 
+## Residuals:
+##     Min      1Q  Median      3Q     Max 
+## -3.0445 -1.0876 -0.1930  0.7735  2.6940 
+## 
+## Coefficients:
+##               Estimate Std. Error t value Pr(&gt;|t|)    
+## (Intercept) -9.639e+02  1.916e+02  -5.031 3.44e-05 ***
+## stateOH      6.496e+00  1.633e+00   3.978 0.000524 ***
+## statePA      5.271e+00  1.186e+00   4.446 0.000157 ***
+## year         5.008e-01  9.507e-02   5.268 1.86e-05 ***
+## edd_Fall    -2.872e-03  2.427e-03  -1.183 0.247777    
+## edd_Spring  -1.870e-03  1.459e-03  -1.282 0.211710    
+## edd_Summer  -3.911e-03  2.221e-03  -1.761 0.090482 .  
+## edd_Winter  -6.473e-03  5.996e-03  -1.080 0.290657    
+## ---
+## Signif. codes:  0 &#39;***&#39; 0.001 &#39;**&#39; 0.01 &#39;*&#39; 0.05 &#39;.&#39; 0.1 &#39; &#39; 1
+## 
+## Residual standard error: 1.488 on 25 degrees of freedom
+## Multiple R-squared:  0.7484, Adjusted R-squared:  0.6779 
+## F-statistic: 10.62 on 7 and 25 DF,  p-value: 3.837e-06</code></pre>
+<p>This comes at a big cost to explanatory power. Notably, the EDD variables aren’t significant. How do the residuals look?</p>
+<pre class="r"><code>mel_df2 &lt;- uv_df %&gt;%
+  modelr::add_residuals(mel_fit2) %&gt;%
+  modelr::add_predictions(mel_fit2)
+
+mel_df2 %&gt;%
+  ggplot(aes(x = pred, y = resid)) + geom_point() + labs(x = &quot;Predicted value&quot;, y = &quot;Residual&quot;)</code></pre>
+<p><img src="regression_files/figure-html/unnamed-chunk-17-1.png" width="672" /></p>
+<p>We have curvature in the residuals. What is the source?</p>
+<pre class="r"><code>summer_resid &lt;- mel_df2 %&gt;%
   ggplot(aes(x = edd_Summer, y = resid)) + geom_point() + labs(x = &quot;Summer Median EDD&quot;, y = &quot;Residual&quot;)
 
-fall_resid &lt;- mel_df %&gt;%
+year_resid &lt;- mel_df2 %&gt;%
+  ggplot(aes(x = year, y = resid)) + geom_point() + labs(x = &quot;Year&quot;, y = &quot;Residual&quot;)
+
+fall_resid &lt;- mel_df2 %&gt;%
   ggplot(aes(x = edd_Fall, y = resid)) + geom_point() + labs(x = &quot;Fall Median EDD&quot;, y = &quot;Residual&quot;)
 
-fall_ozone_resid &lt;- mel_df %&gt;%
-  ggplot(aes(x = o3_med_pred_Fall, y = resid)) + geom_point() + labs(x = &quot;Fall Median O3&quot;, y = &quot;Residual&quot;)
-
-state_resid &lt;- mel_df %&gt;%
+state_resid &lt;- mel_df2 %&gt;%
   ggplot(aes(x = state, y = resid)) + geom_violin() + labs(x = &quot;State&quot;, y = &quot;Residual&quot;)
 
-(summer_resid + fall_resid) / (fall_ozone_resid + state_resid)</code></pre>
-<pre><code>## Warning: Removed 12 rows containing missing values (geom_point).
+(summer_resid + year_resid) / (fall_resid + state_resid)</code></pre>
+<p><img src="regression_files/figure-html/unnamed-chunk-18-1.png" width="672" /></p>
+<p>Seems like fall EDD and year might be the issues. Try transforming.</p>
+<pre class="r"><code>mel_fit3 &lt;- lm(melanoma ~ state + I(1/year^3) + 
+                 edd_Spring + edd_Summer + edd_Fall + edd_Winter,
+                 data = uv_df)
+summary(mel_fit3)</code></pre>
+<pre><code>## 
+## Call:
+## lm(formula = melanoma ~ state + I(1/year^3) + edd_Spring + edd_Summer + 
+##     edd_Fall + edd_Winter, data = uv_df)
+## 
+## Residuals:
+##     Min      1Q  Median      3Q     Max 
+## -3.0451 -1.0908 -0.1952  0.7702  2.7017 
+## 
+## Coefficients:
+##               Estimate Std. Error t value Pr(&gt;|t|)    
+## (Intercept)  3.778e+02  6.453e+01   5.855 4.16e-06 ***
+## stateOH      6.492e+00  1.635e+00   3.970 0.000535 ***
+## statePA      5.268e+00  1.187e+00   4.437 0.000160 ***
+## I(1/year^3) -2.721e+12  5.179e+11  -5.254 1.94e-05 ***
+## edd_Spring  -1.866e-03  1.461e-03  -1.277 0.213248    
+## edd_Summer  -3.916e-03  2.224e-03  -1.760 0.090576 .  
+## edd_Fall    -2.862e-03  2.430e-03  -1.178 0.249980    
+## edd_Winter  -6.458e-03  6.005e-03  -1.075 0.292442    
+## ---
+## Signif. codes:  0 &#39;***&#39; 0.001 &#39;**&#39; 0.01 &#39;*&#39; 0.05 &#39;.&#39; 0.1 &#39; &#39; 1
+## 
+## Residual standard error: 1.49 on 25 degrees of freedom
+## Multiple R-squared:  0.7476, Adjusted R-squared:  0.677 
+## F-statistic: 10.58 on 7 and 25 DF,  p-value: 3.97e-06</code></pre>
+<pre class="r"><code>mel_df3 &lt;- uv_df %&gt;%
+  modelr::add_residuals(mel_fit3) %&gt;%
+  modelr::add_predictions(mel_fit3)
 
-## Warning: Removed 12 rows containing missing values (geom_point).
+mel_df3 %&gt;%
+  ggplot(aes(x = pred, y = resid)) + geom_point() + labs(x = &quot;Predicted value&quot;, y = &quot;Residual&quot;)</code></pre>
+<p><img src="regression_files/figure-html/unnamed-chunk-19-1.png" width="672" /></p>
+<p>Not much better. How are the other diagnostics?</p>
+<pre class="r"><code>plot(mel_fit2, which = 2)</code></pre>
+<p><img src="regression_files/figure-html/unnamed-chunk-20-1.png" width="672" /></p>
+<p>Not very normal…</p>
+<pre class="r"><code>plot(mel_fit2, which = 5)</code></pre>
+<p><img src="regression_files/figure-html/unnamed-chunk-21-1.png" width="672" /></p>
+<p>No high-leverage points. Are we overfit? We only have 33 rows.</p>
+</div>
+<div id="cross-validation-1" class="section level3">
+<h3>Cross validation</h3>
+<pre class="r"><code>set.seed(15)
+cv_df &lt;- crossv_loo(uv_df)
+    
+cv_df &lt;- cv_df %&gt;% 
+  mutate(
+    #State and year only
+    state_year = map(train, ~lm(melanoma ~ state + year, data = .x)),
+    
+    #EDD only
+    edd = map(train, ~lm(melanoma ~ edd_Winter + edd_Spring + edd_Summer + edd_Fall, data = .x)),
+    
+    #EDD with year and state, linear
+    edd_state_year = map(train, ~mel_fit2, data = .x),
+    
+    #EDD with year and state with time interactions
+    edd_state_year2  = map(train, ~lm(melanoma ~ year*(edd_Winter +
+                                                       edd_Spring +
+                                                       edd_Summer +
+                                                       edd_Fall) + year + state +
+                                                       year*state, data = .x)),
+    
+    #BIC model
+    bic_fit = map(train, ~step_bic_mel, data = .x)) %&gt;% 
+  mutate(
+    rmse_state_year = map2_dbl(state_year, test, ~rmse(model = .x, data = .y)),
+    rmse_edd = map2_dbl(edd, test, ~rmse(model = .x, data = .y)),
+    rmse_edd_state_year = map2_dbl(edd_state_year, test, ~rmse(model = .x, data = .y)),
+    rmse_edd_state_year2 = map2_dbl(edd_state_year2, test, ~rmse(model = .x, data = .y)),
+    rmse_bic_fit = map2_dbl(bic_fit, test, ~rmse(model = .x, data = .y)))
 
-## Warning: Removed 12 rows containing missing values (geom_point).</code></pre>
-<pre><code>## Warning: Removed 12 rows containing non-finite values (stat_ydensity).</code></pre>
-<p><img src="regression_files/figure-html/unnamed-chunk-12-1.png" width="672" /></p>
-<p>Seems like ozone might be the issue. Try transforming.</p>
+cv_df %&gt;% 
+  select(starts_with(&quot;rmse&quot;)) %&gt;% 
+  pivot_longer(
+    everything(),
+    names_to = &quot;model&quot;, 
+    values_to = &quot;rmse&quot;,
+    names_prefix = &quot;rmse_&quot;) %&gt;% 
+  mutate(model = fct_inorder(model)) %&gt;% 
+  ggplot(aes(x = model, y = rmse, fill = model)) + geom_violin() + labs(x = &quot;Model&quot;, y = &quot;RMSE&quot;)</code></pre>
+<p><img src="regression_files/figure-html/unnamed-chunk-22-1.png" width="672" /></p>
+<p>The BIC fit wins? How? Will it survive Monte Carlo?</p>
+<pre class="r"><code>set.seed(15)
+cv_df &lt;- crossv_mc(uv_df, 100)
+
+cv_df &lt;- cv_df %&gt;% 
+  mutate(
+    #State and year only
+    state_year = map(train, ~lm(melanoma ~ state + year, data = .x)),
+    
+    #EDD only
+    edd = map(train, ~lm(melanoma ~ edd_Winter + edd_Spring + edd_Summer + edd_Fall, data = .x)),
+    
+    #EDD with year and state, linear
+    edd_state_year = map(train, ~mel_fit2, data = .x),
+    
+    #EDD with year and state with time interactions
+    edd_state_year2  = map(train, ~lm(melanoma ~ year*(edd_Winter +
+                                                       edd_Spring +
+                                                       edd_Summer +
+                                                       edd_Fall) + year + state +
+                                                       year*state, data = .x)),
+    
+    #BIC model
+    bic_fit = map(train, ~step_bic_mel, data = .x)) %&gt;% 
+  mutate(
+    rmse_state_year = map2_dbl(state_year, test, ~rmse(model = .x, data = .y)),
+    rmse_edd = map2_dbl(edd, test, ~rmse(model = .x, data = .y)),
+    rmse_edd_state_year = map2_dbl(edd_state_year, test, ~rmse(model = .x, data = .y)),
+    rmse_edd_state_year2 = map2_dbl(edd_state_year2, test, ~rmse(model = .x, data = .y)),
+    rmse_bic_fit = map2_dbl(bic_fit, test, ~rmse(model = .x, data = .y)))
+
+cv_df %&gt;% 
+  select(starts_with(&quot;rmse&quot;)) %&gt;% 
+  pivot_longer(
+    everything(),
+    names_to = &quot;model&quot;, 
+    values_to = &quot;rmse&quot;,
+    names_prefix = &quot;rmse_&quot;) %&gt;% 
+  mutate(model = fct_inorder(model)) %&gt;% 
+  ggplot(aes(x = model, y = rmse, fill = model)) + geom_violin() + labs(x = &quot;Model&quot;, y = &quot;RMSE&quot;)</code></pre>
+<p><img src="regression_files/figure-html/unnamed-chunk-23-1.png" width="672" /></p>
+<p>That model <em>must</em> be disgustingly overfit… right?</p>
+</div>
 </div>
 </div>
 
