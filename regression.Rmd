@@ -449,7 +449,35 @@ cv_df %>%
   ggplot(aes(x = model, y = rmse, fill = model)) + geom_violin() + labs(x = "Model", y = "RMSE")
 ```
 
-That model *must* be disgustingly overfit... right?
+That model *must* be disgustingly overfit... right? How important is each variable?
+
+```{r warning=FALSE, message=FALSE}
+broom::tidy(step_bic_mel) %>%
+  mutate(
+    abs_t = abs(statistic),
+    term = as.factor(term),
+    term = fct_reorder(term, abs_t)
+    ) %>%
+  ggplot(aes(x = abs_t, y = term)) +
+  geom_col() +
+  labs(title = "Relative Importance of Model Terms",
+       y = "Model Term", x = "|t| statistic")
+```
+
+However, we see a different pattern of importance from the model with just linear terms:
+
+```{r warning=FALSE, message=FALSE}
+broom::tidy(mel_fit2) %>%
+  mutate(
+    abs_t = abs(statistic),
+    term = as.factor(term),
+    term = fct_reorder(term, abs_t)
+    ) %>%
+  ggplot(aes(x = abs_t, y = term)) +
+  geom_col() +
+  labs(title = "Relative Importance of Model Terms",
+       y = "Model Term", x = "|t| statistic")
+```
 
 # Part 2: County-Level Trends, 2014-2018
 
