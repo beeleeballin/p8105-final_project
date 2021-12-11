@@ -646,6 +646,149 @@ broom::tidy(step_bic_aq_cty) %>%
 
 The strongest terms in this model are the state-by-ozone interactions. I wonder how much policy and industry differ between the two states.
 
+## Asthma, cross-sectional analysis
+
+In the following analysis, we will only use those rows for which we have complete data (191), as there is some missingness in the response variable.
+
+### Exploration
+
+```{r warning=FALSE, message=FALSE}
+asth_df <- county_df2 %>%
+  filter(!is.na(asthma))
+
+asth_df %>%
+  ggpairs(columns = c("asthma", "o3_med_pred_Summer", "o3_med_pred_Fall", "pm25_med_pred"),
+          mapping = aes(group = state, color = state),
+          columnLabels = c("Asthma/100,000","Median summer O3, ppm", "Median fall O3, ppm",
+                           "PM 2.5, ug/m^3"))
+```
+
+None of these exposures seem very strongly correlated with the outcome, though summer ozone correlates pretty strongly with particulate matter. Also, we may have some outliers.
+
+### Model Fit
+
+```{r message=FALSE, warning=FALSE}
+aq_asth_df <- asth_df %>%
+  select(-c(melanoma, `lung cancer`, starts_with("edd"), county, fips))
+
+fit_asth_cty <- lm(asthma ~ .^2, data = aq_asth_df)
+
+step_bic_asth_cty <- step(fit_asth_cty, trace = 0, k = log(nobs(fit_aq)), direction = "backward")
+summary(step_bic_asth_cty)
+```
+
+Strong $R^2$ (0.64) value but not absurd; 10 variables for 191 datapoints. Weird that fall ozone is protective (and strongly so). How do the residuals look?
+
+```{r warning=FALSE, message=FALSE}
+asth_cty <- aq_asth_df %>%
+  modelr::add_residuals(step_bic_asth_cty) %>%
+  modelr::add_predictions(step_bic_asth_cty)
+
+asth_cty %>%
+  ggplot(aes(x = pred, y = resid)) + geom_point() + labs(x = "Predicted value", y = "Residual")
+```
+
+Holy outliers, Batman!
+
+```{r warning=FALSE, message=FALSE}
+plot(step_bic_asth_cty, which = 5)
+```
+
+We should filter out those high leverage points and refit.
+
+```{r message=FALSE, warning=FALSE}
+aq_asth_df2 <- aq_asth_df %>%
+  slice(-c(3,40,183))
+
+fit_asth_cty <- lm(asthma ~ .^2, data = aq_asth_df2)
+
+step_bic_asth_cty <- step(fit_asth_cty, trace = 0, k = log(nobs(fit_aq)), direction = "backward")
+summary(step_bic_asth_cty)
+```
+
+What does it look like now?
+
+```{r warning=FALSE, message=FALSE}
+asth_cty <- aq_asth_df2 %>%
+  modelr::add_residuals(step_bic_asth_cty) %>%
+  modelr::add_predictions(step_bic_asth_cty)
+
+asth_cty %>%
+  ggplot(aes(x = pred, y = resid)) + geom_point() + labs(x = "Predicted value", y = "Residual")
+```
+
+```{r warning=FALSE, message=FALSE}
+plot(step_bic_asth_cty, which = 2)
+```
+
+Outliers are gone... but we have serious abnormality. Tried to transform by taking the square root of the response, but it wasn't better.
+
+### Cross-validation
+
+Sometimes a smaller model is better. Is this one of those times?
+
+```{r message=FALSE, warning=FALSE}
+set.seed(15)
+cv_df <- crossv_mc(aq_asth_df2, 1000)
+
+cv_df <- cv_df %>% 
+  mutate(
+    #PM only
+    pm = map(train, ~lm(asthma ~ pm25_med_pred, data = .x)),
+    
+    #O3 only
+    o3 = map(train, ~lm(asthma ~ o3_med_pred_Fall +
+                           o3_med_pred_Winter +
+                           o3_med_pred_Spring +
+                           o3_med_pred_Summer, data = .x)),
+    
+    #O3 and PM
+    o3_pm = map(train, ~lm(asthma ~ o3_med_pred_Fall +
+                           o3_med_pred_Winter +
+                           o3_med_pred_Spring +
+                           o3_med_pred_Summer +
+                           pm25_med_pred, data = .x)),
+    
+    #O3, PM, and State
+    o3_pm_state  = map(train, ~lm(asthma ~ ., data = .x)),
+    
+    #BIC model
+    bic_fit = map(train, ~step_bic_asth_cty, data = .x)) %>% 
+  mutate(
+    rmse_pm25 = map2_dbl(pm, test, ~rmse(model = .x, data = .y)),
+    rmse_o3 = map2_dbl(o3, test, ~rmse(model = .x, data = .y)),
+    rmse_o3_pm25 = map2_dbl(o3_pm, test, ~rmse(model = .x, data = .y)),
+    rmse_o3_pm25_state = map2_dbl(o3_pm_state, test, ~rmse(model = .x, data = .y)),
+    rmse_bic_fit = map2_dbl(bic_fit, test, ~rmse(model = .x, data = .y)))
+
+cv_df %>% 
+  select(starts_with("rmse")) %>% 
+  pivot_longer(
+    everything(),
+    names_to = "model", 
+    values_to = "rmse",
+    names_prefix = "rmse_") %>% 
+  mutate(model = fct_inorder(model)) %>% 
+  ggplot(aes(x = model, y = rmse, fill = model)) + geom_violin() + labs(x = "Model", y = "RMSE")
+```
+
+This is pretty weird. What terms are the most important, according to the BIC model?
+
+```{r warning=FALSE, message=FALSE}
+broom::tidy(step_bic_asth_cty) %>%
+  mutate(
+    abs_t = abs(statistic),
+    term = as.factor(term),
+    term = fct_reorder(term, abs_t)
+    ) %>%
+  ggplot(aes(x = abs_t, y = term)) +
+  geom_col() +
+  labs(title = "Relative Importance of Model Terms",
+       y = "Model Term", x = "|t| statistic")
+```
+
+State interactions with ozone again? This might be something to research.
+
 ## Melanoma of the skin, cross-sectional analysis
 
 ```{r warning=FALSe, message=FALSE}
@@ -758,3 +901,4 @@ broom::tidy(step_bic_mel_cty) %>%
 ```
 
 That's unintuitive. One might expect summer EDD would have the biggest effect on melanoma, but in this model the winter and spring EDD terms are the most important.
+
