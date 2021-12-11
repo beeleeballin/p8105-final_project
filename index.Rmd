@@ -3,10 +3,15 @@ title: "Climate and Chronic Disease"
 output: html_document
 ---
 
-## Hello from 
+## Hello all. 
+We are a team, and we care about **climates** and **diseases**.
 
-
-![](https://24.media.tumblr.com/b76b02ba820673795a89bc03ecf9e891/tumblr_n55t88X2e81r1tezoo3_500.gif)
+<img src="https://thumbs.gfycat.com/SinfulBriskDogfish-size_restricted.gif" height="235"/>
+<img src="https://78.media.tumblr.com/63435d53b3214a87f9dbd712090b492a/tumblr_inline_owa38r4KxU1tzhl5u_540.gif" height="235"/>
+    
+<img src="https://c.tenor.com/jJgEYAs49iAAAAAC/spongebob-wheeze.gif" height="200"/>
+<img src="https://i.gifer.com/7gzj.gif" alt="drawing" height="200"/>
+<img src="https://c.tenor.com/Eq6lwKqkJ6sAAAAC/american-psycho-christian-bale.gif" height="200"/>
 
 # About the project
 
