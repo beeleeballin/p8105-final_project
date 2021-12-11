@@ -20,6 +20,8 @@ navbar:
 
     
   right:
+    - text: "Screencast"
+      href: https://drive.google.com/file/d/1OlPuJULEmn-XNHkTp1HBBtdBquJ1n4c3/view?usp=sharing
     - icon: fa-envelope fa-lg
       href: mailto:<johsuan.lee@columbia.edu>
     - icon: fa-github fa-lg
