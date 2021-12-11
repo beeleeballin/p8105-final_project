@@ -463,6 +463,7 @@ outcomes_wider_county <- outcomes_county %>%
 
 #county-level analysis - fewer predictors
 ap_uv_county_slim <- ap_uv %>%
+  filter(state %in% c("NY","OH","PA")) %>%
   select(-c(pm25_max_pred, pm25_mean_pred, pm25_pop_pred,
             o3_max_pred, o3_mean_pred, o3_pop_pred, i324,
             i310, i305, i380, edr)) %>%
@@ -479,12 +480,32 @@ Again, we look at correlations among the predictors:
 ```{r warning=FALSE, message=FALSE}
 county_corr <- county_df %>%
   select(pm25_med_pred_Fall:edd_Winter) %>% 
-  do(as.data.frame(cor(., method="pearson", use="pairwise.complete.obs")))
-
-
-county_df %>%
-  pivot_longer(names_to = )
+  do(as.data.frame(cor(., method="pearson", use="pairwise.complete.obs"))) %>%
+  knitr::kable()
+county_corr
 ```
+
+We average the particulate matter because the seasonal variables are highly correlated.
+
+```{r message=FALSE, warning=FALSE}
+county_df2 <- county_df %>%
+  mutate(pm25_med_pred = rowMeans(select(., starts_with("pm25")))) %>%
+  select(-c(pm25_med_pred_Fall:pm25_med_pred_Winter))
+```
+
+Now we can start the cross-sectional analysis.
+
+## Lung Cancer, cross-sectional analysis
+
+### Exploration
+
+```{r}
+county_df2 %>%
+  ggpairs(columns = c("lung cancer", "o3_med_pred_Summer", "pm25_med_pred"),
+          mapping = aes(group = state, color = state),
+          columnLabels = c("Lung Cancer/100,000","Median summer O3, ppm", "PM 2.5, ug/m^3"))
+```
+
 
 
 
