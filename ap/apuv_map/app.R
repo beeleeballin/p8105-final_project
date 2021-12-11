@@ -98,6 +98,7 @@ merged_asth_df =
     logRate = replace(logRate, (is.na(logRate) | logRate == -Inf), 0)
   )
 
+#change
 merged_lc_df = 
   dis_df  %>% 
   filter(outcome == "lung cancer") %>% 
@@ -107,9 +108,12 @@ merged_lc_df =
   geo_join(us_counties, ., "GEOID",  "fips") %>%
   sf::st_transform('+proj=longlat +datum=WGS84') %>% 
   mutate(
-    age_adjusted_incidence_rate = replace(age_adjusted_incidence_rate, is.na(age_adjusted_incidence_rate), 0)
+    logRate = log(age_adjusted_incidence_rate),
+    logRate = replace(logRate, (is.na(logRate) | logRate == -Inf), 0)
+    # age_adjusted_incidence_rate = replace(age_adjusted_incidence_rate, is.na(age_adjusted_incidence_rate), 0)
   )
-  
+
+#change
 merged_mel_df = 
   dis_df  %>% 
   filter(outcome == "melanoma") %>% 
@@ -119,79 +123,86 @@ merged_mel_df =
   geo_join(us_counties, ., "GEOID",  "fips") %>%
   sf::st_transform('+proj=longlat +datum=WGS84') %>% 
   mutate(
-    age_adjusted_incidence_rate = replace(age_adjusted_incidence_rate, is.na(age_adjusted_incidence_rate), 0)
+    logRate = log(age_adjusted_incidence_rate),
+    logRate = replace(logRate, (is.na(logRate) | logRate == -Inf), 0)
+    # age_adjusted_incidence_rate = replace(age_adjusted_incidence_rate, is.na(age_adjusted_incidence_rate), 0)
   )
 
-# apuv_plot = 
-#   apuv_df %>% 
-#   filter(state!="ME") %>% 
-#   unite(season_year, c("season", "year"), sep = "_") %>%
-#   mutate(
-#     season_year = factor(season_year),
-#     season_year = fct_inorder(season_year),
-#     county = factor(county)
-#   ) %>% 
-#   arrange(state, county) %>% 
-#   unite(county_state, c("county", "state"), sep = ", ") %>% 
-#   mutate(
-#     county_state = factor(county_state),
-#     county_state = fct_inorder(county_state)
-#   ) %>% 
-#   select(season_year, county_state, pm25_pop_pred, o3_pop_pred, edd) %>% 
-#   pivot_longer(
-#     pm25_pop_pred:edd,
-#     names_to = "climate",
-#     values_to = "level"
-#   ) %>% 
-#   mutate(
-#     climate = factor(climate, levels = c("pm25_pop_pred", "o3_pop_pred", "edd"), 
-#                      labels = c("PM2.5", "O3", "UV"))
-#   ) %>% 
-#   ggplot(aes(x=season_year, y=level, group=1, color=county_state)) +
-#   geom_line() +
-#   scale_x_discrete(breaks=c("Spring_2005", "Winter_2015"),
-#                    labels=c("2005", "2015")) +
-#   labs(
-#     title = "Air Pollutant Concentrations and UV Intensities over the Years",
-#     color = "County",
-#     y = "Concentration/Intensity"
-#   ) +
-#   theme(
-#     axis.title.x=element_blank()
-#   ) + 
-#   facet_grid(climate~., scales = "free_y")
-# 
-# beeswarm_dis_df =
-#   dis_df %>% 
-#   arrange(state, county) %>% 
-#   unite(county_state, c("county", "state"), sep = ", ") %>% 
-#   mutate(
-#     county_state = factor(county_state),
-#     county_state = fct_inorder(county_state)
-#   ) %>% 
-#   select(-fips)
-# 
-# beeswarm_dis_plot =
-#   beeswarm(age_adjusted_incidence_rate ~ outcome, 
-#            data = beeswarm_dis_df, 
-#            method = 'swarm', 
-#            pwcol = county_state,
-#            corral = "wrap")
-# 
-# dis_plot =
-#   ggplot(beeswarm_dis_plot, aes(x, y)) +
-#   theme_minimal() +
-#   geom_violin(aes(x, y, group = x.orig), color = "grey", fill = "grey") + 
-#   geom_point(aes(color = col)) +
-#   scale_x_discrete(labels=c("Asthma", "Lung Cancer", "Melanoma")) +
-#   labs(
-#     title = "Health Outcome Rates in the Following Years",
-#     color = "County",
-#     y = "Rate (Count per 100K)"
-#   ) +
-#   theme(
-#     axis.title.x=element_blank()
-#   )
+apuv_plot =
+  apuv_df %>%
+  filter(state!="ME") %>%
+  unite(season_year, c("season", "year"), sep = "_") %>%
+  mutate(
+    season_year = factor(season_year),
+    season_year = fct_inorder(season_year),
+    county = factor(county)
+  ) %>%
+  arrange(state, county) %>%
+  unite(county_state, c("county", "state"), sep = ", ") %>%
+  mutate(
+    county_state = factor(county_state),
+    county_state = fct_inorder(county_state)
+  ) %>%
+  select(season_year, county_state, pm25_pop_pred, o3_pop_pred, edd) %>%
+  pivot_longer(
+    pm25_pop_pred:edd,
+    names_to = "climate",
+    values_to = "level"
+  ) %>%
+  mutate(
+    climate = factor(climate, levels = c("pm25_pop_pred", "o3_pop_pred", "edd"),
+                     labels = c("PM2.5", "O3", "UV"))
+  ) %>%
+  ggplot(aes(x=season_year, y=level, group=1, color=county_state)) +
+  geom_line() +
+  scale_x_discrete(breaks=c("Spring_2005", "Winter_2015"),
+                   labels=c("2005", "2015")) +
+  labs(
+    title = "Air Pollutant Concentrations and UV Intensities over the Years",
+    color = "County",
+    y = "Concentration/Intensity"
+  ) +
+  theme(
+    axis.title.x=element_blank()
+  ) +
+  facet_grid(climate~., scales = "free_y")
+
+#change
+beeswarm_dis_df =
+  dis_df %>%
+  arrange(state, county) %>%
+  unite(county_state, c("county", "state"), sep = ", ") %>%
+  mutate(
+    county_state = factor(county_state),
+    county_state = fct_inorder(county_state),
+    logRate = log(age_adjusted_incidence_rate),
+    logRate = replace(logRate, (is.na(logRate) | logRate == -Inf), 0)
+  ) %>%
+  select(-fips)
+
+#change
+beeswarm_dis_plot =
+  beeswarm(logRate ~ outcome,
+           data = beeswarm_dis_df,
+           method = 'swarm',
+           pwcol = county_state,
+           corral = "wrap")
+
+#change
+dis_plot =
+  ggplot(beeswarm_dis_plot, aes(x, y)) +
+  theme_minimal() +
+  geom_violin(aes(x, y, group = x.orig), color = "grey", fill = "grey") +
+  geom_point(aes(color = col)) +
+  scale_x_discrete(labels=c("Asthma", "Lung Cancer", "Melanoma")) +
+  labs(
+    title = "Health Outcome Rates in the Following Years",
+    color = "County",
+    y = "log(Count per 100K)"
+  ) +
+  theme(
+    axis.title.x=element_blank()
+  )
 
 # Shiny.app
 ui = fluidPage(
@@ -223,9 +234,11 @@ ui = fluidPage(
     )
   ),
   
+  br(),
+  br(),
   hr(),
   
-  p("We think that the prevalence of some health conditions would differ from county to county as a result of the climate, so we plotted asthma, lung cancer and melanoma incidence rates in the years that followed.", style="text-align:justify;color:black;background-color:lavender;padding:15px;border-radius:10px"),
+  p("We think that the incidence of some health conditions would differ from county to county as a result of the climate, so we plotted asthma, lung cancer and melanoma incidence rates in the years that followed.", style="text-align:justify;color:black;background-color:lavender;padding:15px;border-radius:10px"),
 
   fluidRow(
     tabsetPanel(
@@ -242,14 +255,16 @@ ui = fluidPage(
                column(plotOutput("box_mel"), width = 3)
       )
     )
-  )
+  ),
   
-  # hr(),
-  # 
-  # p("Play around these plots to see if you could find some association between climate and health outcomes.", style="text-align:justify;color:black;background-color:lavender;padding:15px;border-radius:10px"),
-  # 
-  # column(width = 6, plotlyOutput('cli_plotly')),
-  # column(width = 6, plotlyOutput('out_plotly'))
+  br(),
+  br(),
+  hr(),
+
+  p("You could now be interested in looking at the correlation of a particlar county. Play around these plots to see if you may find a trend between climate and health outcomes.", style="text-align:justify;color:black;background-color:lavender;padding:15px;border-radius:10px"),
+
+  column(width = 6, plotlyOutput('cli_plotly')),
+  column(width = 6, plotlyOutput('out_plotly'))
   
 )
 
@@ -411,10 +426,10 @@ server = function(input, output) {
                 title = "log(Count per 100K)",
                 opacity = 0.7)
   })
-  
+  #change
   output$lc = renderLeaflet({
-    pal = colorBin(palette = "PuRd", bins = 6, domain = c(min(merged_lc_df$age_adjusted_incidence_rate, na.rm = T), max(merged_lc_df$age_adjusted_incidence_rate, na.rm = T)))
-    labels = sprintf("<strong>%s, %s</strong><br/> %g per 100K", merged_lc_df$county, merged_lc_df$state, merged_lc_df$age_adjusted_incidence_rate) %>% lapply(htmltools::HTML)
+    pal = colorBin(palette = "PuRd", bins = 6, domain = c(min(merged_lc_df$logRate, na.rm = T), max(merged_lc_df$logRate, na.rm = T)))
+    labels = sprintf("<strong>%s, %s</strong><br/> %g per 100K", merged_lc_df$county, merged_lc_df$state, merged_lc_df$logRate) %>% lapply(htmltools::HTML)
     leaflet(merged_lc_df) %>% 
       addProviderTiles(provider = "Stamen.Toner") %>% 
       setView(-78, 41.8, zoom = 5.5) %>% 
@@ -423,7 +438,7 @@ server = function(input, output) {
                   smoothFactor = 0.5,
                   opacity = 1,
                   fillOpacity = 0.8,
-                  fillColor = ~pal(merged_lc_df$age_adjusted_incidence_rate),
+                  fillColor = ~pal(merged_lc_df$logRate),
                   highlightOptions = highlightOptions(weight = 5,
                                                       fillOpacity = 1,
                                                       color = "black",
@@ -431,14 +446,14 @@ server = function(input, output) {
                                                       bringToFront = TRUE)) %>%
       addLegend("bottomright",
                 pal = pal,
-                values = ~age_adjusted_incidence_rate,
-                title = "Count per 100K",
+                values = ~logRate,
+                title = "log(Count per 100K)",
                 opacity = 0.7)
   })
-  
+  #change
   output$mel = renderLeaflet({
-    pal = colorBin(palette = "YlOrBr", bins = 4, domain = c(min(merged_mel_df$age_adjusted_incidence_rate, na.rm = T), max(merged_mel_df$age_adjusted_incidence_rate, na.rm = T)))
-    labels = sprintf("<strong>%s, %s</strong><br/> %g per 100K", merged_asth_df$county, merged_asth_df$state, merged_mel_df$age_adjusted_incidence_rate) %>% lapply(htmltools::HTML)
+    pal = colorBin(palette = "YlOrBr", bins = 6, domain = c(min(merged_mel_df$logRate, na.rm = T), max(merged_mel_df$logRate, na.rm = T)))
+    labels = sprintf("<strong>%s, %s</strong><br/> %g per 100K", merged_asth_df$county, merged_asth_df$state, merged_mel_df$logRate) %>% lapply(htmltools::HTML)
     leaflet(merged_mel_df) %>% 
       addProviderTiles(provider = "Stamen.Toner") %>% 
       setView(-78, 41.8, zoom = 5.5) %>% 
@@ -447,7 +462,7 @@ server = function(input, output) {
                   smoothFactor = 0.5,
                   opacity = 1,
                   fillOpacity = 0.8,
-                  fillColor = ~pal(merged_mel_df$age_adjusted_incidence_rate),
+                  fillColor = ~pal(merged_mel_df$logRate),
                   highlightOptions = highlightOptions(weight = 5,
                                                       fillOpacity = 1,
                                                       color = "black",
@@ -455,8 +470,8 @@ server = function(input, output) {
                                                       bringToFront = TRUE)) %>%
       addLegend("bottomright",
                 pal = pal,
-                values = ~age_adjusted_incidence_rate,
-                title = "Count per 100K",
+                values = ~logRate,
+                title = "log(Count per 100K)",
                 opacity = 0.7)
   })
   
@@ -479,13 +494,13 @@ server = function(input, output) {
   
   output$box_lc = renderPlot({
     merged_lc_df %>% 
-      ggplot(aes(x = factor(state, rev(levels(factor(state)))), y = age_adjusted_incidence_rate, fill = state))+
+      ggplot(aes(x = factor(state, rev(levels(factor(state)))), y = logRate, fill = state))+
       geom_violin(color = "#3d0071", draw_quantiles = 0.5) +
       theme_minimal() +
       scale_fill_brewer(palette="PuRd") +
       labs(
         title = "Lung Cancer Incidence Rate in 2014-2018",
-        y = bquote("Count per 100K")
+        y = bquote("log(Count per 100K)")
       ) +
       theme(
         plot.title = element_text(hjust = 0.5),
@@ -497,13 +512,13 @@ server = function(input, output) {
   output$box_mel = renderPlot({
     merged_mel_df %>% 
       filter(!is.na(state)) %>% 
-      ggplot(aes(x = factor(state, rev(levels(factor(state)))), y = age_adjusted_incidence_rate, fill = state))+
+      ggplot(aes(x = factor(state, rev(levels(factor(state)))), y = logRate, fill = state))+
       geom_violin(color = "#660000", draw_quantiles = 0.5) +
       theme_minimal() +
       scale_fill_brewer(palette="YlOrBr") +
       labs(
         title = "Melanoma Incidence Rate in 2014-2018",
-        y = bquote("Count per 100K")
+        y = bquote("log(Count per 100K)")
       ) +
       theme(
         plot.title = element_text(hjust = 0.5),
@@ -512,13 +527,13 @@ server = function(input, output) {
       )
   })
   
-  # output$cli_plotly = renderPlotly({
-  #   ggplotly(apuv_plot)
-  # })
-  # 
-  # output$out_plotly = renderPlotly({
-  #   ggplotly(dis_plot)
-  # })
+  output$cli_plotly = renderPlotly({
+    ggplotly(apuv_plot)
+  })
+
+  output$out_plotly = renderPlotly({
+    ggplotly(dis_plot)
+  })
 }
 
 shinyApp(ui = ui, server = server)

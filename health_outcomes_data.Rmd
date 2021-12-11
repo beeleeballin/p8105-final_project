@@ -237,6 +237,8 @@ Lastly, let's write out the combined data.
 write_csv(lc_mel_asthma_county, here::here("data", "lc_mel_asthma_county.csv"))
 ```
 
+Looking at the "Data Exploration: Map" Shiny.app, we can see that there is the most spread in the asthma incidence rate, and the least spread in the melanoma incidence rates. 
+
 Now, that we have combined the health outcomes data, we can explore.
 
 ## Visualizing Trends in Health Outcomes over Space and Time
