@@ -11,7 +11,7 @@ output:
 
 ## Data
 
-We begin by reading in the combined health outcomes data and the combined air pollution and UV radiation data to produce an analysis at the state level. We quickly noticed that some of our variables in the air pollution and UV data were strongly correlated with each other, so we omitted several for the purposes of our regression analysis (collinearity violates our assumptions); the final correlation matrix is given below.
+We begin by reading in the combined health outcomes data, creating seasonal variables, and the combined air pollution and UV radiation data to produce an analysis at the state level. We quickly noticed that some of our variables in the air pollution and UV data were strongly correlated with each other, so we omitted several for the purposes of our regression analysis (collinearity violates our assumptions); the final correlation matrix is given below.
 
 ```{r, warning=FALSE, message=FALSE}
 library(tidyverse)
@@ -21,7 +21,7 @@ outcomes_county <- read_csv("data/lc_mel_asthma_county.csv")
 ap_uv <- read_csv("ap/ap_uv/apuv.csv")
 
 #State-level analysis - fewer predictors
-ap_uv_state_slim <- ap_uv %>%
+ap_uv_slim <- ap_uv %>%
   select(-c(countyfips, county,
             pm25_max_pred, pm25_mean_pred, pm25_pop_pred,
             o3_max_pred, o3_mean_pred, o3_pop_pred,
@@ -248,7 +248,7 @@ broom::tidy(step_bic_aq) %>%
 
 As before, we create several bivariate plots before constructing our model.
 
-```{r}
+```{r warning=FALSE, message=FALSE}
 state_analysis %>%
   filter(year %in% 2001:2015) %>%
   ggpairs(columns = c("year","melanoma","edd_Spring","edd_Summer"),
@@ -450,3 +450,41 @@ cv_df %>%
 ```
 
 That model *must* be disgustingly overfit... right?
+
+# Part 2: County-Level Trends, 2014-2018
+
+Time is a significant predictor in many of the above models. Will we still have good models without it? In exchange, we get a lot more data - resolution at the county level instead of the state level.
+
+We create our county-level dataframe:
+
+```{r warning=FALSE, message=FALSE}
+outcomes_wider_county <- outcomes_county %>%
+  pivot_wider(names_from = outcome, values_from = age_adjusted_incidence_rate)
+
+#county-level analysis - fewer predictors
+ap_uv_county_slim <- ap_uv %>%
+  select(-c(pm25_max_pred, pm25_mean_pred, pm25_pop_pred,
+            o3_max_pred, o3_mean_pred, o3_pop_pred, i324,
+            i310, i305, i380, edr)) %>%
+  group_by(county, state, season) %>%
+  #Take medians across years for each season
+  summarize(across(pm25_med_pred:edd, median, na.rm = TRUE)) %>%
+  pivot_wider(names_from = season, values_from = pm25_med_pred:edd)
+
+county_df <- right_join(outcomes_wider_county, ap_uv_county_slim)
+```
+
+Again, we look at correlations among the predictors:
+
+```{r warning=FALSE, message=FALSE}
+county_corr <- county_df %>%
+  select(pm25_med_pred_Fall:edd_Winter) %>% 
+  do(as.data.frame(cor(., method="pearson", use="pairwise.complete.obs")))
+
+
+county_df %>%
+  pivot_longer(names_to = )
+```
+
+
+
