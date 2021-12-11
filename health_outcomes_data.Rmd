@@ -407,11 +407,13 @@ and the inconsistencies among the type of data available,
 it was not possible to assess important contributing factors to the health outcomes explored here. 
 However, for the asthma data available for Pennsylvania it was possible to visualize trends over time when stratifying for demographic variables like age, gender, and race. This was explored below for hospitalizations due to asthma from 2000 until 2019.
 
-```{r}
+```{r message=FALSE}
 pa_asthma <-
   read_csv("./data/asthma_data/pa_asthma_all.csv", col_names = TRUE) %>%
   janitor::clean_names()
 
+# age-adjusted incidence rates of asthma related hospitalizations in PA by year
+# plot
 pa_asthma_plot <-
   pa_asthma %>% 
   filter(race == "All Races", 
@@ -430,7 +432,8 @@ pa_asthma_plot <-
        x ="Year", 
        y = "Rate\n(age-adjusted per 100,000)")
 
-
+# age-adjusted incidence rates of asthma related hospitalizations in PA by year
+# stratified by race plot
 race_asthma <-
   pa_asthma %>% 
   filter(geography_code == "0",
@@ -450,7 +453,8 @@ race_asthma <-
        x ="Year", y = "Rate \n(age-adjusted per 100,000)") +
   scale_color_viridis_d(name = "Race")
 
-
+# age-adjusted incidence rates of asthma related hospitalizations in PA by year
+# stratified by age plot
 age_asthma <-
   pa_asthma %>% 
   filter(geography_code == "0",
@@ -470,5 +474,6 @@ age_asthma <-
        x ="Year", y = "Rate \n(not age-adjusted per 100,000)") +
   scale_color_viridis_d(name = "Age Group")
 
+# Patchwork
 pa_asthma_plot / (race_asthma + age_asthma )
 ```
