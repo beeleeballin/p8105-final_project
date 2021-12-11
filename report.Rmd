@@ -85,19 +85,19 @@ state is added to the model?
 
 ## Data: 
 
-**Exposures**
+#### Exposures
 
 Our [ozone data](https://data.cdc.gov/Environmental-Health-Toxicology/Daily-County-Level-Ozone-Concentrations-2001-2016/kmf5-t9yc) and our [air pollution data](https://data.cdc.gov/Environmental-Health-Toxicology/Daily-PM2-5-Concentrations-All-County-2001-2016/7vdq-ztk9) were both sourced from the CDC's National Environmental Public Health
 Tracking website. 
 
-**Outcomes**
+#### Outcomes
 
 For county level cancer outcomes, each state's data set was sourced from the [NIH State Cancer Profiles](https://statecancerprofiles.cancer.gov/).
 
 For state level outcomes, each data set was sourced directly from health 
 departments of each respective state.
 
--  **Asthma**
+##### Asthma
 
   - [Ohio](https://odh.ohio.gov/wps/portal/gov/odh/know-our-programs/asthma-program)
   
@@ -105,7 +105,7 @@ departments of each respective state.
   
   - [Pennsylvania](https://www.phaim1.health.pa.gov/EDD/WebForms/HospitalDischargeCntyStChrt.aspx)  
   
--  **Melanoma**
+##### Melanoma
   
   - [Ohio](https://publicapps.odh.ohio.gov/EDW/DataCatalog)
   
@@ -113,7 +113,7 @@ departments of each respective state.
   
   - [Pennsylvania](https://www.phaim1.health.pa.gov/EDD/)
   
--  **Lung Cancer**
+##### Lung Cancer
   
  - [Ohio](https://publicapps.odh.ohio.gov/EDW/DataCatalog)
   
@@ -125,7 +125,7 @@ departments of each respective state.
 
 A significant amount of cleaning was required, as can be seen in the code chunks below:
 
-**exposures data**
+#### Exposure Data
 **NEEDS CODE CHUNKS**
 ```{r warning=FALSE, message=FALSE}
 
@@ -133,7 +133,7 @@ A significant amount of cleaning was required, as can be seen in the code chunks
 ```
 
 
-**state level outcomes data**
+#### State Level Outcomes Data
 **NEEDS ASTHMA SET UP DATA**
 ```{r warning=FALSE, message=FALSE}
 
@@ -289,12 +289,87 @@ pa_melanoma_age_adjusted <- read_csv(here("data",
   select(state, year, cancer_type, age_adjusted_incidence_rate) %>%
   arrange(year)
 
+##### asthma data
+
+#new york asthma data
+
+ny_asthma <-
+  read_csv("./data/asthma_data/NYS_ASTHMA.csv") %>% 
+  janitor::clean_names()
+
+# ohio asthma data
+
+oh_asthma <- 
+  read_csv("./data/asthma_data/ohio_all.csv") %>% 
+  janitor::clean_names()
+
+#pennsylvania asthma data
+
+pa_asthma <-
+  read_csv("./data/asthma_data/pa_asthma_all.csv", col_names = TRUE) %>% 
+  janitor::clean_names()
+
+
+## creating state level data for asthma
+
+#ohio state level data
+oh_state <-
+  oh_asthma %>% 
+  filter(age_group == "All",
+         month == "All",
+         race == "Total",
+         sex == "All",
+         geography == "Ohio",
+         visit == "Inpatient",
+         frequency > 0) %>% 
+  rename(state = geography) %>% 
+  mutate(rate = rate * 10,
+         outcome = "asthma",
+         state = "OH") %>% 
+  select(year, state, outcome, rate)
+
+#pennsylvania state level data
+pa_state <-
+  pa_asthma %>% 
+  filter(age == "All Ages",
+         race == "All Races",
+         sex == "Total",
+         geography_code == "0",
+         rate_adj == "Age-Adjusted Rate") %>% 
+  rename(state = geography) %>% 
+  mutate(outcome = "asthma",
+         state = "PA") %>% 
+  select(year, state, outcome, rate)
+
+
+#new york state level data
+ny_state <-
+  ny_asthma %>% 
+  filter(visit == "Inpatient",
+         geography == "New York State",
+         age_group == "Total",
+         sex == "Total",
+         rate_adj == "Age-Adjusted Rate",
+         month == "Total",
+         str_detect(year, "-20", negate = TRUE)) %>% 
+  rename(rate = rate_per_10k) %>% 
+  mutate(rate = round(rate * 10, 2),
+         state = "NY",
+         outcome = "asthma") %>% 
+  select(year, state, outcome, rate)
+
+
+# merged state level asthma
+asthma_state <-
+  rbind(ny_state, oh_state, pa_state) %>% 
+  write_csv("./asthma_state.csv")
+
 
 
 ```
 
 
-**county level outcomes data**
+#### County Level Outcomes Data
 **NEEDS ASTHMA SET UP DATA **
 ```{r warning=FALSE, message=FALSE}
 
@@ -362,13 +437,64 @@ read_and_clean_county_data(here("data",
                            "PA",
                            "melanoma")
 
+# new york county level asthma data
+
+ny_co <-
+  ny_asthma %>% 
+  filter(age_group == "Total", 
+         month == "Total",
+         year == "2015-2017",
+         visit == "Inpatient",
+         rate_adj == "Age-Adjusted Rate",
+         geography != "New York State",
+         geography != "New York City") %>% 
+  mutate(county = tolower(geography),
+         rate = rate_per_10k,
+         region = "new york",
+         county = replace(county, 
+                          county == "new york county", "new york")) %>% 
+  select(region, county, rate) %>% 
+  group_by(county)
+
+
+# ohio county level asthma data
+
+oh_co <- 
+  oh_asthma %>% 
+  filter(geography != "Ohio",
+         age_group == "All", 
+         visit == "Inpatient") %>% 
+  mutate(county = tolower(geography),
+         region = "ohio") %>%
+  select(region, county, rate) %>% 
+  group_by(county)
+
+#pennsylvania county data
+
+pa_co <- 
+  pa_asthma %>% 
+  filter(geography_code != "0",
+         rate_adj == "Age-Adjusted Rate",
+         year == "2016",
+         age == "All Ages") %>% 
+  mutate(county = tolower(geography),
+         region = "pennsylvania",
+         rate = as.numeric(rate) / 10) %>%
+  select(region, county, rate) %>% 
+  group_by(county)
+
+# merge county data
+
+county_2016 <-
+  bind_rows(oh_co, ny_co, pa_co)
 
 
 ```
 
-Then, we were able to merge both of our exposures into one data set, *apuv*,
-with the following variables:
+Then, we were able to merge both of our exposures into one data set with the 
+following variables:
 
+#### Merged Exposure Data
 **NEEDS CODE CHUNKS**
 
 ```{r warning=FALSE, message=FALSE}
@@ -376,6 +502,8 @@ with the following variables:
 
 
 ```
+
+##### apuv
 
 
   * `Year`. Year
@@ -417,7 +545,9 @@ with the following variables:
   * `I380`.
 
 
-Next, we were able to merge all of our state level outcomes into one data set,  *lc_mel_asthma_state*:
+Next, we were able to merge all of our state level outcomes into one data set
+
+#### Merged State Level Outcome Data (lc_mel_asthma_state)
 
 ```{r warning=FALSE, message=FALSE}
 
@@ -467,7 +597,24 @@ lc_mel_asthma_state <- bind_rows(lc_mel_state, asthma_state) %>%
 
 ```
 
-Then, we could do the same with our county-level outcomes to get our *lc_mel_asthma_county* data set
+##### lc_mel_asthma_state
+
+  * `state`. 2-letter abbreviation
+  
+  * `year`. Year
+  
+  * `outcome`. type of outcome (lung cancer, melanoma, asthma ED visit)
+  
+  * `age_adjusted_incidence_rate`. per 100,000
+
+
+
+
+
+
+Then, we could do the same with our county-level outcomes to get a merged set.
+
+#### Merged County Level Outcome Data (lc_mel_asthma_county)
 
 ```{r warning=FALSE, message=FALSE}
 
@@ -547,7 +694,7 @@ lc_mel_asthma_county <- bind_rows(lc_mel_county, asthma_county) %>%
 ```
 
 
-**lc_mel_asthma_county**
+##### lc_mel_asthma_county
 
   * `state`. 2-letter abbreviation
   
@@ -559,15 +706,6 @@ lc_mel_asthma_county <- bind_rows(lc_mel_county, asthma_county) %>%
   
   * `fips`. county-level unique identifier
 
-**lc_mel_asthma_state**
-
-  * `state`. 2-letter abbreviation
-  
-  * `year`. Year
-  
-  * `outcome`. type of outcome (lung cancer, melanoma, asthma ED visit)
-  
-  * `age_adjusted_incidence_rate`. per 100,000
 
 
 ## Exploratory analysis: 
@@ -1013,3 +1151,4 @@ If you undertake formal statistical analyses, describe these in detail
 
 ## Discussion: 
 What were your findings? Are they what you expect? What insights into the data can you make?
+
