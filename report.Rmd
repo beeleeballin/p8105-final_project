@@ -1181,11 +1181,12 @@ factors for asthma across the states and counties, we were limited to only
 looking at hospitalizations because publicly available Pennsylvania data only 
 reported on hospitalizations and not emergency department visits. Similarly, 
 surveillance data may not collect demographic data that have been shown to be 
-moderators of the health outcomes. For instance, gender, race, and ethnicity have
-been reported in  academic literature as important factors influencing differences
-observed in incidence rates of lung cancer globally. 
+effect measure modifiers of the health outcomes. For instance, gender, race, and 
+ethnicity have been reported in  academic literature as important factors 
+influencing differences observed in incidence rates of lung cancer globally. 
 
-These important moderators have been discussed not only in academic literature
+These important effect measure modifiers have been discussed not only in 
+academic literature
 (e.g., [Schabeth et al. 2016](https://doi.org/10.1177/107327481602300405),), [Meza et al. (2015)](https://doi.org/10.1371/journal.pone.0121323), and [O'Keeffe et al. (2018)](http://dx.doi.org/10.1136/bmjopen-2018-021611)
 )
 but also in [reports by health organizations like the American Cancer Society](https://www.cancer.org/research/cancer-facts-statistics/global.html)) 
