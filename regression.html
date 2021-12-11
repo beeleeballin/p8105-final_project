@@ -387,7 +387,7 @@ div.tocify {
 <h1>Part 1: State Level Trends, 2001-2015</h1>
 <div id="data" class="section level2">
 <h2>Data</h2>
-<p>We begin by reading in the combined health outcomes data and the combined air pollution and UV radiation data to produce an analysis at the state level. We quickly noticed that some of our variables in the air pollution and UV data were strongly correlated with each other, so we omitted several for the purposes of our regression analysis (collinearity violates our assumptions); the final correlation matrix is given below.</p>
+<p>We begin by reading in the combined health outcomes data, creating seasonal variables, and the combined air pollution and UV radiation data to produce an analysis at the state level. We quickly noticed that some of our variables in the air pollution and UV data were strongly correlated with each other, so we omitted several for the purposes of our regression analysis (collinearity violates our assumptions); the final correlation matrix is given below.</p>
 <pre class="r"><code>library(tidyverse)
 
 outcomes_state &lt;- read_csv(&quot;data/lc_mel_asthma_state.csv&quot;)
@@ -938,29 +938,6 @@ cv_df %&gt;%
   ggpairs(columns = c(&quot;year&quot;,&quot;melanoma&quot;,&quot;edd_Spring&quot;,&quot;edd_Summer&quot;),
           mapping = aes(group = state, color = state),
           columnLabels = c(&quot;Year&quot;, &quot;Melanoma/100,000&quot;, &quot;Spring EDD (J/m^2)&quot;, &quot;Summer EDD (J/m^2)&quot;))</code></pre>
-<pre><code>## Warning in ggally_statistic(data = data, mapping = mapping, na.rm = na.rm, :
-## Removed 12 rows containing missing values
-
-## Warning in ggally_statistic(data = data, mapping = mapping, na.rm = na.rm, :
-## Removed 12 rows containing missing values
-
-## Warning in ggally_statistic(data = data, mapping = mapping, na.rm = na.rm, :
-## Removed 12 rows containing missing values
-
-## Warning in ggally_statistic(data = data, mapping = mapping, na.rm = na.rm, :
-## Removed 12 rows containing missing values</code></pre>
-<pre><code>## Warning: Removed 12 rows containing missing values (geom_point).
-
-## Warning: Removed 12 rows containing missing values (geom_point).</code></pre>
-<pre><code>## Warning: Removed 12 rows containing non-finite values (stat_density).</code></pre>
-<pre><code>## Warning in ggally_statistic(data = data, mapping = mapping, na.rm = na.rm, :
-## Removed 12 rows containing missing values</code></pre>
-<pre><code>## Warning: Removed 12 rows containing missing values (geom_point).
-
-## Warning: Removed 12 rows containing missing values (geom_point).
-
-## Warning: Removed 12 rows containing missing values (geom_point).</code></pre>
-<pre><code>## Warning: Removed 12 rows containing non-finite values (stat_density).</code></pre>
 <p><img src="regression_files/figure-html/unnamed-chunk-11-1.png" width="672" /></p>
 <p>That’s weird. There seem to be negative correlations between EDD and melanoma when we break down by state, but positive correlations overall—an instance of Simpson’s paradox.</p>
 </div>
@@ -1209,7 +1186,292 @@ cv_df %&gt;%
   mutate(model = fct_inorder(model)) %&gt;% 
   ggplot(aes(x = model, y = rmse, fill = model)) + geom_violin() + labs(x = &quot;Model&quot;, y = &quot;RMSE&quot;)</code></pre>
 <p><img src="regression_files/figure-html/unnamed-chunk-23-1.png" width="672" /></p>
-<p>That model <em>must</em> be disgustingly overfit… right?</p>
+<p>That model <em>must</em> be disgustingly overfit… right? How important is each variable?</p>
+<pre class="r"><code>broom::tidy(step_bic_mel) %&gt;%
+  mutate(
+    abs_t = abs(statistic),
+    term = as.factor(term),
+    term = fct_reorder(term, abs_t)
+    ) %&gt;%
+  ggplot(aes(x = abs_t, y = term)) +
+  geom_col() +
+  labs(title = &quot;Relative Importance of Model Terms&quot;,
+       y = &quot;Model Term&quot;, x = &quot;|t| statistic&quot;)</code></pre>
+<p><img src="regression_files/figure-html/unnamed-chunk-24-1.png" width="672" /></p>
+<p>However, we see a different pattern of importance from the model with just linear terms:</p>
+<pre class="r"><code>broom::tidy(mel_fit2) %&gt;%
+  mutate(
+    abs_t = abs(statistic),
+    term = as.factor(term),
+    term = fct_reorder(term, abs_t)
+    ) %&gt;%
+  ggplot(aes(x = abs_t, y = term)) +
+  geom_col() +
+  labs(title = &quot;Relative Importance of Model Terms&quot;,
+       y = &quot;Model Term&quot;, x = &quot;|t| statistic&quot;)</code></pre>
+<p><img src="regression_files/figure-html/unnamed-chunk-25-1.png" width="672" /></p>
+</div>
+</div>
+</div>
+<div id="part-2-county-level-trends-2014-2018" class="section level1">
+<h1>Part 2: County-Level Trends, 2014-2018</h1>
+<p>Time is a significant predictor in many of the above models. Will we still have good models without it? In exchange, we get a lot more data - resolution at the county level instead of the state level.</p>
+<p>We create our county-level dataframe:</p>
+<pre class="r"><code>outcomes_wider_county &lt;- outcomes_county %&gt;%
+  pivot_wider(names_from = outcome, values_from = age_adjusted_incidence_rate)
+
+#county-level analysis - fewer predictors
+ap_uv_county_slim &lt;- ap_uv %&gt;%
+  filter(state %in% c(&quot;NY&quot;,&quot;OH&quot;,&quot;PA&quot;)) %&gt;%
+  select(-c(pm25_max_pred, pm25_mean_pred, pm25_pop_pred,
+            o3_max_pred, o3_mean_pred, o3_pop_pred, i324,
+            i310, i305, i380, edr)) %&gt;%
+  group_by(county, state, season) %&gt;%
+  #Take medians across years for each season
+  summarize(across(pm25_med_pred:edd, median, na.rm = TRUE)) %&gt;%
+  pivot_wider(names_from = season, values_from = pm25_med_pred:edd)
+
+county_df &lt;- right_join(outcomes_wider_county, ap_uv_county_slim)</code></pre>
+<p>Again, we look at correlations among the predictors:</p>
+<pre class="r"><code>county_corr &lt;- county_df %&gt;%
+  select(pm25_med_pred_Fall:edd_Winter) %&gt;% 
+  do(as.data.frame(cor(., method=&quot;pearson&quot;, use=&quot;pairwise.complete.obs&quot;))) %&gt;%
+  knitr::kable()
+county_corr</code></pre>
+<table style="width:100%;">
+<colgroup>
+<col width="9%" />
+<col width="8%" />
+<col width="9%" />
+<col width="9%" />
+<col width="9%" />
+<col width="7%" />
+<col width="8%" />
+<col width="8%" />
+<col width="8%" />
+<col width="4%" />
+<col width="4%" />
+<col width="4%" />
+<col width="4%" />
+</colgroup>
+<thead>
+<tr class="header">
+<th align="left"></th>
+<th align="right">pm25_med_pred_Fall</th>
+<th align="right">pm25_med_pred_Spring</th>
+<th align="right">pm25_med_pred_Summer</th>
+<th align="right">pm25_med_pred_Winter</th>
+<th align="right">o3_med_pred_Fall</th>
+<th align="right">o3_med_pred_Spring</th>
+<th align="right">o3_med_pred_Summer</th>
+<th align="right">o3_med_pred_Winter</th>
+<th align="right">edd_Fall</th>
+<th align="right">edd_Spring</th>
+<th align="right">edd_Summer</th>
+<th align="right">edd_Winter</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td align="left">pm25_med_pred_Fall</td>
+<td align="right">1.0000000</td>
+<td align="right">0.9638443</td>
+<td align="right">0.8616069</td>
+<td align="right">0.9052818</td>
+<td align="right">0.2291057</td>
+<td align="right">0.0146364</td>
+<td align="right">0.8384443</td>
+<td align="right">-0.6956225</td>
+<td align="right">0.7684484</td>
+<td align="right">0.8022451</td>
+<td align="right">0.8870468</td>
+<td align="right">0.2349939</td>
+</tr>
+<tr class="even">
+<td align="left">pm25_med_pred_Spring</td>
+<td align="right">0.9638443</td>
+<td align="right">1.0000000</td>
+<td align="right">0.9158741</td>
+<td align="right">0.9028251</td>
+<td align="right">0.2809823</td>
+<td align="right">0.0353524</td>
+<td align="right">0.8916228</td>
+<td align="right">-0.6912378</td>
+<td align="right">0.7924249</td>
+<td align="right">0.8272669</td>
+<td align="right">0.8918020</td>
+<td align="right">0.3220468</td>
+</tr>
+<tr class="odd">
+<td align="left">pm25_med_pred_Summer</td>
+<td align="right">0.8616069</td>
+<td align="right">0.9158741</td>
+<td align="right">1.0000000</td>
+<td align="right">0.8265179</td>
+<td align="right">0.2529572</td>
+<td align="right">0.0051948</td>
+<td align="right">0.8895923</td>
+<td align="right">-0.6914356</td>
+<td align="right">0.7773812</td>
+<td align="right">0.8104157</td>
+<td align="right">0.7624534</td>
+<td align="right">0.4960550</td>
+</tr>
+<tr class="even">
+<td align="left">pm25_med_pred_Winter</td>
+<td align="right">0.9052818</td>
+<td align="right">0.9028251</td>
+<td align="right">0.8265179</td>
+<td align="right">1.0000000</td>
+<td align="right">-0.0004523</td>
+<td align="right">-0.1934251</td>
+<td align="right">0.8279097</td>
+<td align="right">-0.7931456</td>
+<td align="right">0.6843229</td>
+<td align="right">0.7790970</td>
+<td align="right">0.7957184</td>
+<td align="right">0.3151852</td>
+</tr>
+<tr class="odd">
+<td align="left">o3_med_pred_Fall</td>
+<td align="right">0.2291057</td>
+<td align="right">0.2809823</td>
+<td align="right">0.2529572</td>
+<td align="right">-0.0004523</td>
+<td align="right">1.0000000</td>
+<td align="right">0.8829294</td>
+<td align="right">0.3808405</td>
+<td align="right">0.3893814</td>
+<td align="right">0.3971814</td>
+<td align="right">0.2426730</td>
+<td align="right">0.3636476</td>
+<td align="right">0.0583694</td>
+</tr>
+<tr class="even">
+<td align="left">o3_med_pred_Spring</td>
+<td align="right">0.0146364</td>
+<td align="right">0.0353524</td>
+<td align="right">0.0051948</td>
+<td align="right">-0.1934251</td>
+<td align="right">0.8829294</td>
+<td align="right">1.0000000</td>
+<td align="right">0.1154320</td>
+<td align="right">0.6116594</td>
+<td align="right">0.1717104</td>
+<td align="right">0.0137604</td>
+<td align="right">0.1016028</td>
+<td align="right">-0.0893092</td>
+</tr>
+<tr class="odd">
+<td align="left">o3_med_pred_Summer</td>
+<td align="right">0.8384443</td>
+<td align="right">0.8916228</td>
+<td align="right">0.8895923</td>
+<td align="right">0.8279097</td>
+<td align="right">0.3808405</td>
+<td align="right">0.1154320</td>
+<td align="right">1.0000000</td>
+<td align="right">-0.6201207</td>
+<td align="right">0.8356498</td>
+<td align="right">0.8538449</td>
+<td align="right">0.8446666</td>
+<td align="right">0.4939809</td>
+</tr>
+<tr class="even">
+<td align="left">o3_med_pred_Winter</td>
+<td align="right">-0.6956225</td>
+<td align="right">-0.6912378</td>
+<td align="right">-0.6914356</td>
+<td align="right">-0.7931456</td>
+<td align="right">0.3893814</td>
+<td align="right">0.6116594</td>
+<td align="right">-0.6201207</td>
+<td align="right">1.0000000</td>
+<td align="right">-0.5442261</td>
+<td align="right">-0.6571396</td>
+<td align="right">-0.5928370</td>
+<td align="right">-0.3705689</td>
+</tr>
+<tr class="odd">
+<td align="left">edd_Fall</td>
+<td align="right">0.7684484</td>
+<td align="right">0.7924249</td>
+<td align="right">0.7773812</td>
+<td align="right">0.6843229</td>
+<td align="right">0.3971814</td>
+<td align="right">0.1717104</td>
+<td align="right">0.8356498</td>
+<td align="right">-0.5442261</td>
+<td align="right">1.0000000</td>
+<td align="right">0.9045582</td>
+<td align="right">0.8531265</td>
+<td align="right">0.6652107</td>
+</tr>
+<tr class="even">
+<td align="left">edd_Spring</td>
+<td align="right">0.8022451</td>
+<td align="right">0.8272669</td>
+<td align="right">0.8104157</td>
+<td align="right">0.7790970</td>
+<td align="right">0.2426730</td>
+<td align="right">0.0137604</td>
+<td align="right">0.8538449</td>
+<td align="right">-0.6571396</td>
+<td align="right">0.9045582</td>
+<td align="right">1.0000000</td>
+<td align="right">0.8444612</td>
+<td align="right">0.6335905</td>
+</tr>
+<tr class="odd">
+<td align="left">edd_Summer</td>
+<td align="right">0.8870468</td>
+<td align="right">0.8918020</td>
+<td align="right">0.7624534</td>
+<td align="right">0.7957184</td>
+<td align="right">0.3636476</td>
+<td align="right">0.1016028</td>
+<td align="right">0.8446666</td>
+<td align="right">-0.5928370</td>
+<td align="right">0.8531265</td>
+<td align="right">0.8444612</td>
+<td align="right">1.0000000</td>
+<td align="right">0.3542735</td>
+</tr>
+<tr class="even">
+<td align="left">edd_Winter</td>
+<td align="right">0.2349939</td>
+<td align="right">0.3220468</td>
+<td align="right">0.4960550</td>
+<td align="right">0.3151852</td>
+<td align="right">0.0583694</td>
+<td align="right">-0.0893092</td>
+<td align="right">0.4939809</td>
+<td align="right">-0.3705689</td>
+<td align="right">0.6652107</td>
+<td align="right">0.6335905</td>
+<td align="right">0.3542735</td>
+<td align="right">1.0000000</td>
+</tr>
+</tbody>
+</table>
+<p>We average the particulate matter because the seasonal variables are highly correlated.</p>
+<pre class="r"><code>county_df2 &lt;- county_df %&gt;%
+  mutate(pm25_med_pred = rowMeans(select(., starts_with(&quot;pm25&quot;)))) %&gt;%
+  select(-c(pm25_med_pred_Fall:pm25_med_pred_Winter))</code></pre>
+<p>Now we can start the cross-sectional analysis.</p>
+<div id="lung-cancer-cross-sectional-analysis" class="section level2">
+<h2>Lung Cancer, cross-sectional analysis</h2>
+<div id="exploration-2" class="section level3">
+<h3>Exploration</h3>
+<pre class="r"><code>county_df2 %&gt;%
+  ggpairs(columns = c(&quot;lung cancer&quot;, &quot;o3_med_pred_Summer&quot;, &quot;o3_med_pred_Fall&quot;, &quot;pm25_med_pred&quot;),
+          mapping = aes(group = state, color = state),
+          columnLabels = c(&quot;Lung Cancer/100,000&quot;,&quot;Median summer O3, ppm&quot;, &quot;Median fall O3, ppm&quot;,
+                           &quot;PM 2.5, ug/m^3&quot;))</code></pre>
+<p><img src="regression_files/figure-html/unnamed-chunk-29-1.png" width="672" /></p>
+</div>
+<div id="model-fit---lung-cancer-and-air-quality-cross-sectional-data" class="section level3">
+<h3>Model fit - lung cancer and air quality: Cross-sectional data</h3>
 </div>
 </div>
 </div>

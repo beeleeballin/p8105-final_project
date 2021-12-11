@@ -21,7 +21,7 @@ outcomes_county <- read_csv("data/lc_mel_asthma_county.csv")
 ap_uv <- read_csv("ap/ap_uv/apuv.csv")
 
 #State-level analysis - fewer predictors
-ap_uv_slim <- ap_uv %>%
+ap_uv_state_slim <- ap_uv %>%
   select(-c(countyfips, county,
             pm25_max_pred, pm25_mean_pred, pm25_pop_pred,
             o3_max_pred, o3_mean_pred, o3_pop_pred,
@@ -527,12 +527,19 @@ Now we can start the cross-sectional analysis.
 
 ### Exploration
 
-```{r}
+```{r message=FALSE, warning=FALSE}
 county_df2 %>%
-  ggpairs(columns = c("lung cancer", "o3_med_pred_Summer", "pm25_med_pred"),
+  ggpairs(columns = c("lung cancer", "o3_med_pred_Summer", "o3_med_pred_Fall", "pm25_med_pred"),
           mapping = aes(group = state, color = state),
-          columnLabels = c("Lung Cancer/100,000","Median summer O3, ppm", "PM 2.5, ug/m^3"))
+          columnLabels = c("Lung Cancer/100,000","Median summer O3, ppm", "Median fall O3, ppm",
+                           "PM 2.5, ug/m^3"))
 ```
+
+### Model fit - lung cancer and air quality: Cross-sectional data
+
+
+
+
 
 
 
