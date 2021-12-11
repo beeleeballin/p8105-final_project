@@ -42,11 +42,7 @@ ap_uv_state <- ap_uv %>%
 outcomes_wider_state <- outcomes_state %>%
   pivot_wider(names_from = outcome, values_from = age_adjusted_incidence_rate)
   
-# state_analysis <- left_join(outcomes_wider_state, ap_uv_state_slim)
-# 
-# #Revert EDD variable to be without season
-# state_analysis <- state_analysis %>%
-#   select(-c())
+state_analysis <- left_join(outcomes_wider_state, ap_uv_state_slim)
 
 #Correlations
 state_analysis_corr <- state_analysis %>% 
@@ -677,7 +673,7 @@ step_bic_asth_cty <- step(fit_asth_cty, trace = 0, k = log(nobs(fit_aq)), direct
 summary(step_bic_asth_cty)
 ```
 
-Strong $R^2$ (0.64) value but not absurd; 10 variables for 191 datapoints. Weird that fall ozone is protective (and strongly so). How do the residuals look?
+Strong $R^2$ value but not absurd. Weird that fall ozone is protective (and strongly so). How do the residuals look?
 
 ```{r warning=FALSE, message=FALSE}
 asth_cty <- aq_asth_df %>%
@@ -694,11 +690,11 @@ Holy outliers, Batman!
 plot(step_bic_asth_cty, which = 5)
 ```
 
-We should filter out those high leverage points and refit.
+We should filter out those high-leverage points and refit.
 
 ```{r message=FALSE, warning=FALSE}
 aq_asth_df2 <- aq_asth_df %>%
-  slice(-c(3,40,183))
+  slice(-c(3,31,185))
 
 fit_asth_cty <- lm(asthma ~ .^2, data = aq_asth_df2)
 
@@ -791,7 +787,7 @@ State interactions with ozone again? This might be something to research.
 
 ## Melanoma of the skin, cross-sectional analysis
 
-```{r warning=FALSe, message=FALSE}
+```{r warning=FALSE, message=FALSE}
 county_df2 %>%
   ggpairs(columns = c("melanoma", "edd_Summer", "edd_Fall", "edd_Winter", "edd_Spring"),
           mapping = aes(group = state, color = state),
