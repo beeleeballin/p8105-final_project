@@ -436,10 +436,11 @@ pa_asthma_plot <-
   geom_errorbar(aes(ymin = lb, ymax = ub)) +
   labs(title = "Hospitalizations due to asthma in PA, 2000-2019", 
        x ="Year", 
-       y = "Rate\n(age-adjusted per 100,000)")
+       y = "Rate\n(age-adjusted per 100,000)") +
+  theme(plot.title = element_text(hjust = 0.5))
 
 # age-adjusted incidence rates of asthma related hospitalizations in PA by year
-# stratified by race plot
+# stratified by gender and race plot
 race_asthma <-
   pa_asthma %>% 
   filter(geography_code == "0",
@@ -457,10 +458,11 @@ race_asthma <-
   theme(legend.position="bottom") + 
   labs(title = "Stratified by gender and race", 
        x ="Year", y = "Rate \n(age-adjusted per 100,000)") +
-  scale_color_viridis_d(name = "Race")
+  scale_color_viridis_d(name = "Race") +
+  theme(plot.title = element_text(hjust = 0.5))
 
 # age-adjusted incidence rates of asthma related hospitalizations in PA by year
-# stratified by age plot
+# stratified by gender and age plot
 age_asthma <-
   pa_asthma %>% 
   filter(geography_code == "0",
@@ -476,9 +478,10 @@ age_asthma <-
   geom_errorbar(aes(ymin = lb, ymax = ub)) +
   facet_grid(sex ~ .) + 
   theme(legend.position="bottom") +
-  labs(title = "Stratified by gender and age group", 
+  labs(title = "Stratified by gender and age", 
        x ="Year", y = "Rate \n(not age-adjusted per 100,000)") +
-  scale_color_viridis_d(name = "Age Group")
+  scale_color_viridis_d(name = "Age Group") +
+  theme(plot.title = element_text(hjust = 0.5))
 
 # Patchwork
 pa_asthma_plot / (race_asthma + age_asthma )
