@@ -134,7 +134,7 @@ A significant amount of cleaning was required, as can be seen in the code chunks
 
 #### Exposure Data
 
-Code can be found on the [Climate Data](https://beeleeballin.github.io/p8105-final_project/merge-ap-uv.html) page
+Code can be found on the [Climate Data](merge_ap_uv.html) page.
 
 #### State Level Outcomes Data
 
@@ -497,7 +497,7 @@ county_2016 <-
 
 #### Merged Exposure Data
 
-Code can be found on the [Climate Data](https://beeleeballin.github.io/p8105-final_project/merge-ap-uv.html) page
+Code can be found on the [Climate Data](merge_ap_uv.html) page
 
 ##### apuv
   * `year`. Year
@@ -1098,8 +1098,9 @@ fit_aq <- lm(`lung cancer` ~ . +
                state*year, data = aq_lung_df)
 
 step_bic_aq <- step(fit_aq, trace = 0, k = log(nobs(fit_aq)), direction = "backward")
-summary(step_bic_aq)
 
+
+## CHART LC MODEL
 
 step_bic_aq %>%
 tidy() %>%
@@ -1132,6 +1133,8 @@ uv_df <- state_2001_2015 %>%
 mel_fit <- lm(melanoma ~ .^2, data = uv_df)
 step_bic_mel <- step(mel_fit, trace = 0, k = log(nobs(mel_fit)), direction = "backward")
 
+### CHART MELANOMA MODEL
+
 step_bic_mel %>%
   tidy() %>%
   mutate(
@@ -1147,21 +1150,17 @@ step_bic_mel %>%
 
 ```
 
-For both exposure/outcome pairings, we worked to understand their relationship
-through regression models. 
+For both exposure/outcome pairings, we worked to understand their relationship through regression models.
 
-After paring down our lung cancer model with BIC, we 
-observed an R^2 value of **0.97**, which felt unreasonably high. After observing
-diagnostic plots like Q-Q and Box-Cox, (viewable on the [Regression](https://beeleeballin.github.io/p8105-final_project/regression.html) page),
-we found that the residuals were centered and relatively even with no extreme
-outliers. When we cross-validated using leave-one-out and Monte-Carlo, our 
-BIC fit was best, though we still suspect overfitting. Additionally, it is important
-to acknowledge that this data set does not account for many of the relevant
-predictors for lung cancer, including age, race, and, perhaps most importantly,
-smoking.
+After paring down our lung cancer model with BIC, we observed an R^2 value of 0.97, which felt unreasonably high. Diagnostic plots like Q-Q and Box-Cox were conducted, which are viewable on the [Regression](regression.html) page.
+
+
+With our melanoma BIC model, we observed an adjusted R^2 value of 0.88, which 
+also raised some red flags. Diagnostic plots like Q-Q and and residuals vs. 
+leverage were conducted, which are also viewable on the [Regression](regression.html) page.
 
 If you are interested in further assessment and visualizations of these models,
-please visit our [Regression](https://beeleeballin.github.io/p8105-final_project/regression.html) page.
+please visit our [Regression](https://beeleeballin.github.io/p8105-final_project/regression.html) page, or scroll to our **Discussion** for an overview of the findings.
 
 
 
@@ -1176,8 +1175,22 @@ high, alongside the reasonably high rates of UV radiation. However, contrary to
 expectation, we saw the highest rates of lung cancer in areas of Ohio and New York
 State where rates of ozone and particulate matter were generally low.
 
-More can be found from our models on the regression page, but the suspicion that they may be overfitted remains.
+More can be found on the regression page, but we can derive much information from 
+our final models, viewable in this report. We found that, through our diagnostic 
+plots for the lung cancer model that the residuals were centered and relatively 
+even with no extreme outliers. When we cross-validated using leave-one-out and 
+Monte-Carlo, our BIC fit was best, though we still suspect overfitting. Additionally,
+it is important to acknowledge that this data set does not account for many of 
+the relevant predictors for lung cancer, including age, race, and, perhaps most 
+importantly, smoking.
 
+Additionally, for our melanoma model, the residuals were slightly heteroscedastic
+and minimally curved but not unreasonable. The Q-Q plot failed to display normality,
+though, and there were multiple significant outliers with high leverage. Even
+after removing certain predictors and transforming new models, the BIC fit model
+was still the most significant in both leave-one-out and Monte Carlo. We, again,
+suspect overfitting but cannot confirm this without running more tests and expanding
+our research.
 
 
 ### Limitations to analyses
