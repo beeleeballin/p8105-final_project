@@ -43,9 +43,11 @@ On our site you'll find:
 
 
 ## About the Authors
-Kate
+Kate: MPH in Epidemiology, Certificate in Applied Biostatistics and Data Science.
+I'm interested in social determinants of health and how data science and statistical
+modeling can help us better understand health outcomes
 
-Jen: MS in Epidemiology. MS in Geosciences with a focus on Isotope Geoechemistry and Hydrology. BA in Biology and Earth Sciences. I'm nterested in environmental determinants of health and finding ways to mitigate inequities in healthcare.
+Jen: MS in Epidemiology. MS in Geosciences with a focus on Isotope Geoechemistry and Hydrology. BA in Biology and Earth Sciences. I'm interested in environmental determinants of health and finding ways to mitigate inequities in healthcare.
 
 Ben: MS in Biostatistics, Theory & Methods Track. Interested in study design,
 statistical methods and causal inference in healthcare research. 

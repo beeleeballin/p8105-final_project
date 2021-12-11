@@ -28,4 +28,4 @@ navbar:
       href: https://goo.gl/maps/kyKVwUbubgvP3u6s8
 output:
   html_document:
-    theme: darkly
+    theme: cerulean
