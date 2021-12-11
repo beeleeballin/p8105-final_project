@@ -10,17 +10,23 @@ output:
 
 
 ```{r setup, include=FALSE}
+library(broom)
 library(tidyverse)
 library(here)
 library(plotly)
 library(GGally)
+library(knitr)
+
+
+
+
 ```
 
 
 ## Motivation: 
 
-```{r, echo=FALSE, out.width="65%", fig.cap="Climate Change", fig.align = 'center'}
-knitr::include_graphics("./images/climate2.jpeg")
+```{r, echo=FALSE, out.width="65%", fig.align = 'center'}
+knitr::include_graphics("./images/planet_b.jpeg")
 ```
 
 If you've spent time on social media in the last few years, you may have noticed
@@ -135,7 +141,7 @@ A significant amount of cleaning was required, as can be seen in the code chunks
 
 
 #### State Level Outcomes Data
-**NEEDS ASTHMA SET UP DATA**
+
 ```{r warning=FALSE, message=FALSE}
 
 #state-level lung cancer PA data https://www.phaim1.health.pa.gov/EDD/
@@ -371,7 +377,7 @@ asthma_state <-
 
 
 #### County Level Outcomes Data
-**NEEDS ASTHMA SET UP DATA **
+
 ```{r warning=FALSE, message=FALSE}
 
 read_and_clean_county_data <- function(file_path_name, state, outcome) {
@@ -492,8 +498,6 @@ county_2016 <-
 
 ```
 
-Then, we were able to merge both of our exposures into one data set with the 
-following variables:
 
 #### Merged Exposure Data
 **NEEDS CODE CHUNKS**
@@ -548,7 +552,7 @@ following variables:
 
 Next, we were able to merge all of our state level outcomes into one data set
 
-#### Merged State Level Outcome Data (lc_mel_asthma_state)
+#### Merged State Level Outcome Data
 
 ```{r warning=FALSE, message=FALSE}
 
@@ -612,7 +616,7 @@ lc_mel_asthma_state <- bind_rows(lc_mel_state, asthma_state) %>%
 
 Then, we could do the same with our county-level outcomes to get a merged set.
 
-#### Merged County Level Outcome Data (lc_mel_asthma_county)
+#### Merged County Level Outcome Data
 
 ```{r warning=FALSE, message=FALSE}
 
@@ -1080,81 +1084,12 @@ state_analysis <- left_join(outcomes_wider_state, ap_uv_state_slim)
 
 ```
 
-### Correlation
-
-In the name of exploration we created some bivariate plots to assess general 
-trends in the relationships between **air pollution and lung cancer** and 
-**uv radiation and melanoma**
-
-```{r warning=FALSE, message=FALSE}
-
-state_analysis %>%
-  filter(year %in% 2001:2015) %>%
-  ggpairs(columns = c("year","lung cancer", "o3_med_pred_Summer", "pm25_med_pred_Summer"),
-          mapping = aes(group = state, color = state),
-          columnLabels = c("Year", "Lung Cancer/100,000","Median summer O3, ppm", "PM 2.5, ug/m^3"))
-
-```
-
-
-Generally, it appears that there is a negative correlation between lung cancer 
-rates and year, ozone levels and year, and particulate matter and year. This 
-indicates that as years increase, we may expect to see lung cancer age-adjusted 
-rates per 100,000, median summer o3 levels (ppm), and particulate matter 2.5
-(ug/m^3) all to decrease. 
-
-Additionally, lung cancer is highly positively correlated with both ozone and
-particulate matter, meaning that our exposure and outcome rates increase and 
-decrease in the same direction. As particulate matter and ozone levels increase,
-we expect lung cancer age-adjusted incidence rates per 100,000 to similarly 
-increase.
-
-### Models
-
-#### Lung Cancer and Air Quality
-
-```{r warning=FALSE, message=FALSE}
-
-state_analysis %>%
-  filter(year %in% 2001:2015) %>%
-  ggpairs(columns = c("year","melanoma","edd_Spring","edd_Summer"),
-          mapping = aes(group = state, color = state),
-          columnLabels = c("Year", "Melanoma/100,000", "Spring EDD (J/m^2)", "Summer EDD (J/m^2)"))
-
-```
-
-#### Melanoma and UV Radiation
-
-
-```{r warning=FALSE, message=FALSE}
-
-state_analysis %>%
-  filter(year %in% 2001:2015) %>%
-  ggpairs(columns = c("year","melanoma","edd_Spring","edd_Summer"),
-          mapping = aes(group = state, color = state),
-          columnLabels = c("Year", "Melanoma/100,000", "Spring EDD (J/m^2)", "Summer EDD (J/m^2)"))
-
-```
-
-For our melanoma plots, it appears that there is a positive correlation between 
-melanoma rates and year while spring and summer EDD (J/m^2) rates and year are 
-not significantly related. This indicates that as years increase, we may expect 
-to see melanoma age-adjusted incidence rates per 100,000 to increase as well.
-However, as years increase, we have no significant way of predicting how our 
-exposures will change.
-
-
-Additionally, melanoma is somewhat positively correlated with both spring and summer
-EDD (J/m^2), meaning that our exposure and outcome rates increase and 
-decrease in the same direction. As spring and summer EDD increase, we may see a
-slightly associated increase in melanoma age adjusted incidence rates per 100,000.
-
 
 ### Regression Models
 
 #### Lung Cancer and Air Quality
 
-```{r warning=FALSE, message=FALSE}
+```{r warning=FALSE, message=FALSE} 
 
 state_2001_2015 <- state_analysis %>%
   filter(year %in% 2001:2015) %>%
@@ -1163,18 +1098,26 @@ state_2001_2015 <- state_analysis %>%
 
 aq_lung_df <- state_2001_2015 %>%
   select(-c(melanoma, starts_with("edd")))
-#fit_aq <- lm(`lung cancer` ~ .^2, data = aq_lung_df) - this broke in R
-fit_aq <- lm(`lung cancer` ~ . +
+
+lm(`lung cancer` ~ . +
                year*(o3_med_pred_Spring +
                      o3_med_pred_Summer +
                      o3_med_pred_Fall) +
                year*(pm25_med_pred_Spring +
                      pm25_med_pred_Summer +
                      pm25_med_pred_Fall) +
-               state*year, data = aq_lung_df)
+               state*year, data = aq_lung_df) %>%
+  tidy() %>%
+  mutate(
+    p.value = scales::pvalue(p.value),
+  ) %>%
+  kable(
+    caption = "Coefficient-Level Estimates for a Model Fitted to Estimate Variation in Lung Cancer Rates.",
+    col.names = c("Predictor", "B", "SE", "t", "p"),
+    digits = c(0, 2, 3, 2, 3),
+    align = c("l", "r", "r", "r", "r")
+  )
 
-step_bic_aq <- step(fit_aq, trace = 0, k = log(nobs(fit_aq)), direction = "backward")
-summary(step_bic_aq)
 
 ```
 
@@ -1182,28 +1125,34 @@ summary(step_bic_aq)
 
 #### Melanoma and UV Radiation
 
-```{r warning=FALSE, message=FALSE}
+```{r warning=FALSE, message=FALSE} 
 
 uv_df <- state_2001_2015 %>%
   filter(year >= 2005) %>%
   select(-c(starts_with("pm25"), starts_with("o3"), `lung cancer`))
-  
-mel_fit <- lm(melanoma ~ .^2, data = uv_df)
-step_bic_mel <- step(mel_fit, trace = 0, k = log(nobs(mel_fit)), direction = "backward")
-summary(step_bic_mel)
+
+lm(melanoma ~ .^2, data = uv_df) %>%
+  tidy() %>%
+  mutate(
+    p.value = scales::pvalue(p.value),
+  ) %>%
+  kable(
+    caption = "Coefficient-Level Estimates for a Model Fitted to Estimate Variation in Melanoma Rates.",
+    col.names = c("Predictor", "B", "SE", "t", "p"),
+    digits = c(0, 2, 3, 2, 3),
+    align = c("l", "r", "r", "r", "r")
+  )
+
 
 ```
 
 
 
 
-
-
-
-
-
 If you are interested in further assessment and visualizations of these models,
 please visit our [Regression](https://beeleeballin.github.io/p8105-final_project/regression.html) page.
+
+
 
 ## Discussion: 
 
@@ -1216,17 +1165,7 @@ high, alongside the reasonably high rates of UV radiation. However, contrary to
 expectation, we saw the highest rates of lung cancer in areas of Ohio and New York
 State where rates of ozone and particulate matter were generally low.
 
-From our correlations, we were able to learn even more about our data. We see that
-lung cancer is negatively correlated with year while melanoma is positively correlated
-with year. Generally, we can assume that we will expect to see lung cancer rates
-to decrease while melanoma rates increase as years go on. The decline in lung cancer
-incidence over time may be attributable to factors we cannot quantify in this map,
-such as the decrease in tobacco-smoking rates across the United States and 
-legislation that has prevented individuals from smoking in certain public spaces.
-Further analysis may be warranted to understand fully how and why these have 
-changed over time.
-
-We can also see from our models that
+More can be found from our models on the regression page, but the suspicion that they may be overfitted remains.
 
 
 
@@ -1241,7 +1180,7 @@ incidence can be reported with respect to acute cases as shown with emergency
 department visits or more specifically with rates of hospitalization due 
 exclusively to asthma. Consequently, when comparing exposures as potential risk
 factors for asthma across the states and counties, we were limited to only 
-looking at hospitalizations because publically available Pennsylvania data only 
+looking at hospitalizations because publicly available Pennsylvania data only 
 reported on hospitalizations and not emergency department visits. Similarly, 
 surveillance data may not collect demographic data that have been shown to be 
 moderators of the health outcomes. For instance, gender, race, and ethnicity have
