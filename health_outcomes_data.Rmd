@@ -372,12 +372,12 @@ aair_by_year_by_outcome(lc_mel_asthma_state,
                         "Melanoma of the Skin Age-Adjusted Incidence Rates")
 ```
 
-The average age-adjusted incidence rates of Melanoma of the Skin from 2014 to 
+The average age-adjusted incidence rates of melanoma of the skin from 2014 to 
 2018, at the county-level, appears randomly varied across the three states with 
 all states having counties with relatively lower and higher average age-adjusted 
-incidence rates of Melanoma of the Skin.
+incidence rates of melanoma of the skin.
 
-Over time, average age-adjusted incidence rates of Melanoma of the Skin have 
+Over time, average age-adjusted incidence rates of melanoma of the skin have 
 increased for all three states.
 
 **Lung Cancer:**
@@ -393,11 +393,11 @@ aair_by_year_by_outcome(lc_mel_asthma_state,
                         "Lung Cancer Age-Adjusted Incidence Rates")
 ```
 
-Relatively high average age-adjusted incidence rates of Lung Cancer from 2014 to 
+Relatively high average age-adjusted incidence rates of lung cancer from 2014 to 
 2018, at the county-level, occur most frequently in Ohio, followed by New York,
 followed by Pennsylvania.
 
-Average age-adjusted incidence rates of Lung Cancer roughly increased for all 
+Average age-adjusted incidence rates of lung cancer roughly increased for all 
 three states until 1998 and have fallen since.
 
 Looking at the three longitudinal line graphs of the age-adjusted incidence
@@ -483,6 +483,8 @@ age_asthma <-
   scale_color_viridis_d(name = "Age Group") +
   theme(plot.title = element_text(hjust = 0.5))
 
-# Patchwork
-pa_asthma_plot / (race_asthma + age_asthma )
+# Plots
+pa_asthma_plot 
+race_asthma 
+age_asthma 
 ```

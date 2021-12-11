@@ -14,12 +14,14 @@ navbar:
     - text: "Health Outcomes Data"
       href: health_outcomes_data.html
     - text: "Data Exploration: Map"
-      href: https://beeleeballin.shinyapps.io/apuv_map/
+      href: https://bengoebel.shinyapps.io/apuv_map/
     - text: "Regression"
       href: regression.html
 
     
   right:
+    - text: "Screencast"
+      href: https://drive.google.com/file/d/1OlPuJULEmn-XNHkTp1HBBtdBquJ1n4c3/view?usp=sharing
     - icon: fa-envelope fa-lg
       href: mailto:<johsuan.lee@columbia.edu>
     - icon: fa-github fa-lg
