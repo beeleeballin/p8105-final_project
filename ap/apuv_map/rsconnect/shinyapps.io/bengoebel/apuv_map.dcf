@@ -1,0 +1,11 @@
+name: apuv_map
+title:
+username:
+account: bengoebel
+server: shinyapps.io
+hostUrl: https://api.shinyapps.io/v1
+appId: 5310526
+bundleId: 5359803
+url: https://bengoebel.shinyapps.io/apuv_map/
+when: 1639237415.98049
+lastSyncTime: 1639237415.98051
