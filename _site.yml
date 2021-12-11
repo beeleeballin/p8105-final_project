@@ -14,7 +14,7 @@ navbar:
     - text: "Health Outcomes Data"
       href: health_outcomes_data.html
     - text: "Data Exploration: Map"
-      href: https://beeleeballin.shinyapps.io/apuv_map/
+      href: https://bengoebel.shinyapps.io/apuv_map/
     - text: "Regression"
       href: regression.html
 
