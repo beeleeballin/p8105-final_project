@@ -1012,9 +1012,29 @@ Summer
 </tbody>
 </table>
 </div>
-</div>
-<div id="visualizing-trends-in-climate-data-over-space-and-time" class="section level2">
-<h2>Visualizing Trends in Climate Data over Space and Time</h2>
+<div id="variable-definitions" class="section level5">
+<h5>Variable Definitions</h5>
+<ul>
+<li><p><code>year</code>. Year</p></li>
+<li><p><code>countyfips</code>. County-level unique identifier</p></li>
+<li><p><code>county</code>. Name of county</p></li>
+<li><p><code>state</code>. 2-character abbreviation of state name</p></li>
+<li><p><code>season</code>. Period of year in which data was collected</p></li>
+<li><p><code>pm25_max_pred</code>. Daily county-level maximum <span class="math inline">\(PM_{2.5}\)</span> recorded/simulated, <span class="math inline">\(\mu g/m^3\)</span></p></li>
+<li><p><code>pm25_med_pred</code>. Daily county-level median <span class="math inline">\(PM_{2.5}\)</span> recorded/simulated, <span class="math inline">\(\mu g/m^3\)</span></p></li>
+<li><p><code>pm25_mean_pred</code>. Daily county-level mean <span class="math inline">\(PM_{2.5}\)</span> recorded/simulated, <span class="math inline">\(\mu g/m^3\)</span></p></li>
+<li><p><code>pm25_pop_pred</code>. Daily county-level population weighted mean <span class="math inline">\(PM_{2.5}\)</span> recorded/simulated, <span class="math inline">\(\mu g/m^3\)</span></p></li>
+<li><p><code>o3_max_pred</code>. Daily county-level maximum <span class="math inline">\(O_{3}\)</span> recorded/simulated, <span class="math inline">\(ppm\)</span></p></li>
+<li><p><code>o3_med_pred</code>. Daily county-level median <span class="math inline">\(O_{3}\)</span> recorded/simulated, <span class="math inline">\(ppm\)</span></p></li>
+<li><p><code>o3_mean_pred</code>. Daily county-level mean <span class="math inline">\(O_{3}\)</span> recorded/simulated, <span class="math inline">\(ppm\)</span></p></li>
+<li><p><code>o3_pop_pred</code>. Daily county-level population weighted mean <span class="math inline">\(O_{3}\)</span> recorded/simulated, <span class="math inline">\(ppm\)</span></p></li>
+<li><p><code>edd</code>. Daily county-level population weighted erythemally weighted daily dose, <span class="math inline">\(J/m^2\)</span></p></li>
+<li><p><code>edr</code>. Daily county-level population weighted erythemally weighted irradiance at local solar noon time, <span class="math inline">\(mW/m^2\)</span></p></li>
+<li><p><code>i305</code>. Daily county-level population weighted spectral irradiance at local solar noon time at 305 nm, <span class="math inline">\(mW/m^2/nm\)</span></p></li>
+<li><p><code>i310</code>. Daily county-level population weighted spectral irradiance at local solar noon time at 310 nm, <span class="math inline">\(mW/m^2/nm\)</span></p></li>
+<li><p><code>i324</code>. Daily county-level population weighted spectral irradiance at local solar noon time at 324 nm, <span class="math inline">\(mW/m^2/nm\)</span></p></li>
+<li><p><code>i380</code>. Daily county-level population weighted spectral irradiance at local solar noon time at 380 nm, <span class="math inline">\(mW/m^2/nm\)</span> ## Visualizing Trends in Climate Data over Space and Time</p></li>
+</ul>
 <pre class="r"><code>knitr::opts_chunk$set(
     fig.asp = 0.75,
     fig.width = 6,
@@ -1092,6 +1112,7 @@ o3_lreg </code></pre>
 <p><img src="merge_ap_uv_files/figure-html/unnamed-chunk-8-2.png" width="100%" /></p>
 <pre class="r"><code>uv_lreg</code></pre>
 <p><img src="merge_ap_uv_files/figure-html/unnamed-chunk-8-3.png" width="100%" /></p>
+</div>
 </div>
 
 

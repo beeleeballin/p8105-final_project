@@ -186,6 +186,44 @@ kbl(tidy_df[1:7,]) %>%
 
 ```
 
+##### Variable Definitions
+  * `year`. Year
+  
+  * `countyfips`. County-level unique identifier
+  
+  * `county`. Name of county
+
+  * `state`. 2-character abbreviation of state name
+  
+  * `season`. Period of year in which data was collected
+  
+  * `pm25_max_pred`. Daily county-level maximum $PM_{2.5}$ recorded/simulated, $\mu g/m^3$
+  
+  * `pm25_med_pred`. Daily county-level median $PM_{2.5}$ recorded/simulated, $\mu g/m^3$
+
+  * `pm25_mean_pred`. Daily county-level mean $PM_{2.5}$ recorded/simulated, $\mu g/m^3$
+  
+  * `pm25_pop_pred`. Daily county-level population weighted mean $PM_{2.5}$ recorded/simulated, $\mu g/m^3$
+  
+  * `o3_max_pred`. Daily county-level maximum $O_{3}$ recorded/simulated, $ppm$
+  
+  * `o3_med_pred`. Daily county-level median $O_{3}$ recorded/simulated, $ppm$
+
+  * `o3_mean_pred`. Daily county-level mean $O_{3}$ recorded/simulated, $ppm$
+  
+  * `o3_pop_pred`. Daily county-level population weighted mean $O_{3}$ recorded/simulated, $ppm$
+  
+  * `edd`. Daily county-level population weighted erythemally weighted daily dose, $J/m^2$
+  
+  * `edr`. Daily county-level population weighted erythemally weighted irradiance at local solar noon time, $mW/m^2$
+  
+  * `i305`. Daily county-level population weighted spectral irradiance at local solar noon time at 305 nm, $mW/m^2/nm$
+  
+  * `i310`. Daily county-level population weighted spectral irradiance at local solar noon time at 310 nm, $mW/m^2/nm$
+  
+  * `i324`. Daily county-level population weighted spectral irradiance at local solar noon time at 324 nm, $mW/m^2/nm$
+  
+  * `i380`. Daily county-level population weighted spectral irradiance at local solar noon time at 380 nm, $mW/m^2/nm$
 ## Visualizing Trends in Climate Data over Space and Time
 
 ```{r message=FALSE, warning=FALSE}
