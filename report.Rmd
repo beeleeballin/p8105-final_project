@@ -133,12 +133,8 @@ departments of each respective state.
 A significant amount of cleaning was required, as can be seen in the code chunks below:
 
 #### Exposure Data
-**NEEDS CODE CHUNKS**
-```{r warning=FALSE, message=FALSE}
 
-
-```
-
+Code can be found on the [Climate Data](https://beeleeballin.github.io/p8105-final_project/merge-ap-uv.html) page
 
 #### State Level Outcomes Data
 
@@ -500,13 +496,8 @@ county_2016 <-
 
 
 #### Merged Exposure Data
-**NEEDS CODE CHUNKS**
 
-```{r warning=FALSE, message=FALSE}
-
-
-
-```
+Code can be found on the [Climate Data](https://beeleeballin.github.io/p8105-final_project/merge-ap-uv.html) page
 
 ##### apuv
   * `year`. Year
@@ -1097,15 +1088,21 @@ state_2001_2015 <- state_analysis %>%
 aq_lung_df <- state_2001_2015 %>%
   select(-c(melanoma, starts_with("edd")))
 
-lm(`lung cancer` ~ . +
+fit_aq <- lm(`lung cancer` ~ . +
                year*(o3_med_pred_Spring +
                      o3_med_pred_Summer +
                      o3_med_pred_Fall) +
                year*(pm25_med_pred_Spring +
                      pm25_med_pred_Summer +
                      pm25_med_pred_Fall) +
-               state*year, data = aq_lung_df) %>%
-  tidy() %>%
+               state*year, data = aq_lung_df)
+
+step_bic_aq <- step(fit_aq, trace = 0, k = log(nobs(fit_aq)), direction = "backward")
+summary(step_bic_aq)
+
+
+step_bic_aq %>%
+tidy() %>%
   mutate(
     p.value = scales::pvalue(p.value),
   ) %>%
@@ -1115,6 +1112,8 @@ lm(`lung cancer` ~ . +
     digits = c(0, 2, 3, 2, 3),
     align = c("l", "r", "r", "r", "r")
   )
+
+
 
 
 ```
@@ -1129,7 +1128,11 @@ uv_df <- state_2001_2015 %>%
   filter(year >= 2005) %>%
   select(-c(starts_with("pm25"), starts_with("o3"), `lung cancer`))
 
-lm(melanoma ~ .^2, data = uv_df) %>%
+  
+mel_fit <- lm(melanoma ~ .^2, data = uv_df)
+step_bic_mel <- step(mel_fit, trace = 0, k = log(nobs(mel_fit)), direction = "backward")
+
+step_bic_mel %>%
   tidy() %>%
   mutate(
     p.value = scales::pvalue(p.value),
@@ -1144,8 +1147,18 @@ lm(melanoma ~ .^2, data = uv_df) %>%
 
 ```
 
+For both exposure/outcome pairings, we worked to understand their relationship
+through regression models. 
 
-
+After paring down our lung cancer model with BIC, we 
+observed an R^2 value of **0.97**, which felt unreasonably high. After observing
+diagnostic plots like Q-Q and Box-Cox, (viewable on the [Regression](https://beeleeballin.github.io/p8105-final_project/regression.html) page),
+we found that the residuals were centered and relatively even with no extreme
+outliers. When we cross-validated using leave-one-out and Monte-Carlo, our 
+BIC fit was best, though we still suspect overfitting. Additionally, it is important
+to acknowledge that this data set does not account for many of the relevant
+predictors for lung cancer, including age, race, and, perhaps most importantly,
+smoking.
 
 If you are interested in further assessment and visualizations of these models,
 please visit our [Regression](https://beeleeballin.github.io/p8105-final_project/regression.html) page.
