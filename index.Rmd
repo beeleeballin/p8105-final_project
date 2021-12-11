@@ -19,7 +19,8 @@ Kate
 
 Jen
 
-Ben
+Ben: MS in Biostatistics, Theory & Methods Track. Interested in study design,
+statistical methods and causal inference in healthcare research. 
 
 Jesse: MS in Biostatistics, Theory & Methods Track; BA in Biology and Statistics from Williams College. I really enjoy regression and statistical learning. Models describe the world! 
 
