@@ -509,45 +509,43 @@ county_2016 <-
 ```
 
 ##### apuv
+  * `year`. Year
+  
+  * `countyfips`. County-level unique identifier
+  
+  * `county`. Name of county
 
+  * `state`. 2-character abbreviation of state name
+  
+  * `season`. Period of year in which data was collected
+  
+  * `pm25_max_pred`. Daily county-level maximum $PM_{2.5}$ recorded/simulated, $\mu g/m^3$
+  
+  * `pm25_med_pred`. Daily county-level median $PM_{2.5}$ recorded/simulated, $\mu g/m^3$
 
-  * `Year`. Year
+  * `pm25_mean_pred`. Daily county-level mean $PM_{2.5}$ recorded/simulated, $\mu g/m^3$
   
-  * `Countyfips`. County-level unique identifier
+  * `pm25_pop_pred`. Daily county-level population weighted mean $PM_{2.5}$ recorded/simulated, $\mu g/m^3$
   
-  * `County`. Name of county
+  * `o3_max_pred`. Daily county-level maximum $O_{3}$ recorded/simulated, $ppm$
+  
+  * `o3_med_pred`. Daily county-level median $O_{3}$ recorded/simulated, $ppm$
 
-  * `State`. 2-character abbreviation of state name
+  * `o3_mean_pred`. Daily county-level mean $O_{3}$ recorded/simulated, $ppm$
   
-  * `Season`. Period of year in which data was collected
+  * `o3_pop_pred`. Daily county-level population weighted mean $O_{3}$ recorded/simulated, $ppm$
   
-  * `Pm25_max_pred`.
+  * `edd`. Daily county-level population weighted erythemally weighted daily dose, $J/m^2$
   
-  * `Pm25_med_pred`.
-
-  * `Pm25_mean_pred`.
+  * `edr`. Daily county-level population weighted erythemally weighted irradiance at local solar noon time, $mW/m^2$
   
-  * `Pm25_pop_pred`. 
+  * `i305`. Daily county-level population weighted spectral irradiance at local solar noon time at 305 nm, $mW/m^2/nm$
   
-  * `O3_max_pred`.
+  * `i310`. Daily county-level population weighted spectral irradiance at local solar noon time at 310 nm, $mW/m^2/nm$
   
-  * `O3_med_pred`.
-
-  * `O3_mean_pred`.
+  * `i324`. Daily county-level population weighted spectral irradiance at local solar noon time at 324 nm, $mW/m^2/nm$
   
-  * `O3_pop_pred`.
-  
-  * `Edd`.
-  
-  * `Edr`.
-  
-  * `I305`. 
-  
-  * `I310`.
-  
-  * `I324`.
-  
-  * `I380`.
+  * `i380`. Daily county-level population weighted spectral irradiance at local solar noon time at 380 nm, $mW/m^2/nm$
 
 
 Next, we were able to merge all of our state level outcomes into one data set

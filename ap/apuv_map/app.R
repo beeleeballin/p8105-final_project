@@ -1,6 +1,7 @@
 # Load packages
 library(tidyverse)
 library(shiny)
+# library(shinyWidgets)
 library(rsconnect)
 library(htmlwidgets)
 library(tigris)
@@ -206,6 +207,10 @@ dis_plot =
 
 # Shiny.app
 ui = fluidPage(
+  
+  # setBackgroundColor(
+  #   color = "#363434"
+  # ),
   
   titlePanel("Mapping Climate Exposures and Health Outcomes"),
   
