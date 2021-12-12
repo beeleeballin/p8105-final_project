@@ -33,7 +33,8 @@ library(httr)
 ```
 
 Scrape FIPS data and put it in a dataframe. See [USDA County FIPS](https://www.nrcs.usda.gov/wps/portal/nrcs/detail/national/home/?cid=nrcs143_013697).
-```{r message=FALSE, warning=FALSE}
+
+```{r, message=FALSE, warning=FALSE}
 usda_countyfips = read_html("https://www.nrcs.usda.gov/wps/portal/nrcs/detail/national/home/?cid=nrcs143_013697")
 
 countyfips_string =
@@ -60,7 +61,7 @@ countyfips_df =
 
 Load and tidy air pollution data. 
 
-```{r eval = FALSE, message=FALSE, warning=FALSE}
+```{r, eval = FALSE, message=FALSE, warning=FALSE}
 pm_df = 
   read_csv("../final_raw/Daily_PM2.5_Concentrations_All_County__2001-2016.csv") %>% 
   filter(statefips %in% c(36, 39, 23, 42)) %>% 
@@ -87,7 +88,7 @@ oz_df =
 
 Load and tidy UV irradiance data.
 
-```{r eval = FALSE, message=FALSE, warning=FALSE}
+```{r, eval = FALSE, message=FALSE, warning=FALSE}
 uv_df = 
   read_csv("./data/Population-Weighted_Ultraviolet_Irradiance__2004-2015.csv") %>%
   filter(statefips %in% c(36, 39, 23, 42)) %>% 
@@ -102,7 +103,7 @@ uv_df =
 
 Join the air pollution and UV data sensibly, and match the county names using the FIPS dataframe.
 
-```{r eval= FALSE, message=FALSE, warning=FALSE}
+```{r, eval= FALSE, message=FALSE, warning=FALSE}
 ap_uv_df = 
   full_join(pm_df, oz_df, by = c("year", "countyfips", "month", "day")) %>% 
   full_join(., uv_df, by = c("year", "countyfips", "month", "day")) %>% 
@@ -126,7 +127,7 @@ ap_uv_df =
 
 Export the large tidied dataframe whole and its summaries for our project.
 
-```{r eval= FALSE, message=FALSE, warning=FALSE}
+```{r, eval= FALSE, message=FALSE, warning=FALSE}
 tidy_df =
   ap_uv_df %>% 
   mutate(
@@ -162,7 +163,7 @@ extreme_value =
 saveRDS(extreme_value,"ap/apuv_map/ext_val.RDS")
 ```
 
-An example of the resulting data set:
+A snippet of the resulting data set:
 
 ```{r, message=F}
 library(kableExtra)
@@ -185,6 +186,7 @@ kbl(tidy_df[1:7,]) %>%
   scroll_box(width = "100%", height = "200px")
 
 ```
+
 
 ##### Variable Definitions
   * `year`. Year
@@ -224,9 +226,10 @@ kbl(tidy_df[1:7,]) %>%
   * `i324`. Daily county-level population weighted spectral irradiance at local solar noon time at 324 nm, $mW/m^2/nm$
   
   * `i380`. Daily county-level population weighted spectral irradiance at local solar noon time at 380 nm, $mW/m^2/nm$
+  
 ## Visualizing Trends in Climate Data over Space and Time
 
-```{r message=FALSE, warning=FALSE}
+```{r, message=FALSE, warning=FALSE}
 
 knitr::opts_chunk$set(
 	fig.asp = 0.75,

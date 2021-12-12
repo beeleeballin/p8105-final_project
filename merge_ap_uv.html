@@ -16,7 +16,7 @@
 <script src="site_libs/header-attrs-2.11/header-attrs.js"></script>
 <script src="site_libs/jquery-3.6.0/jquery-3.6.0.min.js"></script>
 <meta name="viewport" content="width=device-width, initial-scale=1" />
-<link href="site_libs/bootstrap-3.3.5/css/cerulean.min.css" rel="stylesheet" />
+<link href="site_libs/bootstrap-3.3.5/css/sandstone.min.css" rel="stylesheet" />
 <script src="site_libs/bootstrap-3.3.5/js/bootstrap.min.js"></script>
 <script src="site_libs/bootstrap-3.3.5/shim/html5shiv.min.js"></script>
 <script src="site_libs/bootstrap-3.3.5/shim/respond.min.js"></script>
@@ -326,9 +326,6 @@ div.tocify {
     <div id="navbar" class="navbar-collapse collapse">
       <ul class="nav navbar-nav">
         <li>
-  <a href="about.html">About</a>
-</li>
-<li>
   <a href="report.html">Report</a>
 </li>
 <li>
@@ -338,7 +335,7 @@ div.tocify {
   <a href="health_outcomes_data.html">Health Outcomes Data</a>
 </li>
 <li>
-  <a href="https://beeleeballin.shinyapps.io/apuv_map/">Data Exploration: Map</a>
+  <a href="https://bengoebel.shinyapps.io/apuv_map/">Data Exploration: Map</a>
 </li>
 <li>
   <a href="regression.html">Regression</a>
@@ -346,6 +343,9 @@ div.tocify {
       </ul>
       <ul class="nav navbar-nav navbar-right">
         <li>
+  <a href="https://drive.google.com/file/d/1OlPuJULEmn-XNHkTp1HBBtdBquJ1n4c3/view?usp=sharing">Screencast</a>
+</li>
+<li>
   <a href="mailto:&lt;johsuan.lee@columbia.edu&gt;">
     <span class="fa fa-envelope fa-lg"></span>
      
@@ -513,7 +513,7 @@ extreme_value =
   )
 
 saveRDS(extreme_value,&quot;ap/apuv_map/ext_val.RDS&quot;)</code></pre>
-<p>An example of the resulting data set:</p>
+<p>A snippet of the resulting data set:</p>
 <pre class="r"><code>library(kableExtra)
 
 knitr::opts_chunk$set(
@@ -1033,8 +1033,12 @@ Summer
 <li><p><code>i305</code>. Daily county-level population weighted spectral irradiance at local solar noon time at 305 nm, <span class="math inline">\(mW/m^2/nm\)</span></p></li>
 <li><p><code>i310</code>. Daily county-level population weighted spectral irradiance at local solar noon time at 310 nm, <span class="math inline">\(mW/m^2/nm\)</span></p></li>
 <li><p><code>i324</code>. Daily county-level population weighted spectral irradiance at local solar noon time at 324 nm, <span class="math inline">\(mW/m^2/nm\)</span></p></li>
-<li><p><code>i380</code>. Daily county-level population weighted spectral irradiance at local solar noon time at 380 nm, <span class="math inline">\(mW/m^2/nm\)</span> ## Visualizing Trends in Climate Data over Space and Time</p></li>
+<li><p><code>i380</code>. Daily county-level population weighted spectral irradiance at local solar noon time at 380 nm, <span class="math inline">\(mW/m^2/nm\)</span></p></li>
 </ul>
+</div>
+</div>
+<div id="visualizing-trends-in-climate-data-over-space-and-time" class="section level2">
+<h2>Visualizing Trends in Climate Data over Space and Time</h2>
 <pre class="r"><code>knitr::opts_chunk$set(
     fig.asp = 0.75,
     fig.width = 6,
@@ -1112,7 +1116,6 @@ o3_lreg </code></pre>
 <p><img src="merge_ap_uv_files/figure-html/unnamed-chunk-8-2.png" width="100%" /></p>
 <pre class="r"><code>uv_lreg</code></pre>
 <p><img src="merge_ap_uv_files/figure-html/unnamed-chunk-8-3.png" width="100%" /></p>
-</div>
 </div>
 
 
