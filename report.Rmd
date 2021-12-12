@@ -34,7 +34,7 @@ one particular topic trending often. Now, more than ever, discussions of climate
 change and its impacts are mainstream. As students in the School of Public Health,
 our group was united by an interest in climate change and public health. We 
 wanted to quantify the relationship between climate measure variables like 
-particulate matter, ozone levels, and uv radiation, and see how they may impact 
+particulate matter, ozone levels, and UV radiation, and see how they may impact 
 health outcomes like asthma hospitalizations, lung cancer, and melanoma. 
 
 ### Related work: 
@@ -74,14 +74,14 @@ particulate matter levels? Does this change from state to state?
 - How do emergency department visits and/or hospitalization rates for asthma vary annually based on  
 median particulate matter levels? Does this change from state to state?
 
-- How do melanoma age-adjusted incidence rates vary annually based on uv or ozone
+- How do melanoma age-adjusted incidence rates vary annually based on UV
 levels? Does this change from state to state?
 
 - Is annual median particulate matter level a good predictor of lung cancer 
 age-adjusted incidence rates? How does the regression change when state is added 
 to the model?
 
-- Is annual median ozone level or uv level a good predictor of melanoma 
+- Is annual median UV level a good predictor of melanoma 
 age-adjusted incidence rates? How does the regression change when state is added 
 to the model?
 
@@ -699,21 +699,11 @@ lc_mel_asthma_county <- bind_rows(lc_mel_county, asthma_county) %>%
 
 
 
-## Exploratory analysis: 
-
-Visualizations, summaries, and exploratory statistical analyses. Justify the steps you took, and show any major changes to your ideas.
-
-### Preliminary visualizations of data
-
-#### Asthma
-
-Initial assessment of asthma data explored the two metric for measuring prevalence in the population, namely emergency department visits and hospitalizations due to asthma. **STILL WORKING ON THIS**
-
-### Exposures and Outcome
+## Exploratory analysis 
 
 ### Spatial visualizations of exposures and outcomes
 
-Once all the data was gathered for both exposures and outcomes of interest, we sought to visualize the data in a cross-sectional manner with incidence rates of outcomes plotted onto maps indicating the extent of exposures for a given year. In this case, we used data from 2016 (with the exception of UV dat which was not available and the 2015 data was used in its place). This was accomplished by first plotting maps with a gradient fill to indicate relative levels of the exposure (i.e UV radiation, particulate matter, or low-atomspheric ozone) at the county level. Bubble markers were then overlain with each bubble's size and shading indicating the relative incidence of outcomes (i.e. hospitalization due to asthma, melanoma incidence, and lung cancer incidence). These layers were then put into plot_ly via ggplotly for interactivity with each marker giving all available data for a given county.
+Once all the data was gathered for both exposures and outcomes of interest, we sought to visualize the data in a cross-sectional manner with incidence rates of outcomes plotted onto maps indicating the extent of exposures for a given year. In this case, we used data from 2016 (with the exception of UV data which was not available and the 2015 data was used in its place). This was accomplished by first plotting maps with a gradient fill to indicate relative levels of the exposure (i.e UV radiation, particulate matter, or low-atmospheric ozone) at the county level. Bubble markers were then overlaid with each bubble's size and shading indicating the relative incidence of outcomes (i.e. hospitalization due to asthma, melanoma incidence, and lung cancer incidence). These layers were then put into `plot_ly` via `ggplotly` for interactivity with each marker giving all available data for a given county.
 
 The follow code chunk prepares the data frames for both the map and the data. 
 
@@ -1034,8 +1024,8 @@ and [Data Exploration: Map](https://beeleeballin.shinyapps.io/apuv_map/) pages.
 ## Additional analysis: 
 
 In addition to the numerous data visualizations seen both in this report,  we did
-extensive work on running regression models and seeing how our exposure data was
-correlated to and could be used to predict our outcomes.
+extensive work on running regression models and seeing how our exposure data
+correlated with and could be used to predict our outcomes.
 
 
 The following code was used to set up our outcome data for these models:
@@ -1071,12 +1061,37 @@ outcomes_wider_state <- outcomes_state %>%
 state_analysis <- left_join(outcomes_wider_state, ap_uv_state_slim)
 
 
+outcomes_wider_county <- outcomes_county %>%
+  pivot_wider(names_from = outcome, values_from = age_adjusted_incidence_rate)
+
+#county-level analysis - fewer predictors
+ap_uv_county_slim <- ap_uv %>%
+  filter(state %in% c("NY","OH","PA")) %>%
+  select(-c(pm25_max_pred, pm25_mean_pred, pm25_pop_pred,
+            o3_max_pred, o3_mean_pred, o3_pop_pred, i324,
+            i310, i305, i380, edr)) %>%
+  group_by(county, state, season) %>%
+  #Take medians across years for each season
+  summarize(across(pm25_med_pred:edd, median, na.rm = TRUE)) %>%
+  pivot_wider(names_from = season, values_from = pm25_med_pred:edd)
+
+county_df <- right_join(outcomes_wider_county, ap_uv_county_slim)
+
+county_df2 <- county_df %>%
+  mutate(pm25_med_pred = rowMeans(select(., starts_with("pm25")))) %>%
+  select(-c(pm25_med_pred_Fall:pm25_med_pred_Winter))
+
+
+
 ```
 
 
 ### Regression Models
 
-#### Lung Cancer and Air Quality
+#### Longitudinal Data
+
+
+##### Lung Cancer and Air Quality (Longitudinal Data)
 
 ```{r warning=FALSE, message=FALSE} 
 
@@ -1108,20 +1123,16 @@ tidy() %>%
     p.value = scales::pvalue(p.value),
   ) %>%
   kable(
-    caption = "Coefficient-Level Estimates for a Model Fitted to Estimate Variation in Lung Cancer Rates.",
+    caption = "Coefficient-Level Estimates for a Model Fitted to Estimate Variation in Lung Cancer Rates (Longitudinal).",
     col.names = c("Predictor", "B", "SE", "t", "p"),
     digits = c(0, 2, 3, 2, 3),
     align = c("l", "r", "r", "r", "r")
   )
 
-
-
-
 ```
 
 
-
-#### Melanoma and UV Radiation
+##### Melanoma and UV Radiation (Longitudinal Data)
 
 ```{r warning=FALSE, message=FALSE} 
 
@@ -1141,26 +1152,144 @@ step_bic_mel %>%
     p.value = scales::pvalue(p.value),
   ) %>%
   kable(
-    caption = "Coefficient-Level Estimates for a Model Fitted to Estimate Variation in Melanoma Rates.",
+    caption = "Coefficient-Level Estimates for a Model Fitted to Estimate Variation in Melanoma Rates (Longitudinal).",
     col.names = c("Predictor", "B", "SE", "t", "p"),
     digits = c(0, 2, 3, 2, 3),
     align = c("l", "r", "r", "r", "r")
   )
 
 
+
 ```
 
 For both exposure/outcome pairings, we worked to understand their relationship through regression models.
 
-After paring down our lung cancer model with BIC, we observed an R^2 value of 0.97, which felt unreasonably high. Diagnostic plots like Q-Q and Box-Cox were conducted, which are viewable on the [Regression](regression.html) page.
+After paring down our longitudinal lung cancer model with BIC, we observed an $R^2$ value of 0.97, which felt unreasonably high. Model diagnostics were conducted to assess normality and scedasticity, and check for high-leverage points, with plots viewable on the [Regression](regression.html) page.
+
+With our longitudinal melanoma BIC model, we observed an adjusted $R^2$ value of 0.88, which 
+also raised some red flags. Similarly to the lung cancer model, model diagnostics for the melanoma model are also viewable on the [Regression](regression.html) page.
 
 
-With our melanoma BIC model, we observed an adjusted R^2 value of 0.88, which 
-also raised some red flags. Diagnostic plots like Q-Q and and residuals vs. 
-leverage were conducted, which are also viewable on the [Regression](regression.html) page.
+#### Cross-Sectional Data
 
-If you are interested in further assessment and visualizations of these models,
-please visit our [Regression](https://beeleeballin.github.io/p8105-final_project/regression.html) page, or scroll to our **Discussion** for an overview of the findings.
+##### Predicting Lung Cancer as a Function of Air Quality Variables
+
+```{r message=FALSE, warnin=FALSE}
+aq_lung_df2 <- county_df2 %>%
+  select(-c(melanoma, asthma, starts_with("edd"), county, fips))
+
+fit_aq_cty <- lm(`lung cancer` ~ .^2, data = aq_lung_df2)
+
+step_bic_aq_cty <- step(fit_aq_cty, trace = 0, k = log(nobs(fit_aq)), direction = "backward")
+
+
+### CHART LC MODEL
+
+step_bic_aq_cty %>%
+  tidy() %>%
+  mutate(
+    p.value = scales::pvalue(p.value),
+  ) %>%
+  kable(
+    caption = "Coefficient-Level Estimates for a Model Predicting Lung Cancer as a Function of Air Quality (Cross-Sectional).",
+    col.names = c("Predictor", "B", "SE", "t", "p"),
+    digits = c(0, 2, 3, 2, 3),
+    align = c("l", "r", "r", "r", "r")
+  )
+
+
+
+```
+
+
+With an $R^2$ value of 0.37, this lung cancer model appears to be far more reasonable
+with our expectations. Again, multiple diagnostic plots were used to assess 
+scedasticity and normality, observable on the [Regression](regression.html) page.
+
+
+##### Predicting Melanoma as a Function of UV Radiation Variables
+
+```{r message=FALSE, warnin=FALSE}
+
+mel_cty <- county_df2 %>%
+  select(state, melanoma, starts_with("edd"))
+
+fit_mel_cty <- lm(melanoma ~ .^2 +
+                    I(edd_Spring^3) +
+                    I(edd_Summer^3) +
+                    I(edd_Fall^3) +
+                    I(edd_Winter^3), data = mel_cty)
+
+step_bic_mel_cty <- step(fit_mel_cty, trace = 0, k = log(nobs(fit_aq)), direction = "backward")
+
+
+### CHART MELANOMA MODEL
+
+step_bic_mel_cty %>%
+  tidy() %>%
+  mutate(
+    p.value = scales::pvalue(p.value),
+  ) %>%
+  kable(
+    caption = "Coefficient-Level Estimates for a Model Predicting Melanoma as a Function of UV Radiation (Cross-Sectional).",
+    col.names = c("Predictor", "B", "SE", "t", "p"),
+    digits = c(0, 2, 3, 2, 3),
+    align = c("l", "r", "r", "r", "r")
+  )
+
+```
+
+
+This melanoma model has a fairly small $R^2$ of 0.23. Residuals and Q-Q plots are
+available for reference on the [Regression](regression.html) page for further
+assessment.
+
+
+##### Predicting Asthma as a Function of Air Quality Variables
+
+```{r message=FALSE, warning=FALSE}
+
+asth_df <- county_df2 %>%
+  filter(!is.na(asthma))
+
+aq_asth_df <- asth_df %>%
+  select(-c(melanoma, `lung cancer`, starts_with("edd"), county, fips))
+
+fit_asth_cty <- lm(asthma ~ .^2, data = aq_asth_df)
+
+step_bic_asth_cty <- step(fit_asth_cty, trace = 0, k = log(nobs(fit_aq)), direction = "backward")
+
+aq_asth_df2 <- aq_asth_df %>%
+  slice(-c(3,31,185))
+
+fit_asth_cty <- lm(asthma ~ .^2, data = aq_asth_df2)
+
+step_bic_asth_cty <- step(fit_asth_cty, trace = 0, k = log(nobs(fit_aq)), direction = "backward")
+#summary(step_bic_asth_cty)
+
+
+### CHART Asthma MODEL
+
+step_bic_asth_cty %>%
+  tidy() %>%
+  mutate(
+    p.value = scales::pvalue(p.value),
+  ) %>%
+  kable(
+    caption = "Coefficient-Level Estimates for a Model Predicting Asthma Hospitalizations as a Function of Air Quality (Cross-Sectional).",
+    col.names = c("Predictor", "B", "SE", "t", "p"),
+    digits = c(0, 2, 3, 2, 3),
+    align = c("l", "r", "r", "r", "r")
+  )
+
+```
+
+This asthma model has a reasonable $R^2$ of 0.597. Residuals and Q-Q plots are
+available for reference on the [Regression](regression.html) page for further
+assessment.
+
+
+Additional visualizations of these models are avalable. Please visit our [Regression](https://beeleeballin.github.io/p8105-final_project/regression.html) page, or scroll to our **Discussion** for an overview of the findings.
 
 
 
@@ -1181,31 +1310,55 @@ plots for the lung cancer model that the residuals were centered and relatively
 even with no extreme outliers. When we cross-validated using leave-one-out and 
 Monte-Carlo, our BIC fit was best, though we still suspect overfitting. Additionally,
 it is important to acknowledge that this data set does not account for many of 
-the relevant predictors for lung cancer, including age, race, and, perhaps most 
+the relevant predictors for lung cancer, including age, race, genetics, and, perhaps most 
 importantly, smoking.
 
 Additionally, for our melanoma model, the residuals were slightly heteroscedastic
 and minimally curved but not unreasonable. The Q-Q plot failed to display normality,
 though, and there were multiple significant outliers with high leverage. Even
 after removing certain predictors and transforming new models, the BIC fit model
-was still the most significant in both leave-one-out and Monte Carlo. We, again,
+was still the most predictive in both leave-one-out and Monte Carlo cross-validation. We, again,
 suspect overfitting but cannot confirm this without running more tests and expanding
-our research.
+our research. Additionally, we did not employ methods specific to longitudinal or time-series data, such as generalized least squares or distributed lag models, nor did we attempt penalized methods such as the lasso.
+
+Our models using cross-sectional, county-level data made far more sense. 
+
+For lung cancer, the residuals of the cross-sectional model are much more reasonable.
+The residuals are well dispersed, the Q-Q plot is far more normal than the 
+longitudinal model, and there are similarly no high outliers. Yet again, the backwards-selected
+BIC model is our best-fit. We can also see that the strongest term in the model is
+the interaction between state and ozone, which may indicate potential policy
+and industry differences by state.
+
+When considering the melanoma cross-sectional model, we see that there are
+well dispersed residuals, a relatively normal Q-Q plot, and no high leverage
+points. Additionally, we see significant and important model terms in the form
+of median EDD values in the winter and spring. This was an interesting finding, as you
+may expect summer EDD, when it is most likely to be sunny, to have the most effect.
+However, this relationship may change based on sunscreen use. Individuals may be
+more likely to use sunscreen in the summer, leaving their skin more vulnerable
+in the off-season months. 
+
+Finally, we consider our asthma cross-sectional model. In the diagnostic plots 
+visible on the [Regression](regression.html) page, we see that there are numerous outliers
+that led us to filter out the points and re-model. We end up with a well-distributed
+residual plot but notable abnormality. Again, we see that BIC is the best model through
+cross-validation, with a significant interaction between states and ozone levels.
 
 
 ### Limitations to analyses
 
-Although we focused our attention to three neighboring states, availability of 
+Although we focused our attention on three neighboring states, availability of 
 surveillance data for chronic health conditions varies greatly across these three
 states. These variations in data collection make it difficult for comparison 
 across states, as the scales may not be comparable or the metric for measuring 
 prevalence in the population may differ between states. For instance, asthma 
-incidence can be reported with respect to acute cases as shown with emergency 
+incidence can be reported with respect to acute cases as measured by emergency 
 department visits or more specifically with rates of hospitalization due 
 exclusively to asthma. Consequently, when comparing exposures as potential risk
 factors for asthma across the states and counties, we were limited to only 
 looking at hospitalizations because publicly available Pennsylvania data only 
-reported on hospitalizations and not emergency department visits. Similarly, 
+reported hospitalizations and not emergency department visits. Similarly, 
 surveillance data may not collect demographic data that have been shown to be 
 effect measure modifiers of the health outcomes. For instance, gender, race, and 
 ethnicity have been reported in  academic literature as important factors 

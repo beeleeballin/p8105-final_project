@@ -161,10 +161,11 @@ apuv_plot =
   labs(
     title = "Air Pollutant Concentrations and UV Intensities over the Years",
     color = "County",
-    y = "Concentration/Intensity"
+    y = "Councentration/Intensity"
   ) +
   theme(
-    axis.title.x=element_blank()
+    axis.title.x = element_blank(),
+    axis.title.y = element_text(margin = margin(t = 0, r = 12, b = 0, l = 0))
   ) +
   facet_grid(climate~., scales = "free_y")
 
@@ -177,7 +178,8 @@ beeswarm_dis_df =
     county_state = factor(county_state),
     county_state = fct_inorder(county_state),
     logRate = log(age_adjusted_incidence_rate),
-    logRate = replace(logRate, (is.na(logRate) | logRate == -Inf), 0)
+    logRate = replace(logRate, (is.na(logRate) | logRate == -Inf), 0),
+    outcome = factor(outcome)
   ) %>%
   select(-fips)
 
@@ -192,10 +194,11 @@ beeswarm_dis_plot =
 #change
 dis_plot =
   ggplot(beeswarm_dis_plot, aes(x, y)) +
-  theme_minimal() +
-  geom_violin(aes(x, y, group = x.orig), color = "grey", fill = "grey") +
+  geom_violin(aes(group = x.orig), color = "grey", fill = "grey") +
   geom_point(aes(color = col)) +
-  scale_x_discrete(labels=c("Asthma", "Lung Cancer", "Melanoma")) +
+  theme_minimal() + 
+  scale_x_continuous(breaks = c(1:3),
+                     labels=c("Asthma", "Lung Cancer", "Melanoma")) +
   labs(
     title = "Health Outcome Rates in the Following Years",
     color = "County",
@@ -204,6 +207,7 @@ dis_plot =
   theme(
     axis.title.x=element_blank()
   )
+  
 
 # Shiny.app
 ui = fluidPage(
@@ -211,17 +215,16 @@ ui = fluidPage(
   # setBackgroundColor(
   #   color = "#363434"
   # ),
-  
   titlePanel("Mapping Climate Exposures and Health Outcomes"),
-  
-  p("Climate conditions and particular chronic disease risks are known to be correlated.", br(), " Let's explore the Particulate Matter, Ozone, and UV radiation levels over the years across counties in New York, Pennsylvania, and Ohio.", strong("Select a desired year and season"), "to view these climate exposures on a county level!", style="text-align:justify;color:black;background-color:lavender;padding:15px;border-radius:10px"),
-  
+             
+  p("Air pollution and UV radiation and risks of chronic diseases such as asthma, lung cancer and melanoma are known to be correlated.", br(), "Let's explore the population weighted particulate matter (PM2.5) and ozone(O3) levels, and erythermally weighted UV dosage over the years in counties in New York, Pennsylvania, and Ohio.", strong("Select a desired year and season"), "to view these climate exposures on a county level!", style="text-align:justify;color:black;background-color:lavender;padding:15px;border-radius:10px"),
+             
   fluidRow(
     column(width = 1, offset = 5, selectInput("yr", "Year", choices = unique(apuv_df$year))),
     column(width = 1, selectInput("ss", "Season", choices = unique(apuv_df$season))),
-    column(width = 3, offset = 2, tags$a(href = "https://ephtracking.cdc.gov/download", "Go to Data Source", target = "_blank"), br(), tags$a(href = "https://19january2017snapshot.epa.gov/air-research/downscaler-model-predicting-daily-air-pollution_.html", "Learn about the Downscaler Model", target = "_blank"), style="text-align:right; color:black")
+    column(width = 3, offset = 2, tags$a(href = "https://ephtracking.cdc.gov/download", "Go to Data Source", target = "_blank"), br(), tags$a(href = "https://19january2017snapshot.epa.gov/air-research/downscaler-model-predicting-daily-air-pollution_.html", "Learn about theDownscaler Model", target = "_blank"), style="text-align:right; color:black")
   ),
-    
+             
   fluidRow(
     tabsetPanel(
       tabPanel("Particulate Matter (2.5) Level", 
@@ -243,8 +246,8 @@ ui = fluidPage(
   br(),
   hr(),
   
-  p("We think that the incidence of some health conditions would differ from county to county as a result of the climate, so we plotted asthma, lung cancer and melanoma incidence rates in the years that followed.", style="text-align:justify;color:black;background-color:lavender;padding:15px;border-radius:10px"),
-
+  p("Maybe the incidence of these health conditions would differ from county to county as a result of the climate? We plotted natural log of asthma, lung cancer and melanoma age-adjusted incidence rates in the years that followed.", style="text-align:justify;color:black;background-color:lavender;padding:15px;border-radius:10px"),
+             
   fluidRow(
     tabsetPanel(
       tabPanel("2016 Asthma Incidence",
@@ -265,12 +268,12 @@ ui = fluidPage(
   br(),
   br(),
   hr(),
-
-  p("You could now be interested in looking at the correlation of a particlar county. Play around these plots to see if you may find a trend between climate and health outcomes.", style="text-align:justify;color:black;background-color:lavender;padding:15px;border-radius:10px"),
-
+  
+  p("By now, you must be interested in looking at the correlation of a particlar county. Play around these plots to see if you may dig out some trends between climate and health outcomes.", style="text-align:justify;color:black;background-color:lavender;padding:15px;border-radius:10px"),
+             
   column(width = 6, plotlyOutput('cli_plotly')),
   column(width = 6, plotlyOutput('out_plotly'))
-  
+           
 )
 
 server = function(input, output) {
