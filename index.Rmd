@@ -41,16 +41,16 @@ On our site you'll find:
 
 
 ## About the Authors
-Kate: MPH in Epidemiology, Certificate in Applied Biostatistics and Data Science.
+Kate Mauro: MPH in Epidemiology, Certificate in Applied Biostatistics and Data Science.
 I'm interested in social determinants of health and how data science and statistical
 modeling can help us better understand health outcomes.
 
-Jen: MS in Epidemiology. MS in Geosciences with a focus on Isotope Geoechemistry and Hydrology. BA in Biology and Earth Sciences. I'm interested in environmental determinants of health and finding ways to mitigate inequities in healthcare.
+Jen Estrada: MS in Epidemiology. MS in Geosciences with a focus on Isotope Geoechemistry and Hydrology. BA in Biology and Earth Sciences. I'm interested in environmental determinants of health and finding ways to mitigate inequities in healthcare.
 
-Ben: MS in Biostatistics, Theory & Methods Track. Interested in study design,
+Ben Goebel: MS in Biostatistics, Theory & Methods Track. Interested in study design,
 statistical methods and causal inference in healthcare research. 
 
-Jesse: MS in Biostatistics, Theory & Methods Track; BA in Biology and Statistics from Williams College. I really enjoy regression and statistical learning. Models describe the world! 
+Jesse Ames: MS in Biostatistics, Theory & Methods Track; BA in Biology and Statistics from Williams College. I really enjoy regression and statistical learning. Models describe the world! 
 
-Brian: MS in Biostatistics. Statistical Genetics Track; BA in Biology and Computer Science from Vassar College. I'm easily excited about data visualization and this is my favorite class this semester. 
+Brian Lee: MS in Biostatistics. Statistical Genetics Track; BA in Biology and Computer Science from Vassar College. I'm easily excited about data visualization and this is my favorite class this semester. 
 
