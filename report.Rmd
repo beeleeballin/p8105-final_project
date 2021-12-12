@@ -71,7 +71,7 @@ following:
 - How do lung cancer age-adjusted incidence rates vary annually based on median 
 particulate matter levels? Does this change from state to state?
 
-- How do emergency department visits and/or hospitalization rates for asthma vary annually based on  
+- How do emergency room visits and/or hospitalization rates for asthma vary annually based on  
 median particulate matter levels? Does this change from state to state?
 
 - How do melanoma age-adjusted incidence rates vary annually based on UV
