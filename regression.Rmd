@@ -11,7 +11,7 @@ output:
 
 ## Data
 
-We begin by reading in the combined health outcomes data, creating seasonal variables, and the combined air pollution and UV radiation data to produce an analysis at the state level. We quickly noticed that some of our variables in the air pollution and UV data were strongly correlated with each other, so we omitted several for the purposes of our regression analysis (collinearity violates our assumptions); the final correlation matrix is given below.
+We begin by reading in the combined health outcomes data and the combined air pollution and UV radiation data to produce data frames for analysis at the state and county levels, in the process creating seasonal variables for the air pollution and UV data. We quickly noticed that some of our variables in the air pollution and UV data were strongly correlated with each other, so we omitted several for the purposes of our regression analysis (collinearity violates our assumptions); the final correlation matrix is given below.
 
 ```{r, warning=FALSE, message=FALSE}
 library(tidyverse)
