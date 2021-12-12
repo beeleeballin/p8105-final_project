@@ -387,7 +387,7 @@ div.tocify {
 <h1>Part 1: State Level Trends, 2001-2015</h1>
 <div id="data" class="section level2">
 <h2>Data</h2>
-<p>We begin by reading in the combined health outcomes data, creating seasonal variables, and the combined air pollution and UV radiation data to produce an analysis at the state level. We quickly noticed that some of our variables in the air pollution and UV data were strongly correlated with each other, so we omitted several for the purposes of our regression analysis (collinearity violates our assumptions); the final correlation matrix is given below.</p>
+<p>We begin by reading in the combined health outcomes data and the combined air pollution and UV radiation data to produce data frames for analysis at the state and county levels, in the process creating seasonal variables for the air pollution and UV data. We quickly noticed that some of our variables in the air pollution and UV data were strongly correlated with each other, so we omitted several for the purposes of our regression analysis (collinearity violates our assumptions); the final correlation matrix is given below.</p>
 <pre class="r"><code>library(tidyverse)
 
 outcomes_state &lt;- read_csv(&quot;data/lc_mel_asthma_state.csv&quot;)
