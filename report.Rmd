@@ -7,6 +7,8 @@ output:
     code_folding: hide
 ---
 
+
+
 ```{r setup, include=FALSE}
 library(broom)
 library(tidyverse)
@@ -14,6 +16,10 @@ library(here)
 library(plotly)
 library(GGally)
 library(knitr)
+
+
+
+
 ```
 
 
@@ -28,7 +34,7 @@ one particular topic trending often. Now, more than ever, discussions of climate
 change and its impacts are mainstream. As students in the School of Public Health,
 our group was united by an interest in climate change and public health. We 
 wanted to quantify the relationship between climate measure variables like 
-particulate matter, ozone levels, and uv radiation, and see how they may impact 
+particulate matter, ozone levels, and UV radiation, and see how they may impact 
 health outcomes like asthma hospitalizations, lung cancer, and melanoma. 
 
 ### Related work: 
@@ -68,14 +74,14 @@ particulate matter levels? Does this change from state to state?
 - How do emergency department visits and/or hospitalization rates for asthma vary annually based on  
 median particulate matter levels? Does this change from state to state?
 
-- How do melanoma age-adjusted incidence rates vary annually based on uv or ozone
+- How do melanoma age-adjusted incidence rates vary annually based on UV
 levels? Does this change from state to state?
 
 - Is annual median particulate matter level a good predictor of lung cancer 
 age-adjusted incidence rates? How does the regression change when state is added 
 to the model?
 
-- Is annual median ozone level or uv level a good predictor of melanoma 
+- Is annual median UV level a good predictor of melanoma 
 age-adjusted incidence rates? How does the regression change when state is added 
 to the model?
 
@@ -90,10 +96,6 @@ state is added to the model?
 
 Our [ozone data](https://data.cdc.gov/Environmental-Health-Toxicology/Daily-County-Level-Ozone-Concentrations-2001-2016/kmf5-t9yc) and our [air pollution data](https://data.cdc.gov/Environmental-Health-Toxicology/Daily-PM2-5-Concentrations-All-County-2001-2016/7vdq-ztk9) were both sourced from the CDC's National Environmental Public Health
 Tracking website. 
-
-#### Exposure Data
-
-The data tidying code and details about the useable dataset can be found on the [Climate Data](merge_ap_uv.html) page.
 
 #### Outcomes
 
@@ -126,26 +128,582 @@ departments of each respective state.
   
  - [Pennsylvania](https://www.phaim1.health.pa.gov/EDD/)
 
-#### Data
-
-Again, a significant amount of cleaning was required. Both the tidied and adjusted state-level and county-level datasets and relevant codes can be found on the [Health Outcomes Data](health_outcomes_data.html) page.
 
 
-## Exploratory analysis: 
+A significant amount of cleaning was required, as can be seen in the code chunks below:
 
-Visualizations, summaries, and exploratory statistical analyses. Justify the steps you took, and show any major changes to your ideas.
+#### Exposure Data
 
-### Preliminary visualizations of data
+Code can be found on the [Climate Data](merge_ap_uv.html) page.
 
-#### Asthma
+#### State Level Outcomes Data
 
-Initial assessment of asthma data explored the two metric for measuring prevalence in the population, namely emergency department visits and hospitalizations due to asthma. **STILL WORKING ON THIS**
+```{r warning=FALSE, message=FALSE}
 
-### Exposures and Outcome
+#state-level lung cancer PA data https://www.phaim1.health.pa.gov/EDD/
+
+pa_cancer = read.csv('./data/lung/pa_state_lung.csv', sep = ";", header = T, skip = 3) %>%
+  janitor::clean_names() %>%
+  select(year, rate_ratio_result) %>%
+  map_df(str_replace, pattern = ",", replacement = ".") %>%
+    map_df(as.numeric) %>%
+    rename(c("age_adjusted_incidence_rate" = "rate_ratio_result")) %>%
+  add_column(state = "PA")
+
+#state-level lung cancer OH data https://publicapps.odh.ohio.gov/EDW/DataBrowser/Browse/StateLayoutLockdownCancers
+
+oh_cancer = read.csv('./data/lung/oh_state_lung.csv', sep = ";") %>%
+  janitor::clean_names() %>%
+  rename(year = cancer_year_year) %>%
+  select(year, age_adjusted_rate) %>%
+    map_df(str_replace, pattern = ",", replacement = ".") %>%
+    map_df(as.numeric) %>%
+    rename(c("age_adjusted_incidence_rate" = "age_adjusted_rate")) %>%
+  add_column(state = "OH") %>%
+  distinct() %>%
+  filter(complete.cases(.))
+
+
+#state-level lung cancer NY data https://www.health.ny.gov/statistics/cancer/registry/table2/tb2lungnys.htm
+
+ny_cancer = read.csv("./data/lung/ny_state_lung.csv", skip = 2)[ ,1:3] %>%
+  janitor::clean_names() %>%
+  rename(year = x) %>%
+  select(year, rate_per_100_000_population) %>%
+  rename(c("age_adjusted_incidence_rate" = "rate_per_100_000_population")) %>%
+  add_column(state = "NY")
+
+# Read in the data and set the column names
+# Add a state column and make all rows = "NY"
+# Make the year column of type integer
+# Add a cancer type column and make all rows = "melanoma"
+# Select the state, year, cancer_type and mf_case_rate columns
+# Rename mf_case_rate column "age_adjusted_incidence_rate"
+nys_melanoma_age_adjusted <- read_csv(here("data",
+                                           "incidence_melanoma_data",
+                                           "nys_melanoma_incidence_mortality_year.csv"),
+                                      skip = 3,
+                                      col_names = c("year",
+                                                    "mf_cases",
+                                                    "mf_case_rate",
+                                                    "mf_case_rate_ci",
+                                                    "m_cases",
+                                                    "m_case_rate",
+                                                    "m_case_rate_ci",
+                                                    "f_cases",
+                                                    "f_case_rate",
+                                                    "f_case_rate_ci",
+                                                    "mf_deaths",
+                                                    "mf_death_rate",
+                                                    "mf_death_rate_ci",
+                                                    "m_deaths",
+                                                    "m_death_rate",
+                                                    "m_death_rate_ci",
+                                                    "f_deaths",
+                                                    "f_death_rate",
+                                                    "f_death_rate_ci"
+                                                    )) %>%
+  mutate(state = "NY",
+         year = as.integer(year),
+         cancer_type = "melanoma") %>%
+  select(state, year, cancer_type, mf_case_rate) %>%
+  rename(age_adjusted_incidence_rate = mf_case_rate)
+
+
+# Read in data set
+ohio_cancer_incidence <- readxl::read_xls(here("data",
+                                               "incidence_melanoma_data",
+                                               "ohio_cancer_incidence_year.xls"),
+                                          skip = 1)
+###############################################################################
+# Melanoma cases
+
+# Get cases for each year
+ohio_cancer_cases <- ohio_cancer_incidence %>%
+  select("Site/Type", starts_with("Case"))
+
+# Update column names for the Ohio cancer cases data frame
+colnames(ohio_cancer_cases) <- c("type", 1996:2018, "total")
+
+# Get melanoma of the skin cancer cases for Ohio
+# Pivot longer year
+# Select year and cases variables
+ohio_melanoma_cases <- ohio_cancer_cases %>%
+  filter(type == "Melanoma of Skin") %>%
+  pivot_longer("1996":total,
+               names_to = "year",
+               values_to = "cases") %>%
+  select(year, cases)
+
+###############################################################################
+# Melanoma age-adjusted
+
+# Get age-adjusted for each year
+ohio_cancer_age_adjusted <- ohio_cancer_incidence %>%
+  select("Site/Type", starts_with("Age"))
+
+# Update column names for Ohio cancer age-adjusted data frame
+colnames(ohio_cancer_age_adjusted) <- c("type", 1996:2018, "total")
+
+# Get melanoma of the skin cancer age-adjusted for Ohio
+# Pivot longer year
+# Select year and age_adjusted variables
+# Remove total row
+# Add a state column and set all rows = "OH"
+# Convert type of year column to be integer
+# Add a cancer type column and set all rows = "melanoma"
+# Convert type of age_adjusted_incidence_rate column to be double
+# Reorder columns: state, year, cancer_type, age_adjusted_incidence_rate
+ohio_melanoma_age_adjusted <- ohio_cancer_age_adjusted %>%
+  filter(type == "Melanoma of Skin") %>%
+  pivot_longer("1996":total,
+               names_to = "year",
+               values_to = "age_adjusted_incidence_rate") %>%
+  select(year, age_adjusted_incidence_rate) %>%
+  filter(year != "total") %>%
+  mutate(state = "OH", 
+         year = as.integer(year),
+         cancer_type = "melanoma",
+         age_adjusted_incidence_rate = as.double(age_adjusted_incidence_rate)) %>%
+  select(state, year, cancer_type, age_adjusted_incidence_rate)
+
+# Final data frames: ohio_melanoma_cases and ohio_melanoma_age_adjusted
+
+
+# Read in data, skip first three lines
+# Clean variable names
+# Select relevant variables
+# Add a state column and set all rows = "PA"
+# Convert type of year column to be integer
+# Add a cancer_type column and set all rows = "melanoma"
+# Rename rate_ratio_result column to "age_adjusted_incidence_rate"
+# Reorder columns: state, year, cancer_type, age_adjusted_incidence_rate
+# Sort data frame by ascending year
+pa_melanoma_age_adjusted <- read_csv(here("data",
+                                          "incidence_melanoma_data",
+                                          "pa_melanoma_incidence_year.csv"),
+                                     skip = 3) %>%
+                            janitor::clean_names() %>%
+  select(year, rate_ratio_result) %>%
+  mutate(state = "PA",
+         year = as.integer(year),
+         cancer_type = "melanoma") %>%
+  rename(age_adjusted_incidence_rate = rate_ratio_result) %>%
+  select(state, year, cancer_type, age_adjusted_incidence_rate) %>%
+  arrange(year)
+
+##### asthma data
+
+#new york asthma data
+
+ny_asthma <-
+  read_csv("./data/asthma_data/NYS_ASTHMA.csv") %>% 
+  janitor::clean_names()
+
+# ohio asthma data
+
+oh_asthma <- 
+  read_csv("./data/asthma_data/ohio_all.csv") %>% 
+  janitor::clean_names()
+
+#pennsylvania asthma data
+
+pa_asthma <-
+  read_csv("./data/asthma_data/pa_asthma_all.csv", col_names = TRUE) %>% 
+  janitor::clean_names()
+
+
+## creating state level data for asthma
+
+#ohio state level data
+oh_state <-
+  oh_asthma %>% 
+  filter(age_group == "All",
+         month == "All",
+         race == "Total",
+         sex == "All",
+         geography == "Ohio",
+         visit == "Inpatient",
+         frequency > 0) %>% 
+  rename(state = geography) %>% 
+  mutate(rate = rate * 10,
+         outcome = "asthma",
+         state = "OH") %>% 
+  select(year, state, outcome, rate)
+
+#pennsylvania state level data
+pa_state <-
+  pa_asthma %>% 
+  filter(age == "All Ages",
+         race == "All Races",
+         sex == "Total",
+         geography_code == "0",
+         rate_adj == "Age-Adjusted Rate") %>% 
+  rename(state = geography) %>% 
+  mutate(outcome = "asthma",
+         state = "PA") %>% 
+  select(year, state, outcome, rate)
+
+
+#new york state level data
+ny_state <-
+  ny_asthma %>% 
+  filter(visit == "Inpatient",
+         geography == "New York State",
+         age_group == "Total",
+         sex == "Total",
+         rate_adj == "Age-Adjusted Rate",
+         month == "Total",
+         str_detect(year, "-20", negate = TRUE)) %>% 
+  rename(rate = rate_per_10k) %>% 
+  mutate(rate = round(rate * 10, 2),
+         state = "NY",
+         outcome = "asthma") %>% 
+  select(year, state, outcome, rate)
+
+
+# merged state level asthma
+asthma_state <-
+  rbind(ny_state, oh_state, pa_state) %>% 
+  write_csv("./asthma_state.csv")
+
+
+
+```
+
+
+#### County Level Outcomes Data
+
+```{r warning=FALSE, message=FALSE}
+
+read_and_clean_county_data <- function(file_path_name, state, outcome) {
+  read_csv(file_path_name,
+           skip = 8) %>%
+  janitor::clean_names() %>%
+  select(county, age_adjusted_incidence_rate_rate_note_cases_per_100_000) %>%
+  mutate(county = stringr::str_remove(county, "\\(.\\)$"),
+          state = state,
+         outcome = outcome,
+         age_adjusted_incidence_rate =
+           as.numeric(age_adjusted_incidence_rate_rate_note_cases_per_100_000)) %>%
+  select(state, county, outcome, age_adjusted_incidence_rate)
+}
+
+#county-level lung cancer PA data https://statecancerprofiles.cancer.gov/
+
+pa_county_lc = read_and_clean_county_data('./data/lung/pa_lung_data_county.csv', 
+                                          state = "PA",
+                                          outcome = "lung cancer") %>%
+                                          filter(complete.cases(.)) %>%
+                                          slice(-c(1, 2))
+
+#county-level lung cancer OH data https://statecancerprofiles.cancer.gov/
+
+oh_county_lc = read_and_clean_county_data('./data/lung/oh_lung_data_county.csv', 
+                                          state = "OH", 
+                                          outcome = "lung cancer") %>%
+                                          filter(complete.cases(.)) %>%
+                                          slice(-c(1, 2))
+
+#county-level lung cancer NY data https://statecancerprofiles.cancer.gov/
+
+ny_county_lc = read_and_clean_county_data('./data/lung/ny_lung_data_county.csv', 
+                                          state = "NY", 
+                                          outcome = "lung cancer") %>%
+                                          filter(complete.cases(.)) %>%
+                                          slice(-c(1, 2))
+
+
+# Read in New York melanoma incidence county-level data averaged from 2014 to 
+# 2018
+nys_county_melanoma_incidence_2014_2018 <- 
+read_and_clean_county_data(here("data",
+                                "incidence_melanoma_data",
+                                "nys_county_melanoma_incidence_2014_2018.csv"),
+                           "NY",
+                           "melanoma")
+
+# Read in Ohio melanoma incidence county-level data averaged from 2014 to 2018
+ohio_county_melanoma_incidence_2014_2018 <- 
+read_and_clean_county_data(here("data",
+                                "incidence_melanoma_data",
+                                "ohio_county_melanoma_incidence_2014_2018.csv"),
+                           "OH",
+                           "melanoma")
+
+# Read in Pennsylvania melanoma incidence county-level data averaged from 
+# 2014 to 2018
+pa_county_melanoma_incidence_2014_2018 <- 
+read_and_clean_county_data(here("data",
+                                "incidence_melanoma_data",
+                                "pa_county_melanoma_incidence_2014_2018.csv"),
+                           "PA",
+                           "melanoma")
+
+# new york county level asthma data
+
+ny_co <-
+  ny_asthma %>% 
+  filter(age_group == "Total", 
+         month == "Total",
+         year == "2015-2017",
+         visit == "Inpatient",
+         rate_adj == "Age-Adjusted Rate",
+         geography != "New York State",
+         geography != "New York City") %>% 
+  mutate(county = tolower(geography),
+         rate = rate_per_10k,
+         region = "new york",
+         county = replace(county, 
+                          county == "new york county", "new york")) %>% 
+  select(region, county, rate) %>% 
+  group_by(county)
+
+
+# ohio county level asthma data
+
+oh_co <- 
+  oh_asthma %>% 
+  filter(geography != "Ohio",
+         age_group == "All", 
+         visit == "Inpatient") %>% 
+  mutate(county = tolower(geography),
+         region = "ohio") %>%
+  select(region, county, rate) %>% 
+  group_by(county)
+
+#pennsylvania county data
+
+pa_co <- 
+  pa_asthma %>% 
+  filter(geography_code != "0",
+         rate_adj == "Age-Adjusted Rate",
+         year == "2016",
+         age == "All Ages") %>% 
+  mutate(county = tolower(geography),
+         region = "pennsylvania",
+         rate = as.numeric(rate) / 10) %>%
+  select(region, county, rate) %>% 
+  group_by(county)
+
+# merge county data
+
+county_2016 <-
+  bind_rows(oh_co, ny_co, pa_co)
+
+
+```
+
+
+#### Merged Exposure Data
+
+Code can be found on the [Climate Data](merge_ap_uv.html) page
+
+##### apuv
+  * `year`. Year
+  
+  * `countyfips`. County-level unique identifier
+  
+  * `county`. Name of county
+
+  * `state`. 2-character abbreviation of state name
+  
+  * `season`. Period of year in which data was collected
+  
+  * `pm25_max_pred`. Daily county-level maximum $PM_{2.5}$ recorded/simulated, $\mu g/m^3$
+  
+  * `pm25_med_pred`. Daily county-level median $PM_{2.5}$ recorded/simulated, $\mu g/m^3$
+
+  * `pm25_mean_pred`. Daily county-level mean $PM_{2.5}$ recorded/simulated, $\mu g/m^3$
+  
+  * `pm25_pop_pred`. Daily county-level population weighted mean $PM_{2.5}$ recorded/simulated, $\mu g/m^3$
+  
+  * `o3_max_pred`. Daily county-level maximum $O_{3}$ recorded/simulated, $ppm$
+  
+  * `o3_med_pred`. Daily county-level median $O_{3}$ recorded/simulated, $ppm$
+
+  * `o3_mean_pred`. Daily county-level mean $O_{3}$ recorded/simulated, $ppm$
+  
+  * `o3_pop_pred`. Daily county-level population weighted mean $O_{3}$ recorded/simulated, $ppm$
+  
+  * `edd`. Daily county-level population weighted erythemally weighted daily dose, $J/m^2$
+  
+  * `edr`. Daily county-level population weighted erythemally weighted irradiance at local solar noon time, $mW/m^2$
+  
+  * `i305`. Daily county-level population weighted spectral irradiance at local solar noon time at 305 nm, $mW/m^2/nm$
+  
+  * `i310`. Daily county-level population weighted spectral irradiance at local solar noon time at 310 nm, $mW/m^2/nm$
+  
+  * `i324`. Daily county-level population weighted spectral irradiance at local solar noon time at 324 nm, $mW/m^2/nm$
+  
+  * `i380`. Daily county-level population weighted spectral irradiance at local solar noon time at 380 nm, $mW/m^2/nm$
+
+
+Next, we were able to merge all of our state level outcomes into one data set
+
+#### Merged State Level Outcome Data
+
+```{r warning=FALSE, message=FALSE}
+
+# merging state level data for lung cancer
+
+state_lc <- rbind(pa_cancer, oh_cancer, ny_cancer)
+
+state_lc_wide = state_lc %>%
+  pivot_wider(
+    names_from = state,
+    values_from = age_adjusted_incidence_rate) %>%
+  rename(c("PA_AAIR" = "PA", "NY_AAIR" = "NY", "OH_AAIR" = "OH"))
+
+write_csv(state_lc_wide, "./data/state_lc_wide.csv")
+
+
+# Merge state-level data frames with bind_rows
+state_melanoma_age_adjusted <- 
+  bind_rows(nys_melanoma_age_adjusted,
+            ohio_melanoma_age_adjusted,
+            pa_melanoma_age_adjusted)
+
+# read in longitudinal state data for lung and skin cancer
+
+# longitudinal state level lung cancer data
+state_lc_data = read_csv("./data/lung/state_lc_data.csv")
+
+# longitudinal state level melanoma data
+state_mel_data = read_csv("./data/incidence_melanoma_data/state_melanoma_age_adjusted.csv") %>%
+  rename(c("outcome" = "cancer_type"))
+
+# combine cancer outcome data
+lc_mel_state = bind_rows(state_lc_data, state_mel_data) %>%
+  select(state, year, outcome, age_adjusted_incidence_rate)
+
+# Read in longitudinal state-level asthma data
+# Rename and select columns
+asthma_state <- read_csv(here::here("data", "asthma_state.csv")) %>%
+  rename(age_adjusted_incidence_rate = rate) %>%
+  select(state, year, outcome, age_adjusted_incidence_rate)
+
+# Bind rows of longitudinal asthma and longitudinal cancer by state and arrange 
+# accordingly
+lc_mel_asthma_state <- bind_rows(lc_mel_state, asthma_state) %>%
+  arrange(state, year, outcome)
+
+
+```
+
+##### lc_mel_asthma_state
+
+  * `state`. 2-letter abbreviation
+  
+  * `year`. Year
+  
+  * `outcome`. type of outcome (lung cancer, melanoma, asthma ED visit)
+  
+  * `age_adjusted_incidence_rate`. per 100,000
+
+
+
+Then, we could do the same with our county-level outcomes to get a merged set.
+
+#### Merged County Level Outcome Data
+
+```{r warning=FALSE, message=FALSE}
+
+fips_codes = read.csv('./data/fips_codes.csv') %>%
+  janitor::clean_names() %>%
+  filter(state %in% c("NY", "PA", "OH")) %>%
+  rename(c("county" = "name"))
+
+fips_codes$county[fips_codes$county == "St Lawrence"] <- "St. Lawrence"
+
+county_lc <- rbind(pa_county_lc, oh_county_lc, ny_county_lc) %>%
+   mutate(county = (gsub('.{7}$', '', county)))
+
+lc_fips <- merge(county_lc, fips_codes, by = c("state", "county"))
+
+# Merge county-level data frames with bind_rows
+state_county_melanoma_incidence_2014_2018 <- 
+  bind_rows(nys_county_melanoma_incidence_2014_2018,
+            ohio_county_melanoma_incidence_2014_2018,
+            pa_county_melanoma_incidence_2014_2018)
+
+county_lc = read_csv("./data/lung/county_lc.csv")
+county_mel = read_csv("./data/incidence_melanoma_data/state_county_melanoma_incidence_2014_2018.csv")
+
+# cleaning to make the data sets compatible
+
+county_mel = county_mel %>%
+  rename(c("outcome" = "cancer_type")) %>%
+  drop_na() 
+
+county_mel <- county_mel[!(county_mel$county == "Ohio" | county_mel$county == "Pennsylvania" | 
+     county_mel$county == "New York"), ] %>%
+  filter(!grepl('SEER', county))
+
+county_mel$county <- gsub(" County","", county_mel$county)
+
+county_mel$county[county_mel$county == "St Lawrence"] <- "St. Lawrence"
+
+county_lc$county <- gsub(" County","", county_lc$county)
+
+
+# binding rows
+
+lc_mel_county = bind_rows(county_lc, county_mel) %>%
+  filter(complete.cases(.)) 
+
+# Add FIPS column to the data
+fips = fips_codes %>%
+    janitor::clean_names()
+
+# fips df has 'St Lawrence' instead of 'St. Lawrence'
+fips$county[fips$county == "St Lawrence"] <- "St. Lawrence"
+
+lc_mel_county = merge(lc_mel_county, fips, by = c("state", "county"))
+
+# Read in cross-sectional asthma data
+# Only get county data for the year 2016 since we need county data at
+# a fixed time point (i.e. not longitudinal)
+# Adjust column names and types in prep for merge
+asthma_county <- read_csv(here::here("data", "asthma_county.csv")) %>%
+  filter(year == 2016) %>%
+  select(-year) %>%
+  rename(age_adjusted_incidence_rate = rate) %>%
+  mutate(age_adjusted_incidence_rate = as.double(age_adjusted_incidence_rate))
+
+# asthma_county has 'New York County' instead of 'New York' in fips df, and "GAllia" instead of "Gallia"
+asthma_county$county[asthma_county$county == "New York County"] <- "New York"
+asthma_county$county[asthma_county$county == "GAllia"] <- "Gallia"
+
+asthma_county <- merge(asthma_county, fips, by = c("state", "county"))
+
+# Bind rows of cancer and asthma by county and arrange accordingly
+lc_mel_asthma_county <- bind_rows(lc_mel_county, asthma_county) %>%
+  arrange(state, county, outcome)
+
+
+```
+
+
+##### lc_mel_asthma_county
+
+  * `state`. 2-letter abbreviation
+  
+  * `county`. name of county
+  
+  * `outcome`. type of outcome (lung cancer, melanoma, asthma ED visit)
+  
+  * `age_adjusted_incidence_rate`. per 100,000
+  
+  * `fips`. county-level unique identifier
+
+
+
+## Exploratory analysis 
 
 ### Spatial visualizations of exposures and outcomes
 
-Once all the data was gathered for both exposures and outcomes of interest, we sought to visualize the data in a cross-sectional manner with incidence rates of outcomes plotted onto maps indicating the extent of exposures for a given year. In this case, we used data from 2016 (with the exception of UV dat which was not available and the 2015 data was used in its place). This was accomplished by first plotting maps with a gradient fill to indicate relative levels of the exposure (i.e UV radiation, particulate matter, or low-atomspheric ozone) at the county level. Bubble markers were then overlain with each bubble's size and shading indicating the relative incidence of outcomes (i.e. hospitalization due to asthma, melanoma incidence, and lung cancer incidence). These layers were then put into plot_ly via ggplotly for interactivity with each marker giving all available data for a given county.
+Once all the data was gathered for both exposures and outcomes of interest, we sought to visualize the data in a cross-sectional manner with incidence rates of outcomes plotted onto maps indicating the extent of exposures for a given year. In this case, we used data from 2016 (with the exception of UV data which was not available and the 2015 data was used in its place). This was accomplished by first plotting maps with a gradient fill to indicate relative levels of the exposure (i.e UV radiation, particulate matter, or low-atmospheric ozone) at the county level. Bubble markers were then overlaid with each bubble's size and shading indicating the relative incidence of outcomes (i.e. hospitalization due to asthma, melanoma incidence, and lung cancer incidence). These layers were then put into `plot_ly` via `ggplotly` for interactivity with each marker giving all available data for a given county.
 
 The follow code chunk prepares the data frames for both the map and the data. 
 
@@ -466,8 +1024,8 @@ and [Data Exploration: Map](https://beeleeballin.shinyapps.io/apuv_map/) pages.
 ## Additional analysis: 
 
 In addition to the numerous data visualizations seen both in this report,  we did
-extensive work on running regression models and seeing how our exposure data was
-correlated to and could be used to predict our outcomes.
+extensive work on running regression models and seeing how our exposure data
+correlated with and could be used to predict our outcomes.
 
 
 The following code was used to set up our outcome data for these models:
@@ -606,11 +1164,10 @@ step_bic_mel %>%
 
 For both exposure/outcome pairings, we worked to understand their relationship through regression models.
 
-After paring down our lung cancer model with BIC, we observed an R^2 value of 0.97, which felt unreasonably high. Diagnostic plots like Q-Q and Box-Cox were conducted, which are viewable on the [Regression](regression.html) page.
+After paring down our longitudinal lung cancer model with BIC, we observed an $R^2$ value of 0.97, which felt unreasonably high. Model diagnostics were conducted to assess normality and scedasticity, and check for high-leverage points, with plots viewable on the [Regression](regression.html) page.
 
-With our melanoma BIC model, we observed an adjusted R^2 value of 0.88, which 
-also raised some red flags. Diagnostic plots like Q-Q and and residuals vs. 
-leverage were conducted, which are also viewable on the [Regression](regression.html) page.
+With our longitudinal melanoma BIC model, we observed an adjusted $R^2$ value of 0.88, which 
+also raised some red flags. Similarly to the lung cancer model, model diagnostics for the melanoma model are also viewable on the [Regression](regression.html) page.
 
 
 #### Cross-Sectional Data
@@ -645,7 +1202,7 @@ step_bic_aq_cty %>%
 ```
 
 
-With a R^2 value of 0.37, this lung cancer model appears to be far more reasonable
+With an $R^2$ value of 0.37, this lung cancer model appears to be far more reasonable
 with our expectations. Again, multiple diagnostic plots were used to assess 
 scedasticity and normality, observable on the [Regression](regression.html) page.
 
@@ -683,14 +1240,14 @@ step_bic_mel_cty %>%
 ```
 
 
-This melanoma model has a fairly small R^2 of 0.23. Residuals and Q-Q plots are
+This melanoma model has a fairly small $R^2$ of 0.23. Residuals and Q-Q plots are
 available for reference on the [Regression](regression.html) page for further
 assessment.
 
 
 ##### Predicting Asthma as a Function of Air Quality Variables
 
-```{r message=FALSE, warnin=FALSE}
+```{r message=FALSE, warning=FALSE}
 
 asth_df <- county_df2 %>%
   filter(!is.na(asthma))
@@ -708,7 +1265,7 @@ aq_asth_df2 <- aq_asth_df %>%
 fit_asth_cty <- lm(asthma ~ .^2, data = aq_asth_df2)
 
 step_bic_asth_cty <- step(fit_asth_cty, trace = 0, k = log(nobs(fit_aq)), direction = "backward")
-summary(step_bic_asth_cty)
+#summary(step_bic_asth_cty)
 
 
 ### CHART Asthma MODEL
@@ -727,12 +1284,12 @@ step_bic_asth_cty %>%
 
 ```
 
-This asthma model has a reasonable R^2 of 0.597. Residuals and Q-Q plots are
+This asthma model has a reasonable $R^2$ of 0.597. Residuals and Q-Q plots are
 available for reference on the [Regression](regression.html) page for further
 assessment.
 
 
-Additional visualizations of these models are avalaible. Please visit our [Regression](https://beeleeballin.github.io/p8105-final_project/regression.html) page, or scroll to our **Discussion** for an overview of the findings.
+Additional visualizations of these models are avalable. Please visit our [Regression](https://beeleeballin.github.io/p8105-final_project/regression.html) page, or scroll to our **Discussion** for an overview of the findings.
 
 
 
@@ -753,22 +1310,22 @@ plots for the lung cancer model that the residuals were centered and relatively
 even with no extreme outliers. When we cross-validated using leave-one-out and 
 Monte-Carlo, our BIC fit was best, though we still suspect overfitting. Additionally,
 it is important to acknowledge that this data set does not account for many of 
-the relevant predictors for lung cancer, including age, race, and, perhaps most 
+the relevant predictors for lung cancer, including age, race, genetics, and, perhaps most 
 importantly, smoking.
 
 Additionally, for our melanoma model, the residuals were slightly heteroscedastic
 and minimally curved but not unreasonable. The Q-Q plot failed to display normality,
 though, and there were multiple significant outliers with high leverage. Even
 after removing certain predictors and transforming new models, the BIC fit model
-was still the most significant in both leave-one-out and Monte Carlo. We, again,
+was still the most predictive in both leave-one-out and Monte Carlo cross-validation. We, again,
 suspect overfitting but cannot confirm this without running more tests and expanding
-our research.
+our research. Additionally, we did not employ methods specific to longitudinal or time-series data, such as generalized least squares or distributed lag models, nor did we attempt penalized methods such as the lasso.
 
 Our models using cross-sectional, county-level data made far more sense. 
 
 For lung cancer, the residuals of the cross-sectional model are much more reasonable.
 The residuals are well dispersed, the Q-Q plot is far more normal than the 
-longitudinal model, and there are similarly no high outliers.Yet again, the
+longitudinal model, and there are similarly no high outliers. Yet again, the backwards-selected
 BIC model is our best-fit. We can also see that the strongest term in the model is
 the interaction between state and ozone, which may indicate potential policy
 and industry differences by state.
@@ -776,32 +1333,32 @@ and industry differences by state.
 When considering the melanoma cross-sectional model, we see that there are
 well dispersed residuals, a relatively normal Q-Q plot, and no high leverage
 points. Additionally, we see significant and important model terms in the form
-of EDD values in the winter and spring. This was an interesting finding, as you
+of median EDD values in the winter and spring. This was an interesting finding, as you
 may expect summer EDD, when it is most likely to be sunny, to have the most effect.
-However, this relationship may changed based on sunscreen use. Individuals may be
+However, this relationship may change based on sunscreen use. Individuals may be
 more likely to use sunscreen in the summer, leaving their skin more vulnerable
 in the off-season months. 
 
-Finally, we can observe our asthma cross-sectional model. In the diagnostic plots 
+Finally, we consider our asthma cross-sectional model. In the diagnostic plots 
 visible on the [Regression](regression.html) page, we see that there are numerous outliers
-that led us to filter out the points and re-model. We end up with a well distributed
-residual plot but large abnormality. Again, we see that BIC is the best model through
+that led us to filter out the points and re-model. We end up with a well-distributed
+residual plot but notable abnormality. Again, we see that BIC is the best model through
 cross-validation, with a significant interaction between states and ozone levels.
 
 
 ### Limitations to analyses
 
-Although we focused our attention to three neighboring states, availability of 
+Although we focused our attention on three neighboring states, availability of 
 surveillance data for chronic health conditions varies greatly across these three
 states. These variations in data collection make it difficult for comparison 
 across states, as the scales may not be comparable or the metric for measuring 
 prevalence in the population may differ between states. For instance, asthma 
-incidence can be reported with respect to acute cases as shown with emergency 
+incidence can be reported with respect to acute cases as measured by emergency 
 department visits or more specifically with rates of hospitalization due 
 exclusively to asthma. Consequently, when comparing exposures as potential risk
 factors for asthma across the states and counties, we were limited to only 
 looking at hospitalizations because publicly available Pennsylvania data only 
-reported on hospitalizations and not emergency department visits. Similarly, 
+reported hospitalizations and not emergency department visits. Similarly, 
 surveillance data may not collect demographic data that have been shown to be 
 effect measure modifiers of the health outcomes. For instance, gender, race, and 
 ethnicity have been reported in  academic literature as important factors 
