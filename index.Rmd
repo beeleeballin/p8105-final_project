@@ -16,7 +16,7 @@ We are a team, and we care about **climates** and **diseases**.
 # About the project
 
 As a team of biostatistians and epidemiologists in training, we care about the impact of climate on diseases 
-and understand the power of visualization and data anlaysis to help make sense of nuanced interactions. 
+and understand the power of visualization and data analysis to help make sense of nuanced interactions. 
 Our project set out to investigate how environmental exposures like 
 air quality and UV radiation 
 are associated with incidence rates of 
@@ -25,7 +25,7 @@ We know that air pollution has been linked to chronic respiratory conditions whi
 sun exposure is a notable leading risk factor for skin cancer. 
 However, we sought to understand to what degree can we visualize these relationships and analyze them via statistical models.   
 Using environmental measures of fine particulate matter and ozone as proxies for air pollution and 
-UV radiation as a measure for sun exposure, we compared these climatic exposures to disease prevalence data specifically for our outcomes of interest.
+UV radiation as a measure for sun exposure, we compared these climatic exposures to disease incidence data specifically for our outcomes of interest.
 To limit the scope and scale of our study we focused on three states: Ohio, Pennsylvania, and New York.
 
 ## Overview of Our Website
