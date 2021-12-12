@@ -5,7 +5,9 @@ account: bengoebel
 server: shinyapps.io
 hostUrl: https://api.shinyapps.io/v1
 appId: 5310526
-bundleId: 5359803
+bundleId: 5361138
 url: https://bengoebel.shinyapps.io/apuv_map/
-when: 1639237415.98049
-lastSyncTime: 1639237415.98051
+when: 1639273208.90015
+lastSyncTime: 1639273208.90015
+asMultiple: FALSE
+asStatic: FALSE

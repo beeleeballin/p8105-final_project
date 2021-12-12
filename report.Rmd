@@ -71,7 +71,7 @@ following:
 - How do lung cancer age-adjusted incidence rates vary annually based on median 
 particulate matter levels? Does this change from state to state?
 
-- How do emergency department visits and/or hospitalization rates for asthma vary annually based on  
+- How do emergency room visits and/or hospitalization rates for asthma vary annually based on  
 median particulate matter levels? Does this change from state to state?
 
 - How do melanoma age-adjusted incidence rates vary annually based on UV
@@ -1352,7 +1352,7 @@ Although we focused our attention on three neighboring states, availability of
 surveillance data for chronic health conditions varies greatly across these three
 states. These variations in data collection make it difficult for comparison 
 across states, as the scales may not be comparable or the metric for measuring 
-prevalence in the population may differ between states. For instance, asthma 
+incidence in the population may differ between states. For instance, asthma 
 incidence can be reported with respect to acute cases as measured by emergency 
 department visits or more specifically with rates of hospitalization due 
 exclusively to asthma. Consequently, when comparing exposures as potential risk
